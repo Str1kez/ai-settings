@@ -59,12 +59,12 @@ cd ~/ai-settings && git pull && ./scripts/install.sh
 `install.sh` автоматически генерирует файлы в `~/.claude/commands/<namespace>/` — по одному на каждый скилл с `SKILL.md`. После установки скиллы появляются в `/`-автодополнении Claude Code:
 
 ```
-/popovs:ru-commit-message
-/popovs:tg-post-writer
+/strikez:ru-commit-message
+/strikez:tg-post-writer
 ...
 ```
 
-Переименуй `skills/popovs/` → `skills/<your-handle>/` — команды подхватятся автоматически при следующем запуске `install.sh`.
+Переименуй `skills/strikez/` → `skills/<your-handle>/` — команды подхватятся автоматически при следующем запуске `install.sh`.
 
 ## RTK (Rust Token Killer)
 

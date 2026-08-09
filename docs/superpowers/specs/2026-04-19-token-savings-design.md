@@ -63,7 +63,7 @@ Always-on. Applies only to AI's own chat responses.
 
 ### 4. `docs/ai/writing-voice.md` — сократить дублирование
 
-Файл занимает 6.8KB. Большая часть его содержимого дублирует `skills/popovs/tg-post-writer/references/style-guide.md`, которая грузится непосредственно в TG-скилле.
+Файл занимает 6.8KB. Большая часть его содержимого дублирует `skills/strikez/tg-post-writer/references/style-guide.md`, которая грузится непосредственно в TG-скилле.
 
 **Оставить в writing-voice.md:**
 - Scope (что под этим голосом, что нет) — уникальный контент

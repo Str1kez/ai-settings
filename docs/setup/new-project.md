@@ -44,4 +44,4 @@
 
 ## После init
 
-Если CHANGELOG.md уже велся — скрипт его не трогает. Если нет, созданный шаблон Keep a Changelog можно сразу использовать — смотри скилл `changelog-entry` в `~/ai-settings/skills/popovs/changelog-entry/`.
+Если CHANGELOG.md уже велся — скрипт его не трогает. Если нет, созданный шаблон Keep a Changelog можно сразу использовать — смотри скилл `changelog-entry` в `~/ai-settings/skills/strikez/changelog-entry/`.

@@ -115,7 +115,7 @@ ai-settings/
 │
 ├── docs/
 │   ├── ai/                            # @-imports для AGENTS.md (EN)
-│   │   ├── persona.md                 # Boris: direct, argues, no flattery, humor, "I don't know"
+│   │   ├── persona.md                 # Athena: direct, argues, no flattery, humor, "I don't know"
 │   │   ├── style.md                   # communication style (RU by default, concise, options)
 │   │   ├── commands.md                # Commands section: pytest, npm test, uv run, gh...
 │   │   ├── coding-standards.md        # YAGNI, tests required, no dead code, security

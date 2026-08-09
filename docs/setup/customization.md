@@ -2,7 +2,7 @@
 
 > **Windows:** все bash-команды в этом руководстве требуют macOS/Linux или WSL. Без WSL используйте эквиваленты PowerShell вручную.
 
-Репо — это мой личный пресет. Когда его клонируешь, ты получаешь мою персону (Бориса), мой стиль общения (русский, «ты», без лести), мой стек (Python/TypeScript/Next.js/FastAPI/Yandex Cloud) и мои личные скиллы (русские коммиты, посты в TG). Почти всё это надо поправить под себя.
+Репо — это мой личный пресет. Когда его клонируешь, ты получаешь мою персону (Бориса), мой стиль общения (русский, «ты», без лести), мой стек (Python/FastAPI/LiteStar/Vue, локально в Docker) и мои личные скиллы (русские коммиты, посты в TG). Почти всё это надо поправить под себя.
 
 Ниже — чеклист того, что трогать. По приоритету: сначала обязательное, потом опциональное, потом что **не** трогать.
 
@@ -16,11 +16,11 @@
 
 ### 0. Переименовать неймспейс скиллов
 
-Все кастомные скиллы живут в `skills/popovs/` — это **мой** личный неймспейс. В Claude Code они будут отображаться с префиксом `popovs:` и доступны как `/popovs:skill-name`. Переименуй папку под себя — обычно GitHub-хендл или имя:
+Все кастомные скиллы живут в `skills/strikez/` — это **мой** личный неймспейс. В Claude Code они будут отображаться с префиксом `strikez:` и доступны как `/strikez:skill-name`. Переименуй папку под себя — обычно GitHub-хендл или имя:
 
 ```bash
-git mv skills/popovs skills/<your-handle>
-git commit -m "chore(skills): переименовать неймспейс popovs → <your-handle>"
+git mv skills/strikez skills/<your-handle>
+git commit -m "chore(skills): переименовать неймспейс strikez → <your-handle>"
 ```
 
 После этого `install.sh` автоматически подхватит новый неймспейс — хардкода нет, скрипт сканирует все поддиректории `skills/`.
@@ -93,7 +93,7 @@ Uncertainty) — но не копируй содержание.
 
 ---
 
-### 3. `docs/ai/writing-voice.md` и `skills/popovs/tg-post-writer/references/`
+### 3. `docs/ai/writing-voice.md` и `skills/strikez/tg-post-writer/references/`
 
 Голос **генерируемого контента** — коммиты, PR, CHANGELOG, доки, посты, статьи. Применяется везде, кроме UI-строк и ошибок для конечных пользователей. У меня там правила моего канала «··• Серёжа печатает»: нет канцелярита и инфобиза, кавычки только для прямых цитат, гипербола как приём, автор всегда в тексте через маркеры «на мой взгляд / я считаю», смешанный ритм предложений.
 
@@ -121,7 +121,7 @@ Reference) — содержимое не копируй, там мой голо�
 
 На выходе — готовый writing-voice.md на английском с Russian-specific
 примерами (как в текущем), ссылкой на свой канонический стайл-гайд
-в skills/popovs/tg-post-writer/references/ (если ведёшь канал) или без
+в skills/strikez/tg-post-writer/references/ (если ведёшь канал) или без
 (если не ведёшь). Верни в кодблоке.
 ```
 
@@ -134,7 +134,7 @@ Reference) — содержимое не копируй, там мой голо�
 План работы:
 1. Я присылаю посты.
 2. Ты анализируешь их и извлекаешь стайл-гайд по структуре раздела
-   skills/popovs/tg-post-writer/references/style-guide.md в этом репо:
+   skills/strikez/tg-post-writer/references/style-guide.md в этом репо:
    голос, заходы, структура, ритм, лексика, кавычки, концовки, чек-лист.
 3. На основе стайл-гайда делаешь общий docs/ai/writing-voice.md —
    подмножество правил, применимых везде (коммиты, PR, доки), а не
@@ -151,13 +151,12 @@ Reference) — содержимое не копируй, там мой голо�
 
 Там у меня:
 ```
-- JavaScript / TypeScript, Node.js 20+
-- Python 3.12+ (prefer `uv` over `pip`)
-- Frameworks: Next.js 15 (app router, RSC-first), React 19, FastAPI 0.100+
-- Data: SQLAlchemy 2.0+, Pydantic v2, Alembic
-- Testing: pytest (Python); Jest or Vitest (JS/TS — confirm per-project)
-- CI/CD: GitHub Actions
-- Cloud: Yandex Cloud (`yc` CLI, not AWS/GCP)
+- Python 3.12+ (prefer `uv` over `pip`); occasionally Go and Rust for side projects
+- Frameworks: FastAPI 0.100+, LiteStar 2.24+ (backend); Vue 3 (frontend, side projects only)
+- Data: SQLAlchemy 2.0+, Pydantic v2, Alembic, Pydantic AI
+- Testing: pytest (Python, pytest-xdist for parallel runs), standard testing package (Go), cargo test (Rust)
+- CI/CD: GitLab CI (pipelines)
+- Deployment: Docker, no cloud — local only
 ```
 
 Замени на свой стек с версиями. Это читается моделью как **факт**, а не как рекомендация, — поэтому чужой стек собьёт её с толку.
@@ -166,7 +165,7 @@ Reference) — содержимое не копируй, там мой голо�
 
 ```
 Я обновляю секцию «5. Tech Stack (with versions)» в AGENTS.md. Текущее
-содержимое — мой стек (Python/TypeScript/Next.js/FastAPI/Yandex Cloud),
+содержимое — мой стек (Python/FastAPI/LiteStar/Vue, локально в Docker),
 мне не подходит.
 
 Задай мне 5 вопросов по одному:
@@ -273,7 +272,7 @@ Pre-commit discipline, Merge strategy, Never). Верни в кодблоке.
 
 ---
 
-### 8. `skills/popovs/ru-commit-message`, `ru-pr-description`, `changelog-entry`
+### 8. `skills/strikez/ru-commit-message`, `ru-pr-description`, `changelog-entry`
 
 Все три — русскоязычные.
 - Если коммитишь на английском: удали `ru-commit-message` и `ru-pr-description`, или скопируй и переделай в `en-commit-message`.
@@ -282,14 +281,14 @@ Pre-commit discipline, Merge strategy, Never). Верни в кодблоке.
 **Промпт (форк в английский аналог):**
 
 ```
-Скопируй папку skills/popovs/ru-commit-message/ в skills/popovs/en-commit-message/
+Скопируй папку skills/strikez/ru-commit-message/ в skills/strikez/en-commit-message/
 и переделай скилл под английский язык коммит-описаний:
 - В SKILL.md: поменяй name, description (триггеры типа «write a commit» вместо
   «напиши коммит»), tags.
 - В references/examples.md: перепиши все примеры на английские описания
   (imperative, lowercase first, no trailing period).
 - В CHANGELOG.md скилла и README.md: переведи.
-- После: удали исходную skills/popovs/ru-commit-message/, если она не нужна.
+- После: удали исходную skills/strikez/ru-commit-message/, если она не нужна.
 - Прогони `pytest tests/` — все проверки skill-lint должны пройти.
 
 Потом то же самое для ru-pr-description → en-pr-description.
@@ -301,14 +300,14 @@ SKILL.md и references/.
 
 ---
 
-### 9. `skills/popovs/tg-post-writer`
+### 9. `skills/strikez/tg-post-writer`
 
 Личный скилл для постов в мой Telegram-канал в стиле Бориса. Если не ведёшь TG-канал — удаляй папку целиком. Если ведёшь, но на своём стиле — перепиши `SKILL.md` под свой тон и удали примеры.
 
 **Промпт (удалить):**
 
 ```
-Удали папку skills/popovs/tg-post-writer/ целиком. Обнови skills/README.md —
+Удали папку skills/strikez/tg-post-writer/ целиком. Обнови skills/README.md —
 убери упоминание tg-post-writer из секции «Стартовый набор».
 Прогони pytest tests/ — все проверки skill-lint должны остаться зелёными.
 ```
@@ -317,7 +316,7 @@ SKILL.md и references/.
 
 ```
 Я пишу посты в свой блог/канал, но в другом стиле. Перепиши
-skills/popovs/tg-post-writer/SKILL.md, references/style-guide.md и
+skills/strikez/tg-post-writer/SKILL.md, references/style-guide.md и
 references/examples.md под меня.
 
 Задай мне 4 вопроса по одному:
@@ -341,9 +340,10 @@ references/examples.md. Версию в SKILL.md сбрось до 1.0.0,
 
 ### 10. `agents/`
 
-6 субагентов: `code-reviewer`, `debugger`, `fastapi-backend`, `next-frontend`, `ml-helper`, `pr-writer`.
-- `fastapi-backend`, `next-frontend`, `ml-helper` — узко-стековые. Если не работаешь с FastAPI / Next.js / ML — удали соответствующие папки, чтобы они не всплывали ложными триггерами.
+5 субагентов: `code-reviewer`, `debugger`, `fastapi-backend`, `ml-helper`, `pr-writer`.
+- `fastapi-backend`, `ml-helper` — узко-стековые. Если не работаешь с FastAPI/LiteStar или ML — удали соответствующие папки, чтобы они не всплывали ложными триггерами.
 - `code-reviewer`, `debugger`, `pr-writer` — общие, оставляй.
+- Фронтенд (Vue) отдельного субагента пока не имеет — заведи по аналогии, если Vue-проекты регулярные.
 
 **Промпт (аудит под стек):**
 
@@ -408,7 +408,7 @@ docs/ai/hard-gates.md.
 
 Не пытайся переписать всё за один заход. Работающий минимум:
 1. `persona.md` + `style.md` под себя — 80% эффекта.
-2. Удали `skills/popovs/tg-post-writer/` и `skills/popovs/ru-*`, если не твой язык.
+2. Удали `skills/strikez/tg-post-writer/` и `skills/strikez/ru-*`, если не твой язык.
 3. Живи неделю, смотри где ассистент ломается или звучит чужо — правь точечно.
 
 Всё остальное — опциональная тонкая настройка.

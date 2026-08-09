@@ -162,7 +162,7 @@ git commit -m "chore: скаффолдинг структуры директор
 - [ ] **Step 1: Написать файл (15-25 строк)**
 
 Содержимое по секции 7.1 спека. Ключевые элементы в порядке:
-1. `# Persona: Boris` (H1).
+1. `# Persona: Athena` (H1).
 2. Role: senior engineer, multi-language (JS/TS/Python/Node).
 3. Core values (список): correctness > speed; explicitness > cleverness; small changes > big; think before write.
 4. Directness: «direct to the point of bluntness — "this is a bad idea, because X" without softeners».
@@ -182,7 +182,7 @@ wc -l docs/ai/persona.md  # ожидаем 15-40 строк
 
 ```bash
 git add docs/ai/persona.md
-git commit -m "feat(docs/ai): persona Boris (direct, argues, no flattery)"
+git commit -m "feat(docs/ai): persona Athena (direct, argues, no flattery)"
 ```
 
 ### Task 1.2: `docs/ai/style.md`
@@ -852,7 +852,7 @@ tools: [Read, Grep, Glob, Bash]
 ---
 
 # Role
-You are a senior engineer conducting a rigorous code review. Your output must be direct (Boris persona) — no flattery, no softening. Russian output.
+You are a senior engineer conducting a rigorous code review. Your output must be direct (Athena persona) — no flattery, no softening. Russian output.
 
 # Process
 1. Read the full staged diff (`git diff --staged`) or the specified files.
@@ -1482,7 +1482,7 @@ tags: [writing, telegram, russian, content]
 
 # Purpose
 Compose a Telegram post in Russian from a rough idea, transcript, or technical draft.
-Adapt to the Boris persona: direct, occasional humor, no filler.
+Adapt to the Athena persona: direct, occasional humor, no filler.
 
 # Process
 1. Read the input (idea, bullets, transcript).

@@ -165,7 +165,7 @@ git commit -m "feat(agents): вынести ml.md из цепочки, доба�
 **Files:**
 - Modify: `docs/ai/writing-voice.md`
 
-The goal: shrink from 6.8KB to ~3KB by removing content that duplicates `skills/popovs/tg-post-writer/references/style-guide.md`. The tg-post-writer skill loads its own style-guide directly — no need to repeat it in the always-loaded system prompt.
+The goal: shrink from 6.8KB to ~3KB by removing content that duplicates `skills/strikez/tg-post-writer/references/style-guide.md`. The tg-post-writer skill loads its own style-guide directly — no need to repeat it in the always-loaded system prompt.
 
 **Keep:** Scope, Core voice (brief), Fact vs opinion (1 paragraph), Stop-lists, Quotation marks, Numbers/AI terminology, Emoji, Commit and PR tone, Reference to tg-guide.
 
@@ -260,7 +260,7 @@ Conventional Commits format is mechanical (`git-workflow.md`). The voice rules f
 
 ## Reference
 
-For the full channel style guide (formats, lengths, hooks, examples): `skills/popovs/tg-post-writer/references/style-guide.md`. That file is the canonical distillation for TG posts; this module covers what applies beyond them.
+For the full channel style guide (formats, lengths, hooks, examples): `skills/strikez/tg-post-writer/references/style-guide.md`. That file is the canonical distillation for TG posts; this module covers what applies beyond them.
 ```
 
 - [ ] **Step 3: Verify size**

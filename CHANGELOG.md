@@ -62,12 +62,12 @@
 - `CLAUDE.md` — инструкция модели не вызывать MCP-инструменты (Notion, Confluence, Claude_in_Chrome, scheduled-tasks) без явной просьбы пользователя.
 - `CLAUDE.md` — правило давать подсказку по модели (Haiku / Sonnet / Opus) и уровню effort в конце ответов, где предлагается следующий шаг или запускается задача.
 - `CLAUDE.md` — напоминание писать «Задача закрыта. Если следующая несвязанная — открой новый чат» при завершении задачи.
-- `skills/popovs/boilerplate/SKILL.md` — Step 5 теперь генерирует `.claude/CLAUDE.md` в новом проекте с MCP-guard и маппингом моделей.
+- `skills/strikez/boilerplate/SKILL.md` — Step 5 теперь генерирует `.claude/CLAUDE.md` в новом проекте с MCP-guard и маппингом моделей.
 
 ## [0.2.2] — 2026-04-20
 
 ### Добавлено
-- Секция `## Codex Skills` в `AGENTS.md` — объясняет модели, что скиллы из `.claude/skills/` не видны Codex нативно; как использовать их вручную и как устанавливать в `~/.agents/skills/`; предупреждение про namespace (`popovs:write-meridian-article` → `write-meridian-article`).
+- Секция `## Codex Skills` в `AGENTS.md` — объясняет модели, что скиллы из `.claude/skills/` не видны Codex нативно; как использовать их вручную и как устанавливать в `~/.agents/skills/`; предупреждение про namespace (`strikez:write-meridian-article` → `write-meridian-article`).
 - `scripts/install.sh` — новая секция: создаёт `~/.agents/skills/` и симлинкует каждый скилл из репо без namespace-префикса. Идемпотентно, работает с `--dry-run`.
 
 ## [0.2.1] — 2026-04-19
@@ -91,11 +91,11 @@
 ## [0.2.0] — 2026-04-19
 
 ### Добавлено
-- Скилл `skills/popovs/boilerplate` — одна команда (`/popovs:boilerplate`) разворачивает новый проект: скачивает актуальный шаблон из публичного репо `tsergeytovarov/popovs-boilerplate`, подставляет плейсхолдеры, копирует снэпшот AI-правил, генерирует `docs/DEPLOY.md` с точными командами для VM, создаёт GitHub репо и делает начальный коммит. Поддерживает 4 стека: `nextjs-fastapi`, `fastapi-only`, `landing`, `docs`.
-- Репо `tsergeytovarov/popovs-boilerplate` (публичный) — рабочие шаблоны для всех четырёх стеков. Каждый стек верифицирован: docker-compose up поднимается, `/health` отдаёт 200, mkdocs build проходит, HTML валиден.
+- Скилл `skills/strikez/boilerplate` — одна команда (`/strikez:boilerplate`) разворачивает новый проект: скачивает актуальный шаблон из публичного репо `tsergeytovarov/strikez-boilerplate`, подставляет плейсхолдеры, копирует снэпшот AI-правил, генерирует `docs/DEPLOY.md` с точными командами для VM, создаёт GitHub репо и делает начальный коммит. Поддерживает 4 стека: `nextjs-fastapi`, `fastapi-only`, `landing`, `docs`.
+- Репо `tsergeytovarov/strikez-boilerplate` (публичный) — рабочие шаблоны для всех четырёх стеков. Каждый стек верифицирован: docker-compose up поднимается, `/health` отдаёт 200, mkdocs build проходит, HTML валиден.
 - `scripts/deploy-skills.sh` — одна команда разворачивает скиллы на все платформы: прогоняет `install.sh` (Claude Code + Codex + Gemini + Cursor), пакует скиллы в zip для Claude Desktop и **авто-синкает обновления** в уже загруженные скиллы через rsync. Режим щадящий (без `--delete`) — чужие файлы не трогаются. Первая загрузка через UI (zip в `dist/claude-desktop-skills/`), последующие апдейты — автоматически.
 - `docs/ai/writing-voice.md` — модуль голоса для всего **генерируемого контента**: коммиты, PR, CHANGELOG, TODO, документация, TG-посты, статьи. Явно прописано, где **не** применяется: UI-строки продукта, ошибки для конечных пользователей, формальная API-дока, чат-ответы (на них действует `style.md`). Содержит правила: присутствие автора, разделение факта и мнения, гипербола как приём, стоп-лист канцелярита/инфобиза, жёсткое правило про кавычки, руководство по тону коммитов.
-- Скилл `skills/popovs/tg-post-writer` поднят до **1.1.0**: полный стайл-гайд канала, 10 эталонных постов по жанрам, блок required reading и вызов чек-листа перед возвратом в `SKILL.md`.
+- Скилл `skills/strikez/tg-post-writer` поднят до **1.1.0**: полный стайл-гайд канала, 10 эталонных постов по жанрам, блок required reading и вызов чек-листа перед возвратом в `SKILL.md`.
 
 ### Изменено
 - `AGENTS.md` — добавлена секция **3. Writing Voice** с импортом `docs/ai/writing-voice.md`. Секции сдвинуты.

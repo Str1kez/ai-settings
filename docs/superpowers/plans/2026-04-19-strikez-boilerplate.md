@@ -1,10 +1,10 @@
-# popovs:boilerplate — Implementation Plan
+# strikez:boilerplate — Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Создать скилл `popovs:boilerplate` и публичный репо `popovs-boilerplate` с четырьмя рабочими шаблонами стеков, которые разворачиваются одной командой.
+**Goal:** Создать скилл `strikez:boilerplate` и публичный репо `strikez-boilerplate` с четырьмя рабочими шаблонами стеков, которые разворачиваются одной командой.
 
-**Architecture:** Два репо: `popovs-boilerplate` (публичный, только шаблоны) + `ai-settings` (скилл). Скилл клонирует шаблонный репо, задаёт 4 вопроса, копирует файлы с подстановкой плейсхолдеров, копирует снэпшот AI-правил из ai-settings, генерирует DEPLOY.md, создаёт GitHub репо и делает начальный коммит.
+**Architecture:** Два репо: `strikez-boilerplate` (публичный, только шаблоны) + `ai-settings` (скилл). Скилл клонирует шаблонный репо, задаёт 4 вопроса, копирует файлы с подстановкой плейсхолдеров, копирует снэпшот AI-правил из ai-settings, генерирует DEPLOY.md, создаёт GitHub репо и делает начальный коммит.
 
 **Tech Stack:** Next.js 15, FastAPI 0.115, Python 3.12, PostgreSQL 16, Docker Compose, MkDocs Material, GitHub CLI (`gh`), bash
 
@@ -12,7 +12,7 @@
 
 ## File Map
 
-### Новый репо `popovs-boilerplate` (~/Desktop/projects/popovs-boilerplate/)
+### Новый репо `strikez-boilerplate` (~/Desktop/projects/strikez-boilerplate/)
 
 ```
 README.md
@@ -99,7 +99,7 @@ docs/
 ### Скилл в ai-settings
 
 ```
-skills/popovs/boilerplate/
+skills/strikez/boilerplate/
   SKILL.md
   README.md
   CHANGELOG.md
@@ -107,16 +107,16 @@ skills/popovs/boilerplate/
 
 ---
 
-## Task 1: Создать репо popovs-boilerplate
+## Task 1: Создать репо strikez-boilerplate
 
 **Files:**
-- Create: `~/Desktop/projects/popovs-boilerplate/README.md`
+- Create: `~/Desktop/projects/strikez-boilerplate/README.md`
 
 - [ ] **Step 1: Создать директорию**
 
 ```bash
-mkdir -p ~/Desktop/projects/popovs-boilerplate
-cd ~/Desktop/projects/popovs-boilerplate
+mkdir -p ~/Desktop/projects/strikez-boilerplate
+cd ~/Desktop/projects/strikez-boilerplate
 git init
 ```
 
@@ -124,9 +124,9 @@ git init
 
 ```bash
 cat > README.md << 'EOF'
-# popovs-boilerplate
+# strikez-boilerplate
 
-Публичный репо шаблонов для скилла `popovs:boilerplate`.
+Публичный репо шаблонов для скилла `strikez:boilerplate`.
 
 ## Стеки
 
@@ -139,7 +139,7 @@ cat > README.md << 'EOF'
 
 ## Использование
 
-Этот репо используется автоматически скиллом `/popovs:boilerplate`.
+Этот репо используется автоматически скиллом `/strikez:boilerplate`.
 Чтобы добавить новый стек — создать папку с `meta.yaml` и файлами шаблона.
 
 ## Структура стека
@@ -153,24 +153,24 @@ EOF
 - [ ] **Step 3: Создать публичный репо на GitHub**
 
 ```bash
-cd ~/Desktop/projects/popovs-boilerplate
-gh repo create sergeypopov/popovs-boilerplate --public --source=. --remote=origin --description "Project templates for popovs:boilerplate skill"
+cd ~/Desktop/projects/strikez-boilerplate
+gh repo create sergeypopov/strikez-boilerplate --public --source=. --remote=origin --description "Project templates for strikez:boilerplate skill"
 ```
 
-Expected: репо создан на github.com/sergeypopov/popovs-boilerplate
+Expected: репо создан на github.com/sergeypopov/strikez-boilerplate
 
 ---
 
 ## Task 2: Создать shared/
 
 **Files:**
-- Create: `~/Desktop/projects/popovs-boilerplate/shared/` (все файлы)
+- Create: `~/Desktop/projects/strikez-boilerplate/shared/` (все файлы)
 
 - [ ] **Step 1: Создать .gitignore**
 
 ```bash
-mkdir -p ~/Desktop/projects/popovs-boilerplate/shared
-cat > ~/Desktop/projects/popovs-boilerplate/shared/.gitignore << 'EOF'
+mkdir -p ~/Desktop/projects/strikez-boilerplate/shared
+cat > ~/Desktop/projects/strikez-boilerplate/shared/.gitignore << 'EOF'
 # Python
 __pycache__/
 *.pyc
@@ -216,7 +216,7 @@ EOF
 - [ ] **Step 2: Создать CHANGELOG.md**
 
 ```bash
-cat > ~/Desktop/projects/popovs-boilerplate/shared/CHANGELOG.md << 'EOF'
+cat > ~/Desktop/projects/strikez-boilerplate/shared/CHANGELOG.md << 'EOF'
 # CHANGELOG
 
 Формат: [Keep a Changelog](https://keepachangelog.com/ru/1.1.0/).
@@ -228,7 +228,7 @@ EOF
 - [ ] **Step 3: Создать TODO.md**
 
 ```bash
-cat > ~/Desktop/projects/popovs-boilerplate/shared/TODO.md << 'EOF'
+cat > ~/Desktop/projects/strikez-boilerplate/shared/TODO.md << 'EOF'
 # TODO
 
 ## Активные задачи
@@ -240,7 +240,7 @@ EOF
 - [ ] **Step 4: Создать README.md с плейсхолдерами**
 
 ```bash
-cat > ~/Desktop/projects/popovs-boilerplate/shared/README.md << 'EOF'
+cat > ~/Desktop/projects/strikez-boilerplate/shared/README.md << 'EOF'
 # {{PROJECT_NAME}}
 
 ## Локальный запуск
@@ -274,8 +274,8 @@ EOF
 - [ ] **Step 5: Создать docs/design/README.md**
 
 ```bash
-mkdir -p ~/Desktop/projects/popovs-boilerplate/shared/docs/design
-cat > ~/Desktop/projects/popovs-boilerplate/shared/docs/design/README.md << 'EOF'
+mkdir -p ~/Desktop/projects/strikez-boilerplate/shared/docs/design
+cat > ~/Desktop/projects/strikez-boilerplate/shared/docs/design/README.md << 'EOF'
 # Дизайн
 
 Здесь живут материалы по дизайну: спека, мудборды, токены, референсы.
@@ -291,10 +291,10 @@ EOF
 - [ ] **Step 6: Создать директории superpowers/**
 
 ```bash
-mkdir -p ~/Desktop/projects/popovs-boilerplate/shared/docs/superpowers/specs
-mkdir -p ~/Desktop/projects/popovs-boilerplate/shared/docs/superpowers/plans
-touch ~/Desktop/projects/popovs-boilerplate/shared/docs/superpowers/specs/.gitkeep
-touch ~/Desktop/projects/popovs-boilerplate/shared/docs/superpowers/plans/.gitkeep
+mkdir -p ~/Desktop/projects/strikez-boilerplate/shared/docs/superpowers/specs
+mkdir -p ~/Desktop/projects/strikez-boilerplate/shared/docs/superpowers/plans
+touch ~/Desktop/projects/strikez-boilerplate/shared/docs/superpowers/specs/.gitkeep
+touch ~/Desktop/projects/strikez-boilerplate/shared/docs/superpowers/plans/.gitkeep
 ```
 
 ---
@@ -302,19 +302,19 @@ touch ~/Desktop/projects/popovs-boilerplate/shared/docs/superpowers/plans/.gitke
 ## Task 3: Создать nextjs-fastapi/backend
 
 **Files:**
-- Create: `~/Desktop/projects/popovs-boilerplate/nextjs-fastapi/backend/` (все файлы)
+- Create: `~/Desktop/projects/strikez-boilerplate/nextjs-fastapi/backend/` (все файлы)
 
 - [ ] **Step 1: Создать структуру директорий**
 
 ```bash
-mkdir -p ~/Desktop/projects/popovs-boilerplate/nextjs-fastapi/backend/app/{api,models,schemas,services}
-mkdir -p ~/Desktop/projects/popovs-boilerplate/nextjs-fastapi/backend/{migrations,tests}
+mkdir -p ~/Desktop/projects/strikez-boilerplate/nextjs-fastapi/backend/app/{api,models,schemas,services}
+mkdir -p ~/Desktop/projects/strikez-boilerplate/nextjs-fastapi/backend/{migrations,tests}
 ```
 
 - [ ] **Step 2: Создать app/main.py**
 
 ```bash
-cat > ~/Desktop/projects/popovs-boilerplate/nextjs-fastapi/backend/app/main.py << 'EOF'
+cat > ~/Desktop/projects/strikez-boilerplate/nextjs-fastapi/backend/app/main.py << 'EOF'
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -345,7 +345,7 @@ EOF
 - [ ] **Step 3: Создать app/config.py**
 
 ```bash
-cat > ~/Desktop/projects/popovs-boilerplate/nextjs-fastapi/backend/app/config.py << 'EOF'
+cat > ~/Desktop/projects/strikez-boilerplate/nextjs-fastapi/backend/app/config.py << 'EOF'
 from pydantic_settings import BaseSettings
 
 
@@ -365,7 +365,7 @@ EOF
 - [ ] **Step 4: Создать app/database.py**
 
 ```bash
-cat > ~/Desktop/projects/popovs-boilerplate/nextjs-fastapi/backend/app/database.py << 'EOF'
+cat > ~/Desktop/projects/strikez-boilerplate/nextjs-fastapi/backend/app/database.py << 'EOF'
 from collections.abc import AsyncGenerator
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
@@ -390,18 +390,18 @@ EOF
 - [ ] **Step 5: Создать __init__.py файлы**
 
 ```bash
-touch ~/Desktop/projects/popovs-boilerplate/nextjs-fastapi/backend/app/__init__.py
-touch ~/Desktop/projects/popovs-boilerplate/nextjs-fastapi/backend/app/api/__init__.py
-touch ~/Desktop/projects/popovs-boilerplate/nextjs-fastapi/backend/app/models/__init__.py
-touch ~/Desktop/projects/popovs-boilerplate/nextjs-fastapi/backend/app/schemas/__init__.py
-touch ~/Desktop/projects/popovs-boilerplate/nextjs-fastapi/backend/app/services/__init__.py
-touch ~/Desktop/projects/popovs-boilerplate/nextjs-fastapi/backend/tests/__init__.py
+touch ~/Desktop/projects/strikez-boilerplate/nextjs-fastapi/backend/app/__init__.py
+touch ~/Desktop/projects/strikez-boilerplate/nextjs-fastapi/backend/app/api/__init__.py
+touch ~/Desktop/projects/strikez-boilerplate/nextjs-fastapi/backend/app/models/__init__.py
+touch ~/Desktop/projects/strikez-boilerplate/nextjs-fastapi/backend/app/schemas/__init__.py
+touch ~/Desktop/projects/strikez-boilerplate/nextjs-fastapi/backend/app/services/__init__.py
+touch ~/Desktop/projects/strikez-boilerplate/nextjs-fastapi/backend/tests/__init__.py
 ```
 
 - [ ] **Step 6: Создать migrations/init.sql**
 
 ```bash
-cat > ~/Desktop/projects/popovs-boilerplate/nextjs-fastapi/backend/migrations/init.sql << 'EOF'
+cat > ~/Desktop/projects/strikez-boilerplate/nextjs-fastapi/backend/migrations/init.sql << 'EOF'
 -- Initial schema for {{PROJECT_NAME}}
 -- Add your tables here
 EOF
@@ -410,7 +410,7 @@ EOF
 - [ ] **Step 7: Создать requirements.txt**
 
 ```bash
-cat > ~/Desktop/projects/popovs-boilerplate/nextjs-fastapi/backend/requirements.txt << 'EOF'
+cat > ~/Desktop/projects/strikez-boilerplate/nextjs-fastapi/backend/requirements.txt << 'EOF'
 fastapi==0.115.0
 uvicorn[standard]==0.32.0
 sqlalchemy==2.0.36
@@ -427,7 +427,7 @@ EOF
 - [ ] **Step 8: Создать Dockerfile**
 
 ```bash
-cat > ~/Desktop/projects/popovs-boilerplate/nextjs-fastapi/backend/Dockerfile << 'EOF'
+cat > ~/Desktop/projects/strikez-boilerplate/nextjs-fastapi/backend/Dockerfile << 'EOF'
 FROM python:3.12-slim
 WORKDIR /app
 COPY requirements.txt .
@@ -441,7 +441,7 @@ EOF
 - [ ] **Step 9: Создать pytest.ini**
 
 ```bash
-cat > ~/Desktop/projects/popovs-boilerplate/nextjs-fastapi/backend/pytest.ini << 'EOF'
+cat > ~/Desktop/projects/strikez-boilerplate/nextjs-fastapi/backend/pytest.ini << 'EOF'
 [pytest]
 asyncio_mode = auto
 EOF
@@ -452,20 +452,20 @@ EOF
 ## Task 4: Создать nextjs-fastapi/frontend
 
 **Files:**
-- Create: `~/Desktop/projects/popovs-boilerplate/nextjs-fastapi/frontend/` (все файлы)
+- Create: `~/Desktop/projects/strikez-boilerplate/nextjs-fastapi/frontend/` (все файлы)
 
 - [ ] **Step 1: Создать структуру директорий**
 
 ```bash
-mkdir -p ~/Desktop/projects/popovs-boilerplate/nextjs-fastapi/frontend/src/app
-mkdir -p ~/Desktop/projects/popovs-boilerplate/nextjs-fastapi/frontend/public
-touch ~/Desktop/projects/popovs-boilerplate/nextjs-fastapi/frontend/public/.gitkeep
+mkdir -p ~/Desktop/projects/strikez-boilerplate/nextjs-fastapi/frontend/src/app
+mkdir -p ~/Desktop/projects/strikez-boilerplate/nextjs-fastapi/frontend/public
+touch ~/Desktop/projects/strikez-boilerplate/nextjs-fastapi/frontend/public/.gitkeep
 ```
 
 - [ ] **Step 2: Создать src/app/layout.tsx**
 
 ```bash
-cat > ~/Desktop/projects/popovs-boilerplate/nextjs-fastapi/frontend/src/app/layout.tsx << 'EOF'
+cat > ~/Desktop/projects/strikez-boilerplate/nextjs-fastapi/frontend/src/app/layout.tsx << 'EOF'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -502,7 +502,7 @@ EOF
 - [ ] **Step 3: Создать src/app/page.tsx**
 
 ```bash
-cat > ~/Desktop/projects/popovs-boilerplate/nextjs-fastapi/frontend/src/app/page.tsx << 'EOF'
+cat > ~/Desktop/projects/strikez-boilerplate/nextjs-fastapi/frontend/src/app/page.tsx << 'EOF'
 export default function Home() {
   return (
     <main>
@@ -516,7 +516,7 @@ EOF
 - [ ] **Step 4: Создать src/app/robots.ts**
 
 ```bash
-cat > ~/Desktop/projects/popovs-boilerplate/nextjs-fastapi/frontend/src/app/robots.ts << 'EOF'
+cat > ~/Desktop/projects/strikez-boilerplate/nextjs-fastapi/frontend/src/app/robots.ts << 'EOF'
 import { MetadataRoute } from 'next'
 
 export default function robots(): MetadataRoute.Robots {
@@ -532,7 +532,7 @@ EOF
 - [ ] **Step 5: Создать src/app/sitemap.ts**
 
 ```bash
-cat > ~/Desktop/projects/popovs-boilerplate/nextjs-fastapi/frontend/src/app/sitemap.ts << 'EOF'
+cat > ~/Desktop/projects/strikez-boilerplate/nextjs-fastapi/frontend/src/app/sitemap.ts << 'EOF'
 import { MetadataRoute } from 'next'
 
 export default function sitemap(): MetadataRoute.Sitemap {
@@ -551,7 +551,7 @@ EOF
 - [ ] **Step 6: Создать package.json**
 
 ```bash
-cat > ~/Desktop/projects/popovs-boilerplate/nextjs-fastapi/frontend/package.json << 'EOF'
+cat > ~/Desktop/projects/strikez-boilerplate/nextjs-fastapi/frontend/package.json << 'EOF'
 {
   "name": "{{PROJECT_NAME}}-frontend",
   "version": "0.1.0",
@@ -580,7 +580,7 @@ EOF
 - [ ] **Step 7: Создать tsconfig.json**
 
 ```bash
-cat > ~/Desktop/projects/popovs-boilerplate/nextjs-fastapi/frontend/tsconfig.json << 'EOF'
+cat > ~/Desktop/projects/strikez-boilerplate/nextjs-fastapi/frontend/tsconfig.json << 'EOF'
 {
   "compilerOptions": {
     "lib": ["dom", "dom.iterable", "esnext"],
@@ -608,7 +608,7 @@ EOF
 - [ ] **Step 8: Создать next.config.js**
 
 ```bash
-cat > ~/Desktop/projects/popovs-boilerplate/nextjs-fastapi/frontend/next.config.js << 'EOF'
+cat > ~/Desktop/projects/strikez-boilerplate/nextjs-fastapi/frontend/next.config.js << 'EOF'
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'standalone',
@@ -621,7 +621,7 @@ EOF
 - [ ] **Step 9: Создать frontend/Dockerfile**
 
 ```bash
-cat > ~/Desktop/projects/popovs-boilerplate/nextjs-fastapi/frontend/Dockerfile << 'EOF'
+cat > ~/Desktop/projects/strikez-boilerplate/nextjs-fastapi/frontend/Dockerfile << 'EOF'
 FROM node:20-alpine AS base
 
 FROM base AS deps
@@ -661,7 +661,7 @@ EOF
 - [ ] **Step 1: Создать meta.yaml**
 
 ```bash
-cat > ~/Desktop/projects/popovs-boilerplate/nextjs-fastapi/meta.yaml << 'EOF'
+cat > ~/Desktop/projects/strikez-boilerplate/nextjs-fastapi/meta.yaml << 'EOF'
 name: "Next.js + FastAPI"
 description: "Full-stack: Next.js 15 frontend + FastAPI backend + PostgreSQL 16 + Docker Compose"
 tags: [fullstack, nextjs, fastapi, postgres, docker]
@@ -671,7 +671,7 @@ EOF
 - [ ] **Step 2: Создать .env.example**
 
 ```bash
-cat > ~/Desktop/projects/popovs-boilerplate/nextjs-fastapi/.env.example << 'EOF'
+cat > ~/Desktop/projects/strikez-boilerplate/nextjs-fastapi/.env.example << 'EOF'
 POSTGRES_USER={{PROJECT_NAME}}
 POSTGRES_PASSWORD=changeme
 POSTGRES_DB={{PROJECT_NAME}}
@@ -682,7 +682,7 @@ EOF
 - [ ] **Step 3: Создать nginx.conf**
 
 ```bash
-cat > ~/Desktop/projects/popovs-boilerplate/nextjs-fastapi/nginx.conf << 'EOF'
+cat > ~/Desktop/projects/strikez-boilerplate/nextjs-fastapi/nginx.conf << 'EOF'
 server {
     listen 80;
 
@@ -706,7 +706,7 @@ EOF
 - [ ] **Step 4: Создать docker-compose.yml**
 
 ```bash
-cat > ~/Desktop/projects/popovs-boilerplate/nextjs-fastapi/docker-compose.yml << 'EOF'
+cat > ~/Desktop/projects/strikez-boilerplate/nextjs-fastapi/docker-compose.yml << 'EOF'
 services:
   db:
     image: postgres:16-alpine
@@ -762,7 +762,7 @@ EOF
 - [ ] **Step 5: Создать docker-compose.prod.yml**
 
 ```bash
-cat > ~/Desktop/projects/popovs-boilerplate/nextjs-fastapi/docker-compose.prod.yml << 'EOF'
+cat > ~/Desktop/projects/strikez-boilerplate/nextjs-fastapi/docker-compose.prod.yml << 'EOF'
 services:
   backend:
     env_file: .env.production
@@ -789,7 +789,7 @@ EOF
 - [ ] **Step 6: Создать Makefile**
 
 ```bash
-cat > ~/Desktop/projects/popovs-boilerplate/nextjs-fastapi/Makefile << 'EOF'
+cat > ~/Desktop/projects/strikez-boilerplate/nextjs-fastapi/Makefile << 'EOF'
 .PHONY: dev down reset logs
 
 dev:
@@ -818,12 +818,12 @@ EOF
 
 ```bash
 mkdir -p /tmp/test-boilerplate
-cp -r ~/Desktop/projects/popovs-boilerplate/nextjs-fastapi/. /tmp/test-boilerplate/
-cp ~/Desktop/projects/popovs-boilerplate/shared/.gitignore /tmp/test-boilerplate/
+cp -r ~/Desktop/projects/strikez-boilerplate/nextjs-fastapi/. /tmp/test-boilerplate/
+cp ~/Desktop/projects/strikez-boilerplate/shared/.gitignore /tmp/test-boilerplate/
 
 # Подставить плейсхолдеры
 find /tmp/test-boilerplate -type f \( -name "*.py" -o -name "*.tsx" -o -name "*.ts" -o -name "*.json" -o -name "*.yml" -o -name "*.yaml" -o -name "*.conf" -o -name ".env.example" \) \
-  -exec sed -i '' 's/{{PROJECT_NAME}}/testapp/g; s/{{DOMAIN}}/testapp.popovs.tech/g' {} \;
+  -exec sed -i '' 's/{{PROJECT_NAME}}/testapp/g; s/{{DOMAIN}}/testapp.strikez.tech/g' {} \;
 
 cp /tmp/test-boilerplate/.env.example /tmp/test-boilerplate/.env
 ```
@@ -866,19 +866,19 @@ rm -rf /tmp/test-boilerplate
 ## Task 7: Создать fastapi-only/
 
 **Files:**
-- Create: `~/Desktop/projects/popovs-boilerplate/fastapi-only/` (все файлы)
+- Create: `~/Desktop/projects/strikez-boilerplate/fastapi-only/` (все файлы)
 
 - [ ] **Step 1: Создать структуру директорий**
 
 ```bash
-mkdir -p ~/Desktop/projects/popovs-boilerplate/fastapi-only/app/{api,models,schemas,services}
-mkdir -p ~/Desktop/projects/popovs-boilerplate/fastapi-only/{migrations,tests}
+mkdir -p ~/Desktop/projects/strikez-boilerplate/fastapi-only/app/{api,models,schemas,services}
+mkdir -p ~/Desktop/projects/strikez-boilerplate/fastapi-only/{migrations,tests}
 ```
 
 - [ ] **Step 2: Создать app/main.py**
 
 ```bash
-cat > ~/Desktop/projects/popovs-boilerplate/fastapi-only/app/main.py << 'EOF'
+cat > ~/Desktop/projects/strikez-boilerplate/fastapi-only/app/main.py << 'EOF'
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -909,7 +909,7 @@ EOF
 - [ ] **Step 3: Создать app/config.py**
 
 ```bash
-cat > ~/Desktop/projects/popovs-boilerplate/fastapi-only/app/config.py << 'EOF'
+cat > ~/Desktop/projects/strikez-boilerplate/fastapi-only/app/config.py << 'EOF'
 from pydantic_settings import BaseSettings
 
 
@@ -929,7 +929,7 @@ EOF
 - [ ] **Step 4: Создать app/database.py**
 
 ```bash
-cat > ~/Desktop/projects/popovs-boilerplate/fastapi-only/app/database.py << 'EOF'
+cat > ~/Desktop/projects/strikez-boilerplate/fastapi-only/app/database.py << 'EOF'
 from collections.abc import AsyncGenerator
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
@@ -954,22 +954,22 @@ EOF
 - [ ] **Step 5: Создать __init__.py файлы**
 
 ```bash
-touch ~/Desktop/projects/popovs-boilerplate/fastapi-only/app/__init__.py
-touch ~/Desktop/projects/popovs-boilerplate/fastapi-only/app/api/__init__.py
-touch ~/Desktop/projects/popovs-boilerplate/fastapi-only/app/models/__init__.py
-touch ~/Desktop/projects/popovs-boilerplate/fastapi-only/app/schemas/__init__.py
-touch ~/Desktop/projects/popovs-boilerplate/fastapi-only/app/services/__init__.py
-touch ~/Desktop/projects/popovs-boilerplate/fastapi-only/tests/__init__.py
+touch ~/Desktop/projects/strikez-boilerplate/fastapi-only/app/__init__.py
+touch ~/Desktop/projects/strikez-boilerplate/fastapi-only/app/api/__init__.py
+touch ~/Desktop/projects/strikez-boilerplate/fastapi-only/app/models/__init__.py
+touch ~/Desktop/projects/strikez-boilerplate/fastapi-only/app/schemas/__init__.py
+touch ~/Desktop/projects/strikez-boilerplate/fastapi-only/app/services/__init__.py
+touch ~/Desktop/projects/strikez-boilerplate/fastapi-only/tests/__init__.py
 ```
 
 - [ ] **Step 6: Создать migrations/init.sql, requirements.txt, pytest.ini**
 
 ```bash
-cat > ~/Desktop/projects/popovs-boilerplate/fastapi-only/migrations/init.sql << 'EOF'
+cat > ~/Desktop/projects/strikez-boilerplate/fastapi-only/migrations/init.sql << 'EOF'
 -- Initial schema for {{PROJECT_NAME}}
 EOF
 
-cat > ~/Desktop/projects/popovs-boilerplate/fastapi-only/requirements.txt << 'EOF'
+cat > ~/Desktop/projects/strikez-boilerplate/fastapi-only/requirements.txt << 'EOF'
 fastapi==0.115.0
 uvicorn[standard]==0.32.0
 sqlalchemy==2.0.36
@@ -982,7 +982,7 @@ pytest-asyncio==0.24.0
 httpx==0.28.0
 EOF
 
-cat > ~/Desktop/projects/popovs-boilerplate/fastapi-only/pytest.ini << 'EOF'
+cat > ~/Desktop/projects/strikez-boilerplate/fastapi-only/pytest.ini << 'EOF'
 [pytest]
 asyncio_mode = auto
 EOF
@@ -991,7 +991,7 @@ EOF
 - [ ] **Step 7: Создать Dockerfile**
 
 ```bash
-cat > ~/Desktop/projects/popovs-boilerplate/fastapi-only/Dockerfile << 'EOF'
+cat > ~/Desktop/projects/strikez-boilerplate/fastapi-only/Dockerfile << 'EOF'
 FROM python:3.12-slim
 WORKDIR /app
 COPY requirements.txt .
@@ -1005,7 +1005,7 @@ EOF
 - [ ] **Step 8: Создать docker-compose.yml, meta.yaml, .env.example**
 
 ```bash
-cat > ~/Desktop/projects/popovs-boilerplate/fastapi-only/docker-compose.yml << 'EOF'
+cat > ~/Desktop/projects/strikez-boilerplate/fastapi-only/docker-compose.yml << 'EOF'
 services:
   db:
     image: postgres:16-alpine
@@ -1038,13 +1038,13 @@ volumes:
   postgres_data:
 EOF
 
-cat > ~/Desktop/projects/popovs-boilerplate/fastapi-only/meta.yaml << 'EOF'
+cat > ~/Desktop/projects/strikez-boilerplate/fastapi-only/meta.yaml << 'EOF'
 name: "FastAPI Backend"
 description: "Backend only: FastAPI + PostgreSQL 16 + Docker Compose. Без фронтенда."
 tags: [backend, fastapi, postgres, docker]
 EOF
 
-cat > ~/Desktop/projects/popovs-boilerplate/fastapi-only/.env.example << 'EOF'
+cat > ~/Desktop/projects/strikez-boilerplate/fastapi-only/.env.example << 'EOF'
 POSTGRES_USER={{PROJECT_NAME}}
 POSTGRES_PASSWORD=changeme
 POSTGRES_DB={{PROJECT_NAME}}
@@ -1055,7 +1055,7 @@ EOF
 
 ```bash
 mkdir -p /tmp/test-fastapi
-cp -r ~/Desktop/projects/popovs-boilerplate/fastapi-only/. /tmp/test-fastapi/
+cp -r ~/Desktop/projects/strikez-boilerplate/fastapi-only/. /tmp/test-fastapi/
 find /tmp/test-fastapi -type f \( -name "*.py" -o -name "*.yml" -o -name ".env.example" \) \
   -exec sed -i '' 's/{{PROJECT_NAME}}/testapi/g' {} \;
 cp /tmp/test-fastapi/.env.example /tmp/test-fastapi/.env
@@ -1076,20 +1076,20 @@ rm -rf /tmp/test-fastapi
 ## Task 8: Создать landing/
 
 **Files:**
-- Create: `~/Desktop/projects/popovs-boilerplate/landing/` (все файлы)
+- Create: `~/Desktop/projects/strikez-boilerplate/landing/` (все файлы)
 
 - [ ] **Step 1: Создать структуру**
 
 ```bash
-mkdir -p ~/Desktop/projects/popovs-boilerplate/landing/{css,js}
-mkdir -p ~/Desktop/projects/popovs-boilerplate/landing/assets/images
-touch ~/Desktop/projects/popovs-boilerplate/landing/assets/images/.gitkeep
+mkdir -p ~/Desktop/projects/strikez-boilerplate/landing/{css,js}
+mkdir -p ~/Desktop/projects/strikez-boilerplate/landing/assets/images
+touch ~/Desktop/projects/strikez-boilerplate/landing/assets/images/.gitkeep
 ```
 
 - [ ] **Step 2: Создать index.html**
 
 ```bash
-cat > ~/Desktop/projects/popovs-boilerplate/landing/index.html << 'EOF'
+cat > ~/Desktop/projects/strikez-boilerplate/landing/index.html << 'EOF'
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -1121,7 +1121,7 @@ EOF
 - [ ] **Step 3: Создать css/style.css и js/main.js**
 
 ```bash
-cat > ~/Desktop/projects/popovs-boilerplate/landing/css/style.css << 'EOF'
+cat > ~/Desktop/projects/strikez-boilerplate/landing/css/style.css << 'EOF'
 /* {{PROJECT_NAME}} styles */
 * {
     box-sizing: border-box;
@@ -1134,7 +1134,7 @@ body {
 }
 EOF
 
-cat > ~/Desktop/projects/popovs-boilerplate/landing/js/main.js << 'EOF'
+cat > ~/Desktop/projects/strikez-boilerplate/landing/js/main.js << 'EOF'
 // {{PROJECT_NAME}}
 EOF
 ```
@@ -1142,13 +1142,13 @@ EOF
 - [ ] **Step 4: Создать robots.txt, sitemap.xml, meta.yaml**
 
 ```bash
-cat > ~/Desktop/projects/popovs-boilerplate/landing/robots.txt << 'EOF'
+cat > ~/Desktop/projects/strikez-boilerplate/landing/robots.txt << 'EOF'
 User-agent: *
 Allow: /
 Sitemap: https://{{DOMAIN}}/sitemap.xml
 EOF
 
-cat > ~/Desktop/projects/popovs-boilerplate/landing/sitemap.xml << 'EOF'
+cat > ~/Desktop/projects/strikez-boilerplate/landing/sitemap.xml << 'EOF'
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
@@ -1159,7 +1159,7 @@ cat > ~/Desktop/projects/popovs-boilerplate/landing/sitemap.xml << 'EOF'
 </urlset>
 EOF
 
-cat > ~/Desktop/projects/popovs-boilerplate/landing/meta.yaml << 'EOF'
+cat > ~/Desktop/projects/strikez-boilerplate/landing/meta.yaml << 'EOF'
 name: "Landing Page"
 description: "Статический сайт: HTML/CSS/JS. Без сервера, открывается через file:// или nginx."
 tags: [landing, static, html, seo]
@@ -1169,7 +1169,7 @@ EOF
 - [ ] **Step 5: Верифицировать landing (открыть в браузере)**
 
 ```bash
-open ~/Desktop/projects/popovs-boilerplate/landing/index.html
+open ~/Desktop/projects/strikez-boilerplate/landing/index.html
 ```
 
 Expected: браузер открывает страницу с `<h1>{{PROJECT_NAME}}</h1>` без ошибок в консоли.
@@ -1179,20 +1179,20 @@ Expected: браузер открывает страницу с `<h1>{{PROJECT_N
 ## Task 9: Создать docs/
 
 **Files:**
-- Create: `~/Desktop/projects/popovs-boilerplate/docs/` (все файлы)
+- Create: `~/Desktop/projects/strikez-boilerplate/docs/` (все файлы)
 
 - [ ] **Step 1: Создать структуру**
 
 ```bash
-mkdir -p ~/Desktop/projects/popovs-boilerplate/docs/content/{research,notes}
-touch ~/Desktop/projects/popovs-boilerplate/docs/content/research/.gitkeep
-touch ~/Desktop/projects/popovs-boilerplate/docs/content/notes/.gitkeep
+mkdir -p ~/Desktop/projects/strikez-boilerplate/docs/content/{research,notes}
+touch ~/Desktop/projects/strikez-boilerplate/docs/content/research/.gitkeep
+touch ~/Desktop/projects/strikez-boilerplate/docs/content/notes/.gitkeep
 ```
 
 - [ ] **Step 2: Создать mkdocs.yml**
 
 ```bash
-cat > ~/Desktop/projects/popovs-boilerplate/docs/mkdocs.yml << 'EOF'
+cat > ~/Desktop/projects/strikez-boilerplate/docs/mkdocs.yml << 'EOF'
 site_name: {{PROJECT_NAME}}
 site_url: https://{{DOMAIN}}
 docs_dir: content
@@ -1220,7 +1220,7 @@ EOF
 - [ ] **Step 3: Создать content/index.md**
 
 ```bash
-cat > ~/Desktop/projects/popovs-boilerplate/docs/content/index.md << 'EOF'
+cat > ~/Desktop/projects/strikez-boilerplate/docs/content/index.md << 'EOF'
 # {{PROJECT_NAME}}
 
 Добро пожаловать.
@@ -1230,11 +1230,11 @@ EOF
 - [ ] **Step 4: Создать requirements.txt, meta.yaml**
 
 ```bash
-cat > ~/Desktop/projects/popovs-boilerplate/docs/requirements.txt << 'EOF'
+cat > ~/Desktop/projects/strikez-boilerplate/docs/requirements.txt << 'EOF'
 mkdocs-material>=9.5
 EOF
 
-cat > ~/Desktop/projects/popovs-boilerplate/docs/meta.yaml << 'EOF'
+cat > ~/Desktop/projects/strikez-boilerplate/docs/meta.yaml << 'EOF'
 name: "Docs / Research"
 description: "Документация и ресёрч: MkDocs Material. Для больших текстовых проектов, баз знаний, ресёрча."
 tags: [docs, mkdocs, research, markdown]
@@ -1246,9 +1246,9 @@ EOF
 ```bash
 cd /tmp
 mkdir -p test-docs
-cp -r ~/Desktop/projects/popovs-boilerplate/docs/. test-docs/
+cp -r ~/Desktop/projects/strikez-boilerplate/docs/. test-docs/
 cd test-docs
-sed -i '' 's/{{PROJECT_NAME}}/testdocs/g; s/{{DOMAIN}}/testdocs.popovs.tech/g' mkdocs.yml content/index.md
+sed -i '' 's/{{PROJECT_NAME}}/testdocs/g; s/{{DOMAIN}}/testdocs.strikez.tech/g' mkdocs.yml content/index.md
 pip install -q mkdocs-material
 mkdocs serve --dev-addr=127.0.0.1:8099 &
 MKDOCS_PID=$!
@@ -1272,31 +1272,31 @@ rm -rf /tmp/test-docs
 - [ ] **Step 1: Коммит всего**
 
 ```bash
-cd ~/Desktop/projects/popovs-boilerplate
+cd ~/Desktop/projects/strikez-boilerplate
 git add .
 git commit -m "feat: добавить четыре стека шаблонов (nextjs-fastapi, fastapi-only, landing, docs)"
 git push origin main
 ```
 
-Expected: push прошёл, на github.com/sergeypopov/popovs-boilerplate видны все папки.
+Expected: push прошёл, на github.com/sergeypopov/strikez-boilerplate видны все папки.
 
 ---
 
 ## Task 11: Создать SKILL.md
 
 **Files:**
-- Create: `~/Desktop/projects/ai-settings/skills/popovs/boilerplate/SKILL.md`
+- Create: `~/Desktop/projects/ai-settings/skills/strikez/boilerplate/SKILL.md`
 
 - [ ] **Step 1: Создать директорию**
 
 ```bash
-mkdir -p ~/Desktop/projects/ai-settings/skills/popovs/boilerplate
+mkdir -p ~/Desktop/projects/ai-settings/skills/strikez/boilerplate
 ```
 
 - [ ] **Step 2: Создать SKILL.md**
 
 ```bash
-cat > ~/Desktop/projects/ai-settings/skills/popovs/boilerplate/SKILL.md << 'SKILLEOF'
+cat > ~/Desktop/projects/ai-settings/skills/strikez/boilerplate/SKILL.md << 'SKILLEOF'
 ---
 name: boilerplate
 version: 1.0.0
@@ -1304,7 +1304,7 @@ description: |
   Use when starting a new project from scratch. Scaffolds project structure from
   public template repo, creates GitHub repo, copies AI settings snapshot, and
   generates a ready-to-execute deployment runbook for the Yandex Cloud VM.
-  Trigger: user calls /popovs:boilerplate or says "создать новый проект / развернуть проект".
+  Trigger: user calls /strikez:boilerplate or says "создать новый проект / развернуть проект".
   SKIP: if the project is already initialized (git repo exists, files present).
 category: devops
 tags: [scaffold, boilerplate, setup, new-project]
@@ -1317,7 +1317,7 @@ copy AI rules snapshot, generate deployment runbook.
 
 # Template Repository
 
-`https://github.com/sergeypopov/popovs-boilerplate`
+`https://github.com/sergeypopov/strikez-boilerplate`
 
 Each stack directory contains a `meta.yaml` with name, description, tags.
 New stacks can be added to the repo — they appear in the list automatically.
@@ -1327,7 +1327,7 @@ New stacks can be added to the repo — they appear in the list automatically.
 ## Step 1: Clone template repo
 
 ```bash
-git clone --depth=1 https://github.com/sergeypopov/popovs-boilerplate /tmp/popovs-boilerplate-template
+git clone --depth=1 https://github.com/sergeypopov/strikez-boilerplate /tmp/strikez-boilerplate-template
 ```
 
 ## Step 2: Show available stacks
@@ -1349,7 +1349,7 @@ Ask each question separately, wait for answer:
 1. **Имя проекта?** (будет использовано как: имя GitHub репо, плейсхолдер `{{PROJECT_NAME}}` в файлах)
 2. **Стек?** (показать список из meta.yaml, пронумерованный)
 3. **Видимость GitHub?** `public` / `private` (default: `private`)
-4. **Домен?** (пример: `my-project.popovs.tech`)
+4. **Домен?** (пример: `my-project.strikez.tech`)
 
 Вычислить `{{SUBDOMAIN}}` из домена: часть до первой точки.
 Вычислить `{{YEAR}}` как текущий год.
@@ -1358,10 +1358,10 @@ Ask each question separately, wait for answer:
 
 ```bash
 # Copy shared/ files (base structure for all stacks)
-cp -r /tmp/popovs-boilerplate-template/shared/. ./
+cp -r /tmp/strikez-boilerplate-template/shared/. ./
 
 # Copy chosen stack files
-cp -r /tmp/popovs-boilerplate-template/<chosen-stack>/. ./
+cp -r /tmp/strikez-boilerplate-template/<chosen-stack>/. ./
 
 # Substitute all placeholders in all text files
 find . -type f \( -name "*.py" -o -name "*.tsx" -o -name "*.ts" -o -name "*.js" \
@@ -1420,7 +1420,7 @@ git push -u origin main
 ## Step 8: Cleanup and report
 
 ```bash
-rm -rf /tmp/popovs-boilerplate-template
+rm -rf /tmp/strikez-boilerplate-template
 ```
 
 Report to user:
@@ -1462,8 +1462,8 @@ server {
     listen 443 ssl;
     server_name {{DOMAIN}};
 
-    ssl_certificate /etc/letsencrypt/live/meridian.popovs.tech/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/meridian.popovs.tech/privkey.pem;
+    ssl_certificate /etc/letsencrypt/live/meridian.strikez.tech/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/meridian.strikez.tech/privkey.pem;
 
     location / {
         proxy_pass http://frontend;
@@ -1489,7 +1489,7 @@ docker run --rm \
   -v /opt/ingress/letsencrypt:/etc/letsencrypt \
   -v /opt/ingress/certbot-www:/var/www/certbot \
   certbot/certbot certonly --webroot -w /var/www/certbot \
-  -d meridian.popovs.tech -d uptime.popovs.tech -d status.popovs.tech -d kp.popovs.tech -d {{DOMAIN}} \
+  -d meridian.strikez.tech -d uptime.strikez.tech -d status.strikez.tech -d kp.strikez.tech -d {{DOMAIN}} \
   --expand --email s.popov.works@gmail.com --agree-tos --no-eff-email --non-interactive
 docker exec ingress-nginx nginx -s reload
 ```
@@ -1499,7 +1499,7 @@ docker exec ingress-nginx nginx -s reload
 ## 5. Добавить DNS A-запись
 
 ```bash
-~/yandex-cloud/bin/yc dns zone add-records --name popovs-tech-zone \
+~/yandex-cloud/bin/yc dns zone add-records --name strikez-tech-zone \
   --record "{{SUBDOMAIN}} 300 A 93.77.187.42"
 ```
 
@@ -1603,7 +1603,7 @@ No .env.production needed. Skip step 8.
 | Placeholder | Example | Used in |
 |---|---|---|
 | `{{PROJECT_NAME}}` | `my-blog` | repo name, docker service names, VM paths, package names |
-| `{{DOMAIN}}` | `my-blog.popovs.tech` | nginx config, sitemap, robots, OG meta, sitemap.ts |
+| `{{DOMAIN}}` | `my-blog.strikez.tech` | nginx config, sitemap, robots, OG meta, sitemap.ts |
 | `{{SUBDOMAIN}}` | `my-blog` | DNS record name (`{{SUBDOMAIN}} 300 A 93.77.187.42`) |
 | `{{YEAR}}` | `2026` | CHANGELOG, README |
 
@@ -1619,7 +1619,7 @@ SKILLEOF
 - [ ] **Step 3: Проверить что файл создан**
 
 ```bash
-head -5 ~/Desktop/projects/ai-settings/skills/popovs/boilerplate/SKILL.md
+head -5 ~/Desktop/projects/ai-settings/skills/strikez/boilerplate/SKILL.md
 ```
 
 Expected: `---` + frontmatter
@@ -1629,25 +1629,25 @@ Expected: `---` + frontmatter
 ## Task 12: Создать README.md и CHANGELOG.md скилла
 
 **Files:**
-- Create: `skills/popovs/boilerplate/README.md`
-- Create: `skills/popovs/boilerplate/CHANGELOG.md`
+- Create: `skills/strikez/boilerplate/README.md`
+- Create: `skills/strikez/boilerplate/CHANGELOG.md`
 
 - [ ] **Step 1: Создать README.md**
 
 ```bash
-cat > ~/Desktop/projects/ai-settings/skills/popovs/boilerplate/README.md << 'EOF'
-# popovs:boilerplate
+cat > ~/Desktop/projects/ai-settings/skills/strikez/boilerplate/README.md << 'EOF'
+# strikez:boilerplate
 
 Скилл разворачивает новый проект: структуру, GitHub репо, AI-правила, инструкцию деплоя.
 
 ## Когда вызывается
 
-- `/popovs:boilerplate`
+- `/strikez:boilerplate`
 - «создать новый проект», «развернуть проект»
 
 ## Что делает
 
-1. Подтягивает актуальные шаблоны из [sergeypopov/popovs-boilerplate](https://github.com/sergeypopov/popovs-boilerplate)
+1. Подтягивает актуальные шаблоны из [sergeypopov/strikez-boilerplate](https://github.com/sergeypopov/strikez-boilerplate)
 2. Задаёт 4 вопроса: имя проекта, стек, видимость GitHub, домен
 3. Копирует шаблон и подставляет плейсхолдеры
 4. Копирует снэпшот AI-правил из ai-settings (`docs/ai/`, `AGENTS.md`, `CLAUDE.md`)
@@ -1663,7 +1663,7 @@ cat > ~/Desktop/projects/ai-settings/skills/popovs/boilerplate/README.md << 'EOF
 | `landing` | Статический HTML/CSS/JS |
 | `docs` | Документация / ресёрч (MkDocs Material) |
 
-Новые стеки добавляются в репо `popovs-boilerplate` — появляются автоматически.
+Новые стеки добавляются в репо `strikez-boilerplate` — появляются автоматически.
 
 ## После запуска
 
@@ -1675,8 +1675,8 @@ EOF
 - [ ] **Step 2: Создать CHANGELOG.md**
 
 ```bash
-cat > ~/Desktop/projects/ai-settings/skills/popovs/boilerplate/CHANGELOG.md << 'EOF'
-# CHANGELOG — popovs:boilerplate
+cat > ~/Desktop/projects/ai-settings/skills/strikez/boilerplate/CHANGELOG.md << 'EOF'
+# CHANGELOG — strikez:boilerplate
 
 Формат: [Keep a Changelog](https://keepachangelog.com/ru/1.1.0/).
 
@@ -1684,7 +1684,7 @@ cat > ~/Desktop/projects/ai-settings/skills/popovs/boilerplate/CHANGELOG.md << '
 
 ### Первый релиз
 
-- Создание нового проекта из шаблона одной командой `/popovs:boilerplate`
+- Создание нового проекта из шаблона одной командой `/strikez:boilerplate`
 - Четыре стека: `nextjs-fastapi`, `fastapi-only`, `landing`, `docs`
 - Автоматическое копирование снэпшота AI-правил из ai-settings
 - Генерация `docs/DEPLOY.md` по паттернам infra-репо
@@ -1703,26 +1703,26 @@ EOF
 В файле `~/Desktop/projects/ai-settings/skills/README.md` найти секцию `## Стартовый набор` и добавить строку:
 
 ```markdown
-- `popovs/boilerplate` — разворачивает новый проект: структуру, GitHub репо, AI-правила, инструкцию деплоя.
+- `strikez/boilerplate` — разворачивает новый проект: структуру, GitHub репо, AI-правила, инструкцию деплоя.
 ```
 
 Итоговый блок будет выглядеть так:
 ```markdown
 ## Стартовый набор
 
-- `popovs/ru-commit-message` — conventional commit на русском из staged diff.
-- `popovs/ru-pr-description` — PR-описание на русском по шаблону.
-- `popovs/changelog-entry` — запись в корневой `CHANGELOG.md` проекта.
-- `popovs/tg-post-writer` — Telegram-посты в личной стилистике.
-- `popovs/boilerplate` — разворачивает новый проект: структуру, GitHub репо, AI-правила, инструкцию деплоя.
+- `strikez/ru-commit-message` — conventional commit на русском из staged diff.
+- `strikez/ru-pr-description` — PR-описание на русском по шаблону.
+- `strikez/changelog-entry` — запись в корневой `CHANGELOG.md` проекта.
+- `strikez/tg-post-writer` — Telegram-посты в личной стилистике.
+- `strikez/boilerplate` — разворачивает новый проект: структуру, GitHub репо, AI-правила, инструкцию деплоя.
 ```
 
 - [ ] **Step 2: Добавить в git и закоммитить**
 
 ```bash
 cd ~/Desktop/projects/ai-settings
-git add skills/popovs/boilerplate/ skills/README.md
-git commit -m "feat(skills): добавить скилл popovs:boilerplate для развёртки новых проектов"
+git add skills/strikez/boilerplate/ skills/README.md
+git commit -m "feat(skills): добавить скилл strikez:boilerplate для развёртки новых проектов"
 git push origin main
 ```
 
@@ -1741,11 +1741,11 @@ mkdir -p /tmp/test-skill-project
 cd /tmp/test-skill-project
 ```
 
-Вызвать `/popovs:boilerplate`, ответить:
+Вызвать `/strikez:boilerplate`, ответить:
 - Имя: `skill-test`
 - Стек: `nextjs-fastapi`
 - Видимость: `private`
-- Домен: `skill-test.popovs.tech`
+- Домен: `skill-test.strikez.tech`
 
 - [ ] **Step 2: Проверить структуру**
 

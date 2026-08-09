@@ -70,7 +70,7 @@ Before any non-trivial task, check for a relevant skill or subagent.
   work can run in parallel, or for one independent review of a high-risk or
   cross-boundary change. Low- and medium-risk implementation stays in the
   current agent with self-review.
-- For specialized work (debugging, FastAPI, Next.js, ML, PR writing), prefer the
+- For specialized work (debugging, FastAPI, Vue, ML, PR writing), prefer the
   corresponding skill or role instructions. A specialized topic alone does not
   justify a subagent.
 - Subagents should run with a fresh, curated context. Never pass arbitrary conversation history — brief them explicitly.

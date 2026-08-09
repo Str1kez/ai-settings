@@ -8,7 +8,7 @@
 
 > ⚠️ **СТОП. Прочитай это перед `install.sh`.**
 >
-> Это мой личный пресет: персона «Борис», русский язык, мой стек (Python/TypeScript/Next.js/FastAPI/Yandex Cloud), мои скиллы (русские коммиты, посты в TG).
+> Это мой личный пресет: персона «Борис», русский язык, мой стек (Python/Vue/FastAPI/LiteStar, локально в Docker), мои скиллы (русские коммиты, посты в TG).
 >
 > **Сначала** клонируй репо и пройди [docs/setup/customization.md](docs/setup/customization.md) — там чеклист, что править (persona, style, стек) и готовые промпты под каждую секцию (LLM задаст 4–6 вопросов и вернёт готовый файл).
 >
@@ -33,7 +33,7 @@ ai-settings/
 ├── CLAUDE.md / GEMINI.md        # тонкие обёртки с импортом AGENTS.md
 ├── docs/ai/                     # модули, подключаемые через @imports
 ├── docs/setup/                  # гайды по подключению (на русском)
-├── agents/                      # 6 специализированных субагентов
+├── agents/                      # 5 специализированных субагентов
 ├── skills/                      # скиллы в skills/<namespace>/, с semver-версионированием
 ├── settings/                    # эталонные settings.json / config.toml / хуки
 ├── scripts/                     # install.sh, init-project.sh, sync-cursor.sh, ...

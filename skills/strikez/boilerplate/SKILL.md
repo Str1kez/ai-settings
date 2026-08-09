@@ -5,7 +5,7 @@ description: |
   Use when starting a new project from scratch. Scaffolds project structure from
   public template repo, creates GitHub repo, copies AI settings snapshot, and
   generates a ready-to-execute deployment runbook for the Yandex Cloud VM.
-  Trigger: user calls /popovs:boilerplate or says "создать новый проект / развернуть проект".
+  Trigger: user calls /strikez:boilerplate or says "создать новый проект / развернуть проект".
   SKIP: if the project is already initialized (git repo exists, files present).
 category: devops
 tags: [scaffold, boilerplate, setup, new-project]
@@ -18,7 +18,7 @@ copy AI rules snapshot, generate deployment runbook.
 
 # Template Repository
 
-`https://github.com/tsergeytovarov/popovs-boilerplate`
+`https://github.com/tsergeytovarov/strikez-boilerplate`
 
 Each stack directory contains a `meta.yaml` with name, description, tags.
 New stacks can be added to the repo — they appear in the list automatically.
@@ -28,7 +28,7 @@ New stacks can be added to the repo — they appear in the list automatically.
 ## Step 1: Clone template repo
 
 ```bash
-git clone --depth=1 https://github.com/tsergeytovarov/popovs-boilerplate /tmp/popovs-boilerplate-template
+git clone --depth=1 https://github.com/tsergeytovarov/strikez-boilerplate /tmp/strikez-boilerplate-template
 ```
 
 ## Step 2: Show available stacks
@@ -50,20 +50,20 @@ Ask each question separately, wait for answer before asking the next:
 1. **Имя проекта?** (будет использовано как имя GitHub репо и плейсхолдер `{{PROJECT_NAME}}` в файлах)
 2. **Стек?** (показать список из meta.yaml, пронумерованный)
 3. **Видимость GitHub?** `public` / `private` (default: `private`)
-4. **Домен?** (пример: `my-project.popovs.tech`)
+4. **Домен?** (пример: `my-project.strikez.tech`)
 
 After answers, compute:
-- `{{SUBDOMAIN}}` = part of domain before first dot (e.g. `my-project` from `my-project.popovs.tech`)
+- `{{SUBDOMAIN}}` = part of domain before first dot (e.g. `my-project` from `my-project.strikez.tech`)
 - `{{YEAR}}` = current year
 
 ## Step 4: Copy template files
 
 ```bash
 # Copy shared/ files (base structure for all stacks)
-cp -r /tmp/popovs-boilerplate-template/shared/. ./
+cp -r /tmp/strikez-boilerplate-template/shared/. ./
 
 # Copy chosen stack files (overrides shared if same filename)
-cp -r /tmp/popovs-boilerplate-template/<chosen-stack>/. ./
+cp -r /tmp/strikez-boilerplate-template/<chosen-stack>/. ./
 
 # Substitute all placeholders in all text files
 find . -type f \( -name "*.py" -o -name "*.tsx" -o -name "*.ts" -o -name "*.js" \
@@ -143,7 +143,7 @@ gh repo create $PROJECT_NAME --$([ "$VISIBILITY" = "public" ] && echo "public" |
 ## Step 8: Cleanup and report
 
 ```bash
-rm -rf /tmp/popovs-boilerplate-template
+rm -rf /tmp/strikez-boilerplate-template
 ```
 
 Report to user:
@@ -185,8 +185,8 @@ server {
     listen 443 ssl;
     server_name {{DOMAIN}};
 
-    ssl_certificate /etc/letsencrypt/live/meridian.popovs.tech/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/meridian.popovs.tech/privkey.pem;
+    ssl_certificate /etc/letsencrypt/live/meridian.strikez.tech/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/meridian.strikez.tech/privkey.pem;
 
     location / {
         proxy_pass http://frontend;
@@ -212,7 +212,7 @@ docker run --rm \
   -v /opt/ingress/letsencrypt:/etc/letsencrypt \
   -v /opt/ingress/certbot-www:/var/www/certbot \
   certbot/certbot certonly --webroot -w /var/www/certbot \
-  -d meridian.popovs.tech -d uptime.popovs.tech -d status.popovs.tech -d kp.popovs.tech -d {{DOMAIN}} \
+  -d meridian.strikez.tech -d uptime.strikez.tech -d status.strikez.tech -d kp.strikez.tech -d {{DOMAIN}} \
   --expand --email s.popov.works@gmail.com --agree-tos --no-eff-email --non-interactive
 docker exec ingress-nginx nginx -s reload
 ```
@@ -222,7 +222,7 @@ docker exec ingress-nginx nginx -s reload
 ## 5. Добавить DNS A-запись
 
 ```bash
-~/yandex-cloud/bin/yc dns zone add-records --name popovs-tech-zone \
+~/yandex-cloud/bin/yc dns zone add-records --name strikez-tech-zone \
   --record "{{SUBDOMAIN}} 300 A 93.77.187.42"
 ```
 
@@ -303,7 +303,7 @@ EOF
 | Placeholder | Example | Used in |
 |---|---|---|
 | `{{PROJECT_NAME}}` | `my-blog` | repo name, docker service names, VM paths |
-| `{{DOMAIN}}` | `my-blog.popovs.tech` | nginx, sitemap, robots, OG meta |
+| `{{DOMAIN}}` | `my-blog.strikez.tech` | nginx, sitemap, robots, OG meta |
 | `{{SUBDOMAIN}}` | `my-blog` | DNS record (`{{SUBDOMAIN}} 300 A 93.77.187.42`) |
 | `{{YEAR}}` | `2026` | CHANGELOG, README |
 

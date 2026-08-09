@@ -4,7 +4,7 @@
 
 ### Added
 
-- Первая версия скилла `popovs:boilerplate`
+- Первая версия скилла `strikez:boilerplate`
 - Поддержка четырёх стеков: `nextjs-fastapi`, `fastapi-only`, `landing`, `docs`
 - Генерация `docs/DEPLOY.md` на основе `infra/runbook.md`
 - Копирование снэпшота AI-правил из `ai-settings`

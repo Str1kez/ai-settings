@@ -91,7 +91,7 @@ fi
 # --- Shared personal skills (~/.agents/skills/) ---
 # Codex and OpenCode discover skills from ~/.agents/skills/<skill-name>/SKILL.md.
 # Symlink each skill from the repo so the repo stays source of truth.
-# Namespace prefix is dropped: popovs:write-meridian-article → write-meridian-article.
+# Namespace prefix is dropped: strikez:write-meridian-article → write-meridian-article.
 log_info "Setting up shared personal skills (~/.agents/skills/)..."
 shopt -s nullglob
 codex_superpowers_manifests=(
@@ -193,7 +193,7 @@ fi
 # --- Claude Code: slash commands for personal skills ---
 # For each skills/<namespace>/<skill>/ found in the repo, generates
 # ~/.claude/commands/<namespace>/<skill>.md so skills appear in / autocomplete.
-# Rename skills/popovs/ to skills/<your-handle>/ — the namespace follows automatically.
+# Rename skills/strikez/ to skills/<your-handle>/ — the namespace follows automatically.
 log_info "Generating personal skill slash commands for Claude Code..."
 
 _generate_skill_commands() {

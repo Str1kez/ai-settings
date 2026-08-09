@@ -1,15 +1,15 @@
-# popovs:boilerplate
+# strikez:boilerplate
 
 Скилл разворачивает новый проект: структуру файлов, GitHub репо, снэпшот AI-правил, инструкцию деплоя.
 
 ## Когда вызывается
 
-- Явно: `/popovs:boilerplate`
+- Явно: `/strikez:boilerplate`
 - Явно: «создать новый проект», «развернуть проект»
 
 ## Что делает
 
-1. Подтягивает актуальные шаблоны из [tsergeytovarov/popovs-boilerplate](https://github.com/tsergeytovarov/popovs-boilerplate)
+1. Подтягивает актуальные шаблоны из [tsergeytovarov/strikez-boilerplate](https://github.com/tsergeytovarov/strikez-boilerplate)
 2. Задаёт 4 вопроса по одному: имя проекта, стек, видимость GitHub, домен
 3. Копирует шаблон + подставляет плейсхолдеры (`{{PROJECT_NAME}}`, `{{DOMAIN}}`, etc.)
 4. Копирует снэпшот AI-правил из `ai-settings` (`docs/ai/`, `AGENTS.md`, `CLAUDE.md`)
@@ -25,7 +25,7 @@
 | `landing` | Статический HTML/CSS/JS |
 | `docs` | Документация / ресёрч (MkDocs Material) |
 
-Новые стеки добавляются в репо `popovs-boilerplate` — появляются автоматически при следующем запуске.
+Новые стеки добавляются в репо `strikez-boilerplate` — появляются автоматически при следующем запуске.
 
 ## После запуска
 
