@@ -1,6 +1,6 @@
 # AGENTS.md
 
-<!-- Global AI settings for Claude Code, Codex, Cursor, Gemini CLI -->
+<!-- Global AI settings for Claude Code, Codex, Cursor, Gemini CLI, OpenCode -->
 <!-- Source of truth: https://github.com/tsergeytovarov/ai-settings -->
 <!-- Human-readable docs: ./docs/setup/ (in Russian) -->
 
@@ -22,13 +22,12 @@ Governs the voice of content you produce on my behalf — commits, PRs, CHANGELO
 
 ## 5. Tech Stack (with versions)
 
-- JavaScript / TypeScript, Node.js 20+
-- Python 3.12+ (prefer `uv` over `pip`)
-- Frameworks: Next.js 15 (app router, RSC-first), React 19, FastAPI 0.100+
-- Data: SQLAlchemy 2.0+, Pydantic v2, Alembic
-- Testing: pytest (Python); Jest or Vitest (JS/TS — confirm per-project)
-- CI/CD: GitHub Actions
-- Cloud: Yandex Cloud (`yc` CLI, not AWS/GCP)
+- Python `3.12+` (prefer `uv` over `pip`); occasionally Go and Rust for side projects
+- Frameworks: FastAPI `0.100+`, LiteStar `2.24+` (backend); Vue `3` (frontend, side projects only)
+- Data: SQLAlchemy `2.0+`, Pydantic `v2`, Alembic, Pydantic AI
+- Testing: pytest (Python, `pytest-xdist` for parallel runs), standard `testing` package (Go), `cargo test` (Rust)
+- CI/CD: GitLab CI (pipelines)
+- Deployment: Docker, no cloud — local only
 
 ## 6. Coding Standards
 @docs/ai/coding-standards.md
@@ -143,8 +142,8 @@ A symlink is preferred over copying, so the repo remains the source of truth.
 After installing a skill, restart Codex.
 
 Do not assume Claude command namespaces carry over to Codex.
-Example: Claude command `popovs:write-meridian-article` maps to a Codex personal skill
-named `write-meridian-article`, not `popovs:write-meridian-article`.
+Example: Claude command `strikez:write-meridian-article` maps to a Codex personal skill
+named `write-meridian-article`, not `strikez:write-meridian-article`.
 
 ## Compact Instructions
 

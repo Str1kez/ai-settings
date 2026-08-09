@@ -1,10 +1,10 @@
 # Skills
 
-Библиотека кастомных скиллов для AI-платформ (Claude Code, Codex, Cursor, Gemini CLI).
+Библиотека кастомных скиллов для AI-платформ (Claude Code, Codex, OpenCode, Cursor, Gemini CLI).
 
-Все кастомные скиллы живут в `popovs/` — единый неймспейс `popovs:` в Claude Code.
-При установке (`scripts/install.sh`) автоматически генерируются слеш-команды `~/.claude/commands/popovs/`,
-что делает каждый скилл доступным через `/popovs:<name>` в интерфейсе.
+Все кастомные скиллы живут в `strikez/` — единый неймспейс `strikez:` в Claude Code.
+При установке (`scripts/install.sh`) автоматически генерируются слеш-команды `~/.claude/commands/strikez/`,
+что делает каждый скилл доступным через `/strikez:<name>` в интерфейсе.
 
 ## Правила
 
@@ -68,8 +68,9 @@ tags: [git, markdown, russian, ...]
 
 ## Стартовый набор
 
-- `popovs/ru-commit-message` — conventional commit на русском из staged diff.
-- `popovs/ru-pr-description` — PR-описание на русском по шаблону.
-- `popovs/changelog-entry` — запись в корневой `CHANGELOG.md` проекта.
-- `popovs/tg-post-writer` — Telegram-посты в личной стилистике.
-- `popovs/boilerplate` — развернуть новый проект: шаблон + GitHub репо + AI-правила + инструкция деплоя.
+- `strikez/ru-commit-message` — conventional commit на русском из staged diff.
+- `strikez/en-commit-message` — conventional commit на английском из staged diff.
+- `strikez/ru-pr-description` — PR-описание на русском по шаблону.
+- `strikez/en-pr-description` — PR-описание на английском по шаблону.
+- `strikez/changelog-entry` — запись в корневой `CHANGELOG.md` проекта (на английском).
+- `strikez/boilerplate` — развернуть новый проект: шаблон + GitHub репо + AI-правила + инструкция деплоя.

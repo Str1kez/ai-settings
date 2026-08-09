@@ -1,10 +1,9 @@
 from pathlib import Path
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
-PIPELINE_SKILL = REPO_ROOT / "skills/popovs/product-spec-pipeline/SKILL.md"
+PIPELINE_SKILL = REPO_ROOT / "skills/strikez/product-spec-pipeline/SKILL.md"
 BRAINSTORMING_SKILL = REPO_ROOT / "skills/superpowers/brainstorming/SKILL.md"
-SPEC_ALIAS_SKILL = REPO_ROOT / "skills/popovs/spec/SKILL.md"
+SPEC_ALIAS_SKILL = REPO_ROOT / "skills/strikez/spec/SKILL.md"
 
 
 def test_pipeline_runs_brainstorming_before_grilling():

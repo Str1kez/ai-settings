@@ -4,6 +4,7 @@
 
 Ничего не делать. Глобальные правила применяются автоматически через:
 - `~/.claude/CLAUDE.md` (Claude Code),
+- `~/.config/opencode/AGENTS.md` (OpenCode),
 - `~/.codex/AGENTS.md` (Codex CLI),
 - `~/.gemini/GEMINI.md` (Gemini CLI).
 

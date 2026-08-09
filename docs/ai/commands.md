@@ -2,6 +2,8 @@
 
 READ THIS FIRST. These are the canonical commands for common tasks. Prefer these over ad-hoc invocations — they include the flags that matter.
 
+**Project-specific overrides:** before touching an unfamiliar project, check for a `.ai/` directory in its root. If present, it documents project-specific test/lint/build commands and custom tooling that take precedence over the defaults below.
+
 ## Python (pytest + uv)
 
 - Run all tests: `pytest -v`
@@ -9,9 +11,11 @@ READ THIS FIRST. These are the canonical commands for common tasks. Prefer these
 - Run one test: `pytest -v path/to/test_file.py::test_name`
 - Run with coverage: `pytest -v --cov=src --cov-report=term-missing`
 - Stop on first failure: `pytest -v -x`
-- Install deps (preferred): `uv pip install -e ".[dev]"`
+- Sync existing deps from lockfile: `uv sync --frozen`
+- Add a new runtime dependency: `uv add <pkg>`
+- Add a new dependency to a custom group (e.g. `local`, `lint`, `dev`): `uv add --group <name> <pkg>`
+- Add a new optional/extra dependency: `uv add <pkg> --optional <extra>`
 - Create venv: `uv venv && source .venv/bin/activate`
-- Sync from lockfile: `uv sync --frozen`
 - Run a script in venv: `.venv/bin/python script.py`
 - Run a CLI in venv: `.venv/bin/<cli-command>`
 - Lint: `ruff check .`
@@ -34,9 +38,30 @@ If `.venv/bin/python` is missing, create the environment (`uv sync --frozen` or
 - Dev server: `npm run dev`
 - Build: `npm run build`
 - Lint: `npm run lint`
+- Format: `npm run format` (Prettier)
 - Type-check (if separate script): `npm run type-check`
 - Install deps: `npm install`
 - Install single dep: `npm install <pkg>` (add `-D` for dev dep)
+
+## Rust (cargo)
+
+- Run all tests: `cargo test`
+- Run one test: `cargo test <test_name>`
+- Run with output: `cargo test -- --nocapture`
+- Lint: `cargo clippy --all-targets --all-features -- -D warnings`
+- Format: `cargo fmt`
+- Build (debug): `cargo build`
+- Build (release): `cargo build --release`
+
+## Go (go test)
+
+- Run all tests: `go test ./...`
+- Run one test: `go test ./path/to/pkg -run TestName`
+- Verbose: `go test -v ./...`
+- With coverage: `go test -cover ./...`
+- Lint: `golangci-lint run` (falls back to `go vet ./...` if not installed)
+- Format: `gofmt -l -w .` (or `goimports -l -w .` if imports need sorting)
+- Build: `go build ./...`
 
 ## Git
 
@@ -46,20 +71,6 @@ If `.venv/bin/python` is missing, create the environment (`uv sync --frozen` or
 - Diff unstaged: `git diff`
 - Diff staged: `git diff --staged`
 - Diff against base: `git diff main...HEAD`
+- Update current branch from main: `git merge main` (merge, not rebase — see git-workflow.md)
 - Stash: `git stash push -m "<msg>"`
 - Push current branch: `git push -u origin $(git branch --show-current)`
-
-## GitHub CLI (`gh`)
-
-- View current PR: `gh pr view`
-- List PRs: `gh pr list`
-- Create PR: `gh pr create --fill` (description in Russian — see git-workflow.md)
-- View run status: `gh run list --limit 5`
-- Watch run: `gh run watch`
-
-## Yandex Cloud (`yc`)
-
-- Authenticate (one-time): `yc init`
-- List VMs: `yc compute instance list`
-- List buckets: `yc storage bucket list`
-- Full reference: https://cloud.yandex.ru/docs/cli/

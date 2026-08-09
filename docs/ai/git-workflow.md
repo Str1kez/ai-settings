@@ -2,33 +2,33 @@
 
 ## Commit messages — Conventional Commits
 
-Format: `<type>(<scope>): <описание>`
+Format: `<type>(<scope>): <description>`
 
 **Types** (English, lowercase): `feat`, `fix`, `chore`, `refactor`, `docs`, `test`, `style`, `perf`, `ci`, `build`.
 
 **Scope** (optional, English, lowercase): module or component name, derived from changed file paths. Examples: `auth`, `api`, `db`, `skills/ru-commit-message`.
 
-**Description** (**Russian**, imperative, lowercase first letter, no trailing period, ≤72 chars): what the commit does from the user's perspective.
+**Description** (**English**, imperative, lowercase first letter, no trailing period, ≤72 chars): what the commit does from the user's perspective.
 
 Example:
 ```
-feat(auth): добавить вход через GitHub OAuth
+feat(auth): add github oauth login
 
-Закрываем задачу #42. Обычный логин/пароль остаётся как fallback.
+Closes BOTICS-42. Regular login/password stays as a fallback.
 ```
 
-**Body** (optional, **Russian**): explains WHY, not WHAT. Separated from subject by a blank line. Lines wrap at ~72 chars.
+**Body** (optional, **English**): explains WHY, not WHAT. Separated from subject by a blank line. Lines wrap at ~72 chars.
 
 ## Branch naming
 
-Format: `<type>/<short-description-in-english-kebab-case>`.
+Format: `task-<PROJECT-KEY>-<issue-number>-<short-description-kebab-case>`.
 
-Types mirror the commit types: `feat/`, `fix/`, `chore/`, `refactor/`, `docs/`, `test/`.
+The issue number comes from the tracker (Jira/GitLab). No `feat/`, `fix/`, etc. type prefixes — the tracker issue is the source of truth for what kind of change it is.
 
 Examples:
-- `feat/github-oauth`
-- `fix/expired-jwt-on-password-change`
-- `chore/upgrade-fastapi-0.110`
+- `task-BOTICS-123-github-oauth-login`
+- `task-BOTICS-456-fix-expired-jwt`
+- `task-BOTICS-789-upgrade-fastapi`
 
 ## Pull Requests
 

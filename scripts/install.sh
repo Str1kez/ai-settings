@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Global install: symlink ai-settings into ~/.claude, ~/.codex, ~/.gemini; set up Cursor rules.
+# Global install: configure Claude Code, Codex, OpenCode, Gemini, and Cursor.
 # Idempotent. Supports --dry-run.
 
 set -euo pipefail
@@ -88,11 +88,11 @@ else
   fi
 fi
 
-# --- Codex personal skills (~/.agents/skills/) ---
-# Codex discovers personal skills from ~/.agents/skills/<skill-name>/SKILL.md.
+# --- Shared personal skills (~/.agents/skills/) ---
+# Codex and OpenCode discover skills from ~/.agents/skills/<skill-name>/SKILL.md.
 # Symlink each skill from the repo so the repo stays source of truth.
 # Namespace prefix is dropped: popovs:write-meridian-article → write-meridian-article.
-log_info "Setting up Codex personal skills (~/.agents/skills/)..."
+log_info "Setting up shared personal skills (~/.agents/skills/)..."
 shopt -s nullglob
 codex_superpowers_manifests=(
   "$HOME"/.codex/plugins/cache/*/superpowers/*/.codex-plugin/plugin.json
@@ -146,6 +146,22 @@ if [[ $DRY_RUN -eq 0 ]]; then
 else
   echo "[dry-run] ensure_dir $HOME/.codex"
   echo "[dry-run] $SCRIPT_DIR/sync-cursor.sh --codex"
+fi
+
+# --- OpenCode ---
+# OpenCode reads ~/.config/opencode/AGENTS.md but does not resolve @imports.
+# Skills are discovered from the shared ~/.agents/skills configured above.
+# Agents are converted from agents/*/AGENT.md (Claude Code format) into
+# ~/.config/opencode/agents/<name>.md (OpenCode markdown format).
+log_info "Setting up OpenCode..."
+if [[ $DRY_RUN -eq 0 ]]; then
+  ensure_dir "$HOME/.config/opencode"
+  "$SCRIPT_DIR/sync-cursor.sh" --opencode
+  "$SCRIPT_DIR/sync-cursor.sh" --opencode-agents
+else
+  echo "[dry-run] ensure_dir $HOME/.config/opencode"
+  echo "[dry-run] $SCRIPT_DIR/sync-cursor.sh --opencode"
+  echo "[dry-run] $SCRIPT_DIR/sync-cursor.sh --opencode-agents"
 fi
 
 # --- Gemini CLI ---

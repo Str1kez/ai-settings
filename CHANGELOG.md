@@ -12,10 +12,27 @@
 - Скилл `product-spec-pipeline` — превращает идеи и продуктовые задачи любого масштаба в адаптивную спецификацию через интерактивный grilling, межмодельную проверку и 2 независимых ревью в Orca.
 - Оригинальный скилл `brainstorming` из Superpowers v6.1.1 — проводит идею через уточняющий диалог, сравнение подходов и согласование дизайна.
 - Короткий alias `$spec` — запускает полный pipeline продуктовой спецификации из любого проекта.
+- `install.sh` и `sync-cursor.sh --opencode` устанавливают плоский глобальный
+  `~/.config/opencode/AGENTS.md`; OpenCode использует общие personal skills из
+  `~/.agents/skills`, а пользовательский `opencode.json` остаётся нетронутым.
+- Добавлен гайд `docs/setup/opencode.md` по установке, обновлению и проверке
+  интеграции OpenCode.
+- `sync-cursor.sh --opencode-agents` конвертирует `agents/*/AGENT.md` и мерджит
+  managed-поля (`description`, `mode`, `permission`, `prompt`) в блок `agent`
+  файла `~/.config/opencode/opencode.jsonc`. Промпты лежат отдельно в
+  `~/.config/opencode/agent-prompts/`. Поле `model` не задаётся установщиком —
+  оно пользовательское; project-level override через `agent.<name>.model` в
+  `opencode.json` работает как field-level merge. Существующие пользовательские
+  поля агентов при повторном `install.sh` сохраняются.
 
 ### Изменено
 - `product-spec-pipeline` анализирует существующий проект до работы с идеей и предлагает выбрать глубокие исследования, запускаемые отдельными агентами.
 - `product-spec-pipeline` начинает работу с оригинального `brainstorming`: пользователь выбирает направление из 2–3 вариантов, после чего `grilling` уточняет выбранный вариант.
+- `docs/ai/python.md` адаптирован под команду: минимальная версия поднята до
+  3.14+ с акцентом на `match/case` и упоминанием PEP 649 (ленивые аннотации);
+  раздел `FastAPI patterns` расширен до `Web framework patterns` (FastAPI и
+  LiteStar); линтинг зафиксирован как `ruff` (lint+format, без `black`) +
+  обязательный `mypy --strict` с baseline-конфигом в `pyproject.toml`.
 
 ### Исправлено
 - `install.sh` теперь создаёт `~/.gemini/AGENTS.md` для относительного импорта

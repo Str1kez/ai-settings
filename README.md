@@ -1,6 +1,6 @@
 # ai-settings
 
-Централизованная библиотека настроек для AI coding-ассистентов: **Claude Code**, **Codex CLI**, **Cursor** и **Gemini CLI**. Единое место, где живут персона агента, стандарты кода, стилистика общения, специализированные субагенты и переиспользуемые скиллы.
+Централизованная библиотека настроек для AI coding-ассистентов: **Claude Code**, **Codex CLI**, **OpenCode**, **Cursor** и **Gemini CLI**. Единое место, где живут персона агента, стандарты кода, стилистика общения, специализированные субагенты и переиспользуемые скиллы.
 
 Подробный дизайн: [`docs/superpowers/specs/2026-04-18-ai-settings-design.md`](docs/superpowers/specs/2026-04-18-ai-settings-design.md).
 
@@ -43,7 +43,7 @@ ai-settings/
 
 ## Использование
 
-**В новом проекте** — ничего делать не надо. Глобальные правила уже применяются автоматически через `~/.claude/CLAUDE.md`, `~/.codex/AGENTS.md`, `~/.gemini/GEMINI.md` (для Cursor — запусти `~/ai-settings/scripts/sync-cursor.sh --project .` один раз в проекте).
+**В новом проекте** — ничего делать не надо. Глобальные правила уже применяются автоматически через `~/.claude/CLAUDE.md`, `~/.codex/AGENTS.md`, `~/.config/opencode/AGENTS.md`, `~/.gemini/GEMINI.md` (для Cursor — запусти `~/ai-settings/scripts/sync-cursor.sh --project .` один раз в проекте).
 
 **Для проектной специфики** — в корне проекта:
 
@@ -81,7 +81,7 @@ Claude Desktop не читает `~/.claude/skills/` (это канал Claude C
 ```
 
 Скрипт:
-- прогоняет `install.sh` (Claude Code + Codex + Gemini + Cursor);
+- прогоняет `install.sh` (Claude Code + Codex + OpenCode + Gemini + Cursor);
 - пакует каждый скилл в zip в `dist/claude-desktop-skills/` — для **первой** загрузки через UI;
 - для скиллов, которые **уже** загружены, делает rsync из репы прямо в папку Desktop (щадящий режим, без `--delete` — ничего чужого не удаляется).
 
@@ -99,6 +99,7 @@ Claude Desktop не читает `~/.claude/skills/` (это канал Claude C
 - [Подключение Codex CLI](docs/setup/codex.md)
 - [Подключение Cursor](docs/setup/cursor.md)
 - [Подключение Gemini CLI](docs/setup/gemini.md)
+- [Подключение OpenCode](docs/setup/opencode.md)
 - [Новый проект](docs/setup/new-project.md)
 
 ## Лицензия

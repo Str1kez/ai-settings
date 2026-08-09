@@ -3,8 +3,8 @@
 #
 # Что делает:
 #   Claude Code   — прогоняет install.sh (симлинки ~/.claude/skills → repo/skills).
-#   Codex         — тот же install.sh перегенерит плоский ~/.codex/AGENTS.md
-#                   с развёрнутыми @imports.
+#   Codex/OpenCode — тот же install.sh перегенерит плоские глобальные AGENTS.md
+#                    и обновит общие personal skills в ~/.agents/skills.
 #   Claude Desktop — двухступенчатая схема:
 #                    1) пакует каждый скилл в zip в dist/claude-desktop-skills/
 #                       (чтобы можно было загрузить через Settings → Capabilities
@@ -34,7 +34,7 @@ require_cmd() {
 require_cmd zip
 require_cmd rsync
 
-echo "==> Claude Code + Codex: install.sh"
+echo "==> Claude Code + Codex + OpenCode + Gemini + Cursor: install.sh"
 "$REPO_ROOT/scripts/install.sh"
 
 echo

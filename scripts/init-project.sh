@@ -13,14 +13,14 @@ PROJECT_ROOT="$(cd "$PROJECT_ROOT" && pwd)"
 
 log_info "Initializing ai-settings for project: $PROJECT_ROOT"
 
-# Project-specific AGENTS.md (additive; global layer auto-applies via ~/.claude, ~/.codex, ~/.gemini)
+# Project-specific AGENTS.md (additive; global layer is installed for every supported agent)
 project_agents="$PROJECT_ROOT/AGENTS.md"
 if [[ ! -f "$project_agents" ]]; then
   cat > "$project_agents" <<'EOF'
 # AGENTS.md (project-local)
 
 <!-- Additive layer. Global rules apply automatically via ~/.claude/CLAUDE.md,
-     ~/.codex/AGENTS.md, ~/.gemini/GEMINI.md (symlinked to ~/ai-settings). -->
+     ~/.codex/AGENTS.md, ~/.config/opencode/AGENTS.md, and ~/.gemini/GEMINI.md. -->
 
 ## Project context
 <!-- TODO: опиши проект в 2-3 предложениях -->
