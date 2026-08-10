@@ -60,7 +60,7 @@ cd ~/ai-settings && git pull && ./scripts/install.sh
 
 ```
 /strikez:ru-commit-message
-/strikez:tg-post-writer
+/strikez:ru-pr-description
 ...
 ```
 

@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Создать публичную GitHub-библиотеку `ai-settings` — централизованные настройки для Claude Code, Codex CLI, Cursor и Gemini CLI, с персоной «Борис», 6 субагентами, 4 скиллами, skill-lint на pytest, install-скриптами и CI.
+**Goal:** Создать публичную GitHub-библиотеку `ai-settings` — централизованные настройки для Claude Code, Codex CLI, Cursor и Gemini CLI, с персоной «Афина», 6 субагентами, 4 скиллами, skill-lint на pytest, install-скриптами и CI.
 
 **Architecture:** `AGENTS.md` — source of truth, тяжёлые темы в `docs/ai/*.md` через `@imports`. Платформы Claude/Codex/Gemini читают импорты нативно (или как текст); Cursor получает плоскую версию через `sync-cursor.sh`. Глобальная установка симлинкует репо в `~/.claude`, `~/.codex`, `~/.gemini`.
 
@@ -1514,7 +1514,7 @@ The post text, ready to paste. Optionally offer 2 variants if the angle is ambig
 
 ## [1.0.0] — 2026-04-18
 ### Первый релиз
-- Написание постов в Телеграм на русском в стиле персоны Бориса.
+- Написание постов в Телеграм на русском в стиле персоны Афины.
 - Ограничения по длине и форматированию под TG.
 ```
 
@@ -1523,7 +1523,7 @@ The post text, ready to paste. Optionally offer 2 variants if the angle is ambig
 ```markdown
 # tg-post-writer
 
-Скилл пишет посты в Телеграм на русском в стиле Бориса — прямо, без воды, с одной мыслью на пост.
+Скилл пишет посты в Телеграм на русском в стиле Афины — прямо, без воды, с одной мыслью на пост.
 
 ## Использование
 «Напиши TG-пост про <тема>» или «оформи эту идею для телеграма».
@@ -2515,7 +2515,7 @@ git commit -m "docs(setup): гайд по подключению Cursor"
 
 ## Проверка
 
-Запусти Gemini CLI, задай любой вопрос, требующий правил (например, «напиши коммит»). Если модель отвечает в стиле персоны Бориса на русском — всё работает.
+Запусти Gemini CLI, задай любой вопрос, требующий правил (например, «напиши коммит»). Если модель отвечает в стиле персоны Афины на русском — всё работает.
 
 ## @imports
 
@@ -2770,7 +2770,7 @@ gh run watch
 ## [0.1.0] — 2026-04-18
 ### Первый релиз
 - AGENTS.md с 13 секциями + 11 модулей docs/ai/.
-- Персона «Борис» + 6 специализированных субагентов.
+- Персона «Афина» + 6 специализированных субагентов.
 - 4 скилла: ru-commit-message, ru-pr-description, changelog-entry, tg-post-writer.
 - skill-lint (pytest, 9 проверок) с negative fixture.
 - Установщики: install.sh, init-project.sh, sync-cursor.sh, bump-skill-version.sh.

@@ -59,7 +59,7 @@ find -L ~/.agents/skills -maxdepth 2 -name SKILL.md -print
 
 После `install.sh` Codex получает:
 
-- плоский `~/.codex/AGENTS.md` со всеми правилами общения, персоной Бориса, hard gates, git workflow и platform-wide notes;
+- плоский `~/.codex/AGENTS.md` со всеми правилами общения, персоной Афины, hard gates, git workflow и platform-wide notes;
 - personal skills из `~/.agents/skills/`;
 - текущий `~/.codex/config.toml` остаётся пользовательским: модель, плагины и trusted projects не перезаписываются.
 
@@ -69,7 +69,7 @@ find -L ~/.agents/skills -maxdepth 2 -name SKILL.md -print
 
 > «напиши коммит»
 
-Если модель предлагает Conventional Commits с русским описанием (`feat(scope): ...`) и не ломает персону Бориса — правила подхвачены. Если выдаёт generic английский — значит плоский файл не прогрузился; проверь `head ~/.codex/AGENTS.md` и перегенерируй через `sync-cursor.sh --codex`.
+Если модель предлагает Conventional Commits с русским описанием (`feat(scope): ...`) и не ломает персону Афины — правила подхвачены. Если выдаёт generic английский — значит плоский файл не прогрузился; проверь `head ~/.codex/AGENTS.md` и перегенерируй через `sync-cursor.sh --codex`.
 
 ## Windows
 

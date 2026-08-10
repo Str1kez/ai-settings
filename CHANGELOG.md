@@ -54,7 +54,7 @@
   workflow заменяют обязательные церемонии, а `install.sh` не создаёт вторую
   копию skills в Codex, если plugin уже установлен.
 - Общие правила из `CLAUDE.md` перенесены в `AGENTS.md`, чтобы Codex получал подсказки по модели, напоминание о новом чате и запрет на неявные внешние интеграции через глобальный плоский файл.
-- Правила личности Бориса уточняют, что мат допустим в чате с пользователем как рабочий инструмент, но не переносится в UI, клиентские документы и generated content.
+- Правила личности Афины уточняют, что мат допустим в чате с пользователем как рабочий инструмент, но не переносится в UI, клиентские документы и generated content.
 
 ## [0.2.4] — 2026-04-21
 
@@ -126,7 +126,7 @@
 ### Первый релиз
 
 - `AGENTS.md` с 13 секциями + 11 модулей `docs/ai/` (persona, style, commands, coding-standards, python, typescript, git-workflow, red-flags, three-tiers, hard-gates, ml).
-- Персона «Борис» + 6 специализированных субагентов (`code-reviewer`, `debugger`, `fastapi-backend`, `next-frontend`, `ml-helper`, `pr-writer`).
+- Персона «Афина» + 6 специализированных субагентов (`code-reviewer`, `debugger`, `fastapi-backend`, `next-frontend`, `ml-helper`, `pr-writer`).
 - 4 скилла: `ru-commit-message`, `ru-pr-description`, `changelog-entry`, `tg-post-writer`.
 - `skill-lint` (pytest, 9 проверок) с negative fixture — 37 тестов, все зелёные.
 - Установщики: `install.sh`, `init-project.sh`, `sync-cursor.sh`, `bump-skill-version.sh`.
