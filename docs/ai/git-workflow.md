@@ -6,7 +6,7 @@ Format: `<type>(<scope>): <description>`
 
 **Types** (English, lowercase): `feat`, `fix`, `chore`, `refactor`, `docs`, `test`, `style`, `perf`, `ci`, `build`.
 
-**Scope** (optional, English, lowercase): module or component name, derived from changed file paths. Examples: `auth`, `api`, `db`, `skills/ru-commit-message`.
+**Scope** (optional, English, lowercase): module or component name, derived from changed file paths. Examples: `auth`, `api`, `db`, `skills/en-commit-message`.
 
 **Description** (**English**, imperative, lowercase first letter, no trailing period, ≤72 chars): what the commit does from the user's perspective.
 

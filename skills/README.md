@@ -68,7 +68,6 @@ tags: [git, markdown, russian, ...]
 
 ## Стартовый набор
 
-- `strikez/ru-commit-message` — conventional commit на русском из staged diff.
 - `strikez/en-commit-message` — conventional commit на английском из staged diff.
 - `strikez/ru-pr-description` — PR-описание на русском по шаблону.
 - `strikez/en-pr-description` — PR-описание на английском по шаблону.

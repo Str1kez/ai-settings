@@ -269,26 +269,23 @@ Pre-commit discipline, Merge strategy, Never). Верни в кодблоке.
 
 ---
 
-### 8. `skills/strikez/ru-commit-message`, `ru-pr-description`, `changelog-entry`
+### 8. `skills/strikez/en-commit-message`, `ru-pr-description`, `changelog-entry`
 
-Все три — русскоязычные.
-- Если коммитишь на английском: удали `ru-commit-message` и `ru-pr-description`, или скопируй и переделай в `en-commit-message`.
+- Если коммитишь не на английском: удали `en-commit-message` или переделай в `ru-commit-message`.
 - `changelog-entry` — тоже пишет по-русски в формате Keep a Changelog. Адаптируй язык.
 
 **Промпт (форк в английский аналог):**
 
 ```
-Скопируй папку skills/strikez/ru-commit-message/ в skills/strikez/en-commit-message/
-и переделай скилл под английский язык коммит-описаний:
+Скопируй папку skills/strikez/en-commit-message/ в skills/strikez/ru-commit-message/
+и переделай скилл под русский язык коммит-описаний:
 - В SKILL.md: поменяй name, description (триггеры типа «write a commit» вместо
   «напиши коммит»), tags.
 - В references/examples.md: перепиши все примеры на английские описания
   (imperative, lowercase first, no trailing period).
 - В CHANGELOG.md скилла и README.md: переведи.
-- После: удали исходную skills/strikez/ru-commit-message/, если она не нужна.
+- После: удали исходную skills/strikez/en-commit-message/, если она не нужна.
 - Прогони `pytest tests/` — все проверки skill-lint должны пройти.
-
-Потом то же самое для ru-pr-description → en-pr-description.
 
 Для changelog-entry — в нём шаблоны на русском, но формат (Keep a Changelog)
 языково-независимый. Просто переведи шаблоны и примеры на английский внутри

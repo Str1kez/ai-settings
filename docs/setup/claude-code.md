@@ -59,7 +59,7 @@ cd ~/ai-settings && git pull && ./scripts/install.sh
 `install.sh` автоматически генерирует файлы в `~/.claude/commands/<namespace>/` — по одному на каждый скилл с `SKILL.md`. После установки скиллы появляются в `/`-автодополнении Claude Code:
 
 ```
-/strikez:ru-commit-message
+/strikez:en-commit-message
 /strikez:ru-pr-description
 ...
 ```
