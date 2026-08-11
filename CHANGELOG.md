@@ -39,6 +39,10 @@
 - `install.sh` теперь ставит RTK-плагин для OpenCode автоматически
   (`rtk init -g --opencode --hook-only --no-patch`, идемпотентно, не трогает
   Claude Code) — раньше требовался ручной шаг.
+- `docs/ai/commands.md` — добавлена секция CLI tool preferences (`rg`/`fd`/
+  `bat`/`xh` вместо `grep`/`find`/`cat`/`curl`).
+- `docs/setup/customization.md` — промпт для генерации `commands.md` теперь
+  спрашивает про rust-аналоги CLI-утилит.
 
 ### Исправлено
 - `install.sh` теперь создаёт `~/.gemini/AGENTS.md` для относительного импорта
