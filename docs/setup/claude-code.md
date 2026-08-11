@@ -71,13 +71,14 @@ cd ~/ai-settings && git pull && ./scripts/install.sh
 RTK — CLI-прокси, сжимает вывод bash-команд перед попаданием в контекст. Экономит 60-90% токенов на `git`, `npm test`, `pytest`, `grep` и других командах.
 
 **Что настроено автоматически:**
-- PreToolUse hook (`~/.claude/hooks/rtk-rewrite.sh`) — прозрачно переписывает команды через rtk
+- PreToolUse hook (`rtk hook claude` — нативная команда бинарника, без обёрточного скрипта) — прозрачно переписывает команды через rtk
 - `install.sh` устанавливает бинарник автоматически (через Homebrew или curl)
 
 **Проверить установку:**
 ```bash
 rtk --version
-rtk gain       # статистика экономии токенов за сессию
+rtk hook claude --help   # если команды нет — обновись: brew upgrade rtk
+rtk gain                 # статистика экономии токенов за сессию
 ```
 
 **Установить вручную (если install.sh не запускали):**

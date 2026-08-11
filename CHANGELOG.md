@@ -33,6 +33,12 @@
   раздел `FastAPI patterns` расширен до `Web framework patterns` (FastAPI и
   LiteStar); линтинг зафиксирован как `ruff` (lint+format, без `black`) +
   обязательный `mypy --strict` с baseline-конфигом в `pyproject.toml`.
+- RTK PreToolUse hook в `settings/claude-settings.json` переведён с
+  обёрточного скрипта на нативную команду бинарника `rtk hook claude` —
+  сам скрипт дублировал логику, которая уже целиком живёт в бинаре rtk.
+- `install.sh` теперь ставит RTK-плагин для OpenCode автоматически
+  (`rtk init -g --opencode --hook-only --no-patch`, идемпотентно, не трогает
+  Claude Code) — раньше требовался ручной шаг.
 
 ### Исправлено
 - `install.sh` теперь создаёт `~/.gemini/AGENTS.md` для относительного импорта
@@ -41,6 +47,8 @@
 
 ### Удалено
 - `tg-post-writer`, `ru-commit-message`
+- `settings/hooks/rtk-rewrite.sh` — заменён на нативную команду `rtk hook claude`
+  прямо в `settings/claude-settings.json`.
 
 ## [0.2.5] — 2026-07-31
 

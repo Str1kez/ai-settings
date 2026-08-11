@@ -22,10 +22,9 @@ if [[ -d "$AGENTS_DIR" ]]; then
   agent_count=$(find "$AGENTS_DIR" -mindepth 2 -maxdepth 2 -name AGENT.md 2>/dev/null | wc -l | tr -d ' ')
 fi
 
-RTK_HOOK="$HOME/.claude/hooks/rtk-rewrite.sh"
 RTK_WARNING=""
-if [[ -f "$RTK_HOOK" ]] && ! command -v rtk &>/dev/null; then
-  RTK_WARNING=$'\nrtk hook is wired but rtk binary not found. Install: brew install rtk'
+if ! command -v rtk &>/dev/null; then
+  RTK_WARNING=$'\nrtk hook is wired (rtk hook claude) but rtk binary not found. Install: brew install rtk'
 fi
 
 cat <<EOF

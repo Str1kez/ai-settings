@@ -269,4 +269,20 @@ else
   fi
 fi
 
+# Claude Code hook is wired via the claude-settings.json merge above
+# (PreToolUse -> "rtk hook claude", native binary command, no extra setup).
+# OpenCode has no equivalent settings.json merge, so wire its plugin explicitly.
+log_info "Setting up RTK OpenCode plugin..."
+if [[ $DRY_RUN -eq 1 ]]; then
+  echo "[dry-run] rtk init -g --opencode --hook-only --no-patch"
+elif command -v rtk &>/dev/null; then
+  if rtk init -g --opencode --hook-only --no-patch &>/dev/null; then
+    log_ok "RTK OpenCode plugin installed (~/.config/opencode/plugins/rtk.ts)"
+  else
+    log_warn "RTK OpenCode plugin install failed — run manually: rtk init -g --opencode"
+  fi
+else
+  log_warn "rtk binary not found — skipping OpenCode plugin (run 'rtk init -g --opencode' after installing rtk)"
+fi
+
 log_ok "ai-settings installation complete."

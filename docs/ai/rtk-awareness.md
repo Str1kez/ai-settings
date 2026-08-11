@@ -15,4 +15,6 @@ Two different "rtk" projects exist on crates.io. Verify correct install: `rtk ga
 
 ## Hook behavior
 
-All other commands (git, npm, pytest, grep, etc.) are automatically rewritten by the PreToolUse hook. Built-in tools (Read, Grep, Glob) are NOT affected.
+All other commands (git, npm, pytest, grep, etc.) are automatically rewritten by the PreToolUse hook (`rtk hook claude`, native binary command — no wrapper script). Built-in tools (Read, Grep, Glob) are NOT affected.
+
+OpenCode uses its own mechanism: a plugin at `~/.config/opencode/plugins/rtk.ts`, installed automatically by `install.sh` via `rtk init -g --opencode --hook-only --no-patch` — see `docs/setup/opencode.md`.

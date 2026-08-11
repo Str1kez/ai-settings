@@ -82,13 +82,35 @@ opencode debug config
 Конвертация агентов требует `jq` для merge в `opencode.jsonc`. Если `jq` нет
 — выводится предупреждение, агент-блок не записывается. Установка: `brew install jq`.
 
+## RTK (Rust Token Killer)
+
+`install.sh` ставит плагин автоматически (если бинарник `rtk` уже есть в PATH):
+
+```bash
+rtk init -g --opencode --hook-only --no-patch
+```
+
+Флаги `--hook-only --no-patch` гарантируют, что команда трогает только
+OpenCode: без `CLAUDE.md`/`RTK.md` и без патча `~/.claude/settings.json` —
+Claude Code уже настроен отдельно через `settings/claude-settings.json`
+(`rtk hook claude`).
+
+Команда кладёт плагин `~/.config/opencode/plugins/rtk.ts` — он делегирует всю
+логику переписывания команд бинарнику `rtk` (`rtk rewrite <cmd>`), сам плагин
+не содержит никакой rewrite-логики. Проверка: `rtk init --show`.
+
+Если бинарника `rtk` не было на момент установки — поставь его
+(`brew install rtk`) и перезапусти `install.sh`, или прогони команду выше
+вручную.
+
 ## Пользовательская конфигурация
 
 `~/.config/opencode/opencode.jsonc` остаётся пользовательским: провайдеры,
-модели, MCP-серверы и плагины установщик не трогает. Единственное исключение —
-блок `agent`: `install.sh` мерджит туда managed-поля (`description`, `mode`,
-`permission`, `prompt`) из `agents/*/AGENT.md`. Поля `model`, `temperature`
-и другие пользовательские настройки агентов сохраняются при повторных запусках.
+модели, MCP-серверы и плагины (кроме RTK, см. выше) установщик не трогает.
+Единственное исключение в самом `opencode.jsonc` — блок `agent`: `install.sh`
+мерджит туда managed-поля (`description`, `mode`, `permission`, `prompt`) из
+`agents/*/AGENT.md`. Поля `model`, `temperature` и другие пользовательские
+настройки агентов сохраняются при повторных запусках.
 
 ## Обновление
 
