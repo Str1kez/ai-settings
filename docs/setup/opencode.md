@@ -128,11 +128,17 @@ cd ~/ai-settings && git pull
 ~/ai-settings/scripts/sync-cursor.sh --opencode
 ```
 
-## Проектные правила
+## Проектные правила и runtime-конфиг
 
-OpenCode автоматически читает ближайший `AGENTS.md` от текущей директории до
-корня worktree. `scripts/init-project.sh` уже создаёт такой файл, поэтому
-отдельная OpenCode-конфигурация проекту не нужна.
+Правила проекта покрывает `AGENTS.md`: OpenCode автоматически читает ближайший
+такой файл от текущей директории до корня worktree, и `scripts/init-project.sh`
+уже создаёт его — отдельного механизма для правил не нужно.
+
+Runtime-конфиг (модель, `agent`, `mcp`, `permission`, плагины) — это другое:
+`scripts/init-project.sh` создаёт в корне проекта пустой `opencode.jsonc` с
+`$schema` и комментарием-подсказкой. Он мерджится field-level над глобальным
+`~/.config/opencode/opencode.jsonc`, так что можно переопределить, например,
+модель конкретного агента только для этого проекта (см. пример выше).
 
 ## Windows
 

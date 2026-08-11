@@ -57,6 +57,22 @@ EOF
   log_ok "Created $project_settings (empty override)"
 fi
 
+# Project opencode.jsonc — runtime config override (model, agent, mcp, etc.)
+# AGENTS.md already covers project rules; this is for OpenCode-specific
+# runtime settings that mustn't leak into other agents.
+opencode_config="$PROJECT_ROOT/opencode.jsonc"
+if [[ ! -f "$opencode_config" ]]; then
+  cat > "$opencode_config" <<'EOF'
+{
+  "$schema": "https://opencode.ai/config.json"
+  // Project-local overrides, merged field-level over the global config, e.g.:
+  // "model": "anthropic/claude-opus-4-1",
+  // "agent": { "code-reviewer": { "model": "anthropic/claude-opus-4-1" } }
+}
+EOF
+  log_ok "Created $opencode_config (empty override)"
+fi
+
 # CHANGELOG.md + TODO.md templates
 if [[ ! -f "$PROJECT_ROOT/CHANGELOG.md" ]]; then
   cat > "$PROJECT_ROOT/CHANGELOG.md" <<EOF

@@ -24,6 +24,9 @@
   оно пользовательское; project-level override через `agent.<name>.model` в
   `opencode.json` работает как field-level merge. Существующие пользовательские
   поля агентов при повторном `install.sh` сохраняются.
+- `scripts/init-project.sh` создаёт в корне проекта пустой `opencode.jsonc`
+  с `$schema` и подсказкой в комментарии — для project-level override модели,
+  `agent`, `mcp` и других runtime-настроек OpenCode.
 
 ### Изменено
 - `product-spec-pipeline` анализирует существующий проект до работы с идеей и предлагает выбрать глубокие исследования, запускаемые отдельными агентами.
