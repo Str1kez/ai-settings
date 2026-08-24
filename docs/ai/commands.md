@@ -4,15 +4,6 @@ READ THIS FIRST. These are the canonical commands for common tasks. Prefer these
 
 **Project-specific overrides:** before touching an unfamiliar project, check for a `.ai/` directory in its root. If present, it documents project-specific test/lint/build commands and custom tooling that take precedence over the defaults below.
 
-## CLI tool preferences
-
-Rust replacements are installed on every machine — prefer them over the classic tool whenever a raw shell command is actually needed (dedicated Read/Grep/Glob tools remain the default for file search/read/edit):
-
-- `rg` instead of `grep`
-- `fd` instead of `find`
-- `bat` instead of `cat`
-- `xh` instead of `curl`
-
 ## Python (pytest + uv)
 
 - Run all tests: `pytest -v`
