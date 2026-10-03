@@ -6,7 +6,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
-def test_install_links_gemini_import_and_superpowers(tmp_path):
+def test_install_links_gemini_import(tmp_path):
     subprocess.run(
         [REPO_ROOT / "scripts/install.sh"],
         cwd=REPO_ROOT,
@@ -19,4 +19,3 @@ def test_install_links_gemini_import_and_superpowers(tmp_path):
     gemini_home = tmp_path / ".gemini"
     assert (gemini_home / "GEMINI.md").resolve() == REPO_ROOT / "GEMINI.md"
     assert (gemini_home / "AGENTS.md").resolve() == REPO_ROOT / "AGENTS.md"
-    assert (gemini_home / "skills").resolve() == REPO_ROOT / "skills/superpowers"

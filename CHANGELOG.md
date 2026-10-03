@@ -52,6 +52,9 @@
   падал на чужих скиллах в `skills/synced/` и `skills/.trash/`.
 
 ### Удалено
+- Форк Superpowers (`skills/superpowers/`) и тест на пропуск Codex-плагина. Из
+  `install.sh` ушли проверка SP-плагина Claude, пропуск Codex-плагина и симлинк
+  `~/.gemini/skills`. Процесс ведут внешние matt-скиллы.
 - `tg-post-writer`, `ru-commit-message`
 - Битые симлинки `presentation-builder`, `report-builder`, `sales-kit-writer`
   и `strikez/write-meridian-article` — смотрели в чужие домашние каталоги.

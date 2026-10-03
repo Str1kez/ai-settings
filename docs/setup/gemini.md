@@ -3,8 +3,8 @@
 ## После `scripts/install.sh`
 
 ```bash
-ls -la ~/.gemini/GEMINI.md ~/.gemini/AGENTS.md ~/.gemini/skills
-# -> ai-settings/GEMINI.md, ai-settings/AGENTS.md и ai-settings/skills/superpowers
+ls -la ~/.gemini/GEMINI.md ~/.gemini/AGENTS.md
+# -> ai-settings/GEMINI.md и ai-settings/AGENTS.md
 ```
 
 ## Проверка
@@ -19,7 +19,7 @@ ls -la ~/.gemini/GEMINI.md ~/.gemini/AGENTS.md ~/.gemini/skills
 
 Gemini CLI нативно поддерживает `@imports`, поэтому модули из `docs/ai/*.md` подтягиваются автоматически при загрузке `GEMINI.md` (через транзит `GEMINI.md → @./AGENTS.md → @docs/ai/*.md`). Отдельный симлинк `~/.gemini/AGENTS.md` нужен, потому что относительный импорт разрешается из глобальной папки Gemini, а не из директории исходного симлинка.
 
-Risk-based Superpowers подключены через `~/.gemini/skills`. Остальные общие скиллы Gemini также видит в `~/.agents/skills`, которую создаёт тот же установщик.
+Общие скиллы Gemini видит в `~/.agents/skills`, которую создаёт тот же установщик.
 
 ## Обновление
 
