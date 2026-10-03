@@ -47,9 +47,13 @@
 - `install.sh` теперь создаёт `~/.gemini/AGENTS.md` для относительного импорта
   из `GEMINI.md` и подключает risk-based Superpowers через
   `~/.gemini/skills`.
+- skill-lint проверяет только `SKILL.md`, которые отслеживает git. Раньше он
+  падал на чужих скиллах в `skills/synced/` и `skills/.trash/`.
 
 ### Удалено
 - `tg-post-writer`, `ru-commit-message`
+- Битые симлинки `presentation-builder`, `report-builder`, `sales-kit-writer`
+  и `strikez/write-meridian-article` — смотрели в чужие домашние каталоги.
 - `settings/hooks/rtk-rewrite.sh` — заменён на нативную команду `rtk hook claude`
   прямо в `settings/claude-settings.json`.
 
