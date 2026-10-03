@@ -7,14 +7,13 @@ user's own foreign skills.
 """
 
 import os
-import shutil
 import subprocess
 from collections.abc import Callable
 from pathlib import Path
 
 import pytest
 
-from tests.helpers import REPO_ROOT, run, tree
+from tests.helpers import copy_scripts, run_sync, tree, write
 
 TRACKED_SKILL = "---\nname: tracked-skill\n---\n"
 # Where the migration gathers entries before the new dir takes the link's
@@ -26,12 +25,8 @@ STAGING = ".claude/.skills.ai-settings-migration"
 def repo(tmp_path: Path) -> Path:
     """A git repo with one tracked skill and its own copy of the deploy scripts."""
     repo = tmp_path / "repo"
-    shutil.copytree(
-        REPO_ROOT / "scripts",
-        repo / "scripts",
-        ignore=shutil.ignore_patterns("__pycache__"),
-    )
-    _write(repo / "skills/ns/tracked-skill/SKILL.md", TRACKED_SKILL)
+    copy_scripts(repo)
+    write(repo / "skills/ns/tracked-skill/SKILL.md", TRACKED_SKILL)
     subprocess.run(["git", "init", "-q"], cwd=repo, check=True)
     subprocess.run(["git", "add", "skills"], cwd=repo, check=True)
     return repo
@@ -47,8 +42,8 @@ def home(tmp_path: Path, repo: Path) -> Path:
     matt.mkdir(parents=True)
     # npx skills writes the link relative to the real dir it lands in.
     (repo / "skills/matt").symlink_to(os.path.relpath(matt, repo / "skills"))
-    _write(repo / "skills/synced/account-skill/SKILL.md", "synced\n")
-    _write(repo / "skills/.trash/old-skill/SKILL.md", "trashed\n")
+    write(repo / "skills/synced/account-skill/SKILL.md", "synced\n")
+    write(repo / "skills/.trash/old-skill/SKILL.md", "trashed\n")
     # A link to another entry that moves too.
     (repo / "skills/pinned").symlink_to("synced/account-skill")
     return home
@@ -64,11 +59,6 @@ def _shim(skill_ref: str) -> str:
     )
 
 
-def _write(path: Path, text: str) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(text, encoding="utf-8")
-
-
 def _read(path: Path) -> str:
     return path.read_text(encoding="utf-8")
 
@@ -77,17 +67,10 @@ def _planned(plan: list[str], action: str, path: Path) -> bool:
     return any(f"{action} {path}" in line for line in plan)
 
 
-def _sync_skills(repo: Path, home: Path, *flags: str) -> str:
-    """Run the repo's copy of `sync.py skills`, fail on error, return its log."""
-    command: list[str | Path] = ["python3", repo / "scripts/sync.py", "skills"]
-    # Apple's python3 otherwise caches bytecode under $HOME/Library/Caches.
-    return run([*command, *flags], home, PYTHONDONTWRITEBYTECODE="1").stderr
-
-
 def test_old_skills_link_becomes_a_real_dir_with_everything_git_does_not_track(
     repo: Path, home: Path
 ) -> None:
-    _sync_skills(repo, home)
+    run_sync(repo, home, "skills")
 
     claude_skills = home / ".claude/skills"
     assert claude_skills.is_dir() and not claude_skills.is_symlink()
@@ -104,10 +87,10 @@ def test_old_skills_link_becomes_a_real_dir_with_everything_git_does_not_track(
 
 
 def test_second_run_changes_nothing(repo: Path, home: Path) -> None:
-    _sync_skills(repo, home)
+    run_sync(repo, home, "skills")
     first = tree(home), tree(repo / "skills")
 
-    _sync_skills(repo, home)
+    run_sync(repo, home, "skills")
 
     assert (tree(home), tree(repo / "skills")) == first
 
@@ -120,7 +103,7 @@ def _stop_after_first_move(repo: Path, home: Path) -> None:
 
 def _stop_before_swap(repo: Path, home: Path) -> None:
     """Every entry reached the staging dir; the old link is already gone."""
-    _sync_skills(repo, home)
+    run_sync(repo, home, "skills")
     (home / ".claude/skills").rename(home / STAGING)
 
 
@@ -136,7 +119,7 @@ def test_rerun_finishes_a_migration_that_stopped_halfway(
 ) -> None:
     stop(repo, home)
 
-    _sync_skills(repo, home)
+    run_sync(repo, home, "skills")
 
     claude_skills = home / ".claude/skills"
     assert claude_skills.is_dir() and not claude_skills.is_symlink()
@@ -149,12 +132,12 @@ def test_rerun_finishes_a_migration_that_stopped_halfway(
 
 def test_only_exact_generated_shims_are_removed(repo: Path, home: Path) -> None:
     commands = home / ".claude/commands"
-    _write(commands / "ns/tracked-skill.md", _shim("ns:tracked-skill"))
-    _write(commands / "ns/alias.md", _shim("ns:tracked-skill"))
-    _write(commands / "ns/edited.md", _shim("ns:edited") + "Then commit.\n")
-    _write(commands / "old/gone.md", _shim("old:gone"))
+    write(commands / "ns/tracked-skill.md", _shim("ns:tracked-skill"))
+    write(commands / "ns/alias.md", _shim("ns:tracked-skill"))
+    write(commands / "ns/edited.md", _shim("ns:edited") + "Then commit.\n")
+    write(commands / "old/gone.md", _shim("old:gone"))
 
-    _sync_skills(repo, home)
+    run_sync(repo, home, "skills")
 
     assert tree(commands) == {
         "ns": "dir",
@@ -178,7 +161,7 @@ def test_gemini_skills_link_goes_only_if_it_points_into_the_repo(
     gemini_skills.parent.mkdir()
     gemini_skills.symlink_to(tmp_path / target)
 
-    _sync_skills(repo, home)
+    run_sync(repo, home, "skills")
 
     assert os.path.lexists(gemini_skills) is not removed
 
@@ -187,12 +170,12 @@ def test_dry_run_lists_moves_and_removals_and_changes_nothing(
     repo: Path, home: Path
 ) -> None:
     shim = home / ".claude/commands/ns/tracked-skill.md"
-    _write(shim, _shim("ns:tracked-skill"))
+    write(shim, _shim("ns:tracked-skill"))
     (home / ".gemini").mkdir()
     (home / ".gemini/skills").symlink_to(repo / "skills/superpowers")
     before = tree(home), tree(repo / "skills")
 
-    log = _sync_skills(repo, home, "--dry-run")
+    log = run_sync(repo, home, "skills", "--dry-run")
 
     assert (tree(home), tree(repo / "skills")) == before
     plan = [line for line in log.splitlines() if line.startswith("[dry-run]")]
