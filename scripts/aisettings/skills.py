@@ -8,11 +8,10 @@ to be unique across namespaces.
 
 from __future__ import annotations
 
-import os
 import subprocess
 from pathlib import Path
 
-from aisettings.fs import Fs, SyncError
+from aisettings.fs import Fs, SyncError, link_target
 
 _SKILL_PATHSPEC = "skills/*/*/SKILL.md"
 # <namespace>/<skill>/SKILL.md below skills/; "*" in a pathspec crosses "/".
@@ -23,9 +22,9 @@ _HARNESS_SKILL_DIRS = (Path(".claude/skills"), Path(".agents/skills"))
 def sync(fs: Fs, repo: Path, home: Path) -> None:
     skills = collect(repo)
     targets = [home / rel for rel in _HARNESS_SKILL_DIRS]
-    # Check every target before the first write: no half-done deploy.
+    # Check every target before the first link: no half-done skill deploy.
     for skills_home in targets:
-        _refuse_legacy_layout(repo, skills_home)
+        _refuse_repo_link(fs, skills_home)
     for skills_home in targets:
         _sync_dir(fs, repo, skills_home, skills)
 
@@ -71,11 +70,13 @@ def _sync_dir(fs: Fs, repo: Path, skills_home: Path, skills: dict[str, Path]) ->
     _remove_stale_links(fs, repo, skills_home, skills)
 
 
-def _refuse_legacy_layout(repo: Path, skills_home: Path) -> None:
-    if skills_home.is_symlink() and skills_home.resolve().is_relative_to(repo):
+def _refuse_repo_link(fs: Fs, skills_home: Path) -> None:
+    """A dir link into the repo would turn every skill link below it into a
+    write to the repo."""
+    if skills_home.is_symlink() and fs.inside_repo(skills_home):
         raise SyncError(
-            f"{skills_home} is a symlink into the repo (old layout): "
-            "migrate it to a real directory first, nothing was changed"
+            f"{skills_home} is a symlink into the repo: replace it with a real "
+            "directory, nothing was changed"
         )
 
 
@@ -90,6 +91,5 @@ def _remove_stale_links(
     for entry in sorted(skills_home.iterdir()):
         if not entry.is_symlink() or entry.name in skills:
             continue
-        target = Path(os.path.normpath(skills_home / os.readlink(entry)))
-        if target.is_relative_to(repo_skills):
+        if link_target(entry).is_relative_to(repo_skills):
             fs.unlink(entry)

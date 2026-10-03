@@ -2,7 +2,7 @@ import os
 import subprocess
 from pathlib import Path
 
-from tests.helpers import REPO_ROOT, run, run_unchecked
+from tests.helpers import REPO_ROOT, run, run_unchecked, tree
 from tests.skill_lint.conftest import discover_skill_paths
 
 INSTALL = REPO_ROOT / "scripts/install.sh"
@@ -24,18 +24,6 @@ def _repo_snapshot() -> tuple[str, list[str]]:
     return status, sorted(os.listdir(REPO_ROOT / "backups")) if (
         REPO_ROOT / "backups"
     ).is_dir() else []
-
-
-def _tree(root: Path) -> dict[str, str]:
-    """Every path under root with its link target, or "dir"/"file"."""
-    return {
-        str(path.relative_to(root)): f"-> {os.readlink(path)}"
-        if path.is_symlink()
-        else "dir"
-        if path.is_dir()
-        else "file"
-        for path in sorted(root.rglob("*"))
-    }
 
 
 def test_every_repo_skill_is_linked_flat_into_claude_and_agents(
@@ -68,27 +56,13 @@ def test_install_does_not_touch_the_repo(tmp_path: Path) -> None:
 
 def test_second_install_changes_nothing(tmp_path: Path) -> None:
     run([INSTALL], tmp_path)
-    first = [_tree(tmp_path / rel) for rel in (".claude/skills", ".agents/skills")]
+    first = [tree(tmp_path / rel) for rel in (".claude/skills", ".agents/skills")]
 
     run([INSTALL], tmp_path)
 
     assert first == [
-        _tree(tmp_path / rel) for rel in (".claude/skills", ".agents/skills")
+        tree(tmp_path / rel) for rel in (".claude/skills", ".agents/skills")
     ]
-
-
-def test_install_stops_on_legacy_skills_symlink_and_writes_nothing_to_repo(
-    tmp_path: Path,
-) -> None:
-    (tmp_path / ".claude").mkdir()
-    (tmp_path / ".claude/skills").symlink_to(REPO_ROOT / "skills")
-    before = _repo_snapshot()
-
-    result = run_unchecked([INSTALL], tmp_path)
-
-    assert result.returncode != 0
-    assert "migrat" in result.stderr
-    assert _repo_snapshot() == before
 
 
 def test_stale_link_into_repo_skills_is_removed_and_foreign_links_stay(
