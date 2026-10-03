@@ -32,6 +32,7 @@ def main() -> int:
             legacy.migrate_skills(fs, REPO, home)
             skills.sync(fs, REPO, home)
         elif args.artifact == "agents":
+            legacy.migrate_agents(fs, REPO, home)
             agents.sync(fs, REPO, home)
         else:
             # Skills first: they migrate the old layout, and a layout they
@@ -39,6 +40,7 @@ def main() -> int:
             legacy.migrate_skills(fs, REPO, home)
             skills.sync(fs, REPO, home)
             rules.sync(fs, REPO, home)
+            legacy.migrate_agents(fs, REPO, home)
             agents.sync(fs, REPO, home)
     except SyncError as exc:
         log.error(str(exc))
@@ -79,7 +81,10 @@ def _parser() -> argparse.ArgumentParser:
         help="skills/<ns>/<skill> flat into ~/.claude/skills and ~/.agents/skills",
     )
     artifacts.add_parser(
-        "agents", parents=[common], help="agents/*/AGENT.md for OpenCode"
+        "agents",
+        parents=[common],
+        help="agents/<name>/AGENT.md linked into ~/.claude/agents, rendered "
+        "into ~/.config/opencode/agents",
     )
     return parser
 

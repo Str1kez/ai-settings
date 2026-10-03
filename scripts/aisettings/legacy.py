@@ -8,10 +8,13 @@ have migrated (ADR 0001).
 
 from __future__ import annotations
 
+import json
 import re
 import subprocess
 from pathlib import Path
+from typing import Any
 
+from aisettings import agents, log
 from aisettings.fs import Fs, SyncError, link_target
 
 # What the old install.sh wrote to ~/.claude/commands/<ns>/<skill>.md for every
@@ -20,6 +23,11 @@ from aisettings.fs import Fs, SyncError, link_target
 _SHIM_RE = re.compile(
     r'---\ndescription: "[^"\n]*"\n---\nInvoke the `(?P<skill>[^`\n]+)` skill\.\n'
 )
+# The old install.sh merged these and permission into every agent entry of
+# opencode.jsonc. Its prompt pointed at agent-prompts/<name>.md, which is how
+# an entry of the merge is told from the user's.
+_MERGED_AGENT_FIELDS = ("description", "mode", "prompt")
+_PROMPT_DIR_REF = "{file:./agent-prompts/"
 
 
 def migrate_skills(fs: Fs, repo: Path, home: Path) -> None:
@@ -28,6 +36,22 @@ def migrate_skills(fs: Fs, repo: Path, home: Path) -> None:
     _remove_command_shims(fs, home / ".claude/commands")
     # Gemini CLI reads ~/.agents/skills; this one pointed at Superpowers.
     _remove_repo_link(fs, repo, home / ".gemini/skills")
+
+
+def migrate_agents(fs: Fs, repo: Path, home: Path) -> None:
+    migrate_dir_link(fs, repo, home / ".claude/agents", repo / "agents")
+    # OpenCode gets markdown agents now, the old merge goes.
+    permissions = {
+        agent.name: agents.opencode_permission(agent.tools)
+        for agent in agents.collect(repo)
+    }
+    opencode = home / ".config/opencode"
+    config = opencode / "opencode.jsonc"
+    before = config.read_text(encoding="utf-8") if config.is_file() else ""
+    after = _unmerge_opencode_agents(fs, config, before, permissions)
+    _remove_merged_prompts(
+        fs, opencode / "agent-prompts", before, after, set(permissions)
+    )
 
 
 def migrate_dir_link(fs: Fs, repo: Path, link: Path, source: Path) -> None:
@@ -65,6 +89,96 @@ def _untracked_entries(repo: Path, source: Path) -> list[Path]:
         if path
     }
     return sorted(entry for entry in source.iterdir() if entry.name not in tracked)
+
+
+def _prompt_ref(name: str) -> str:
+    return f"{_PROMPT_DIR_REF}{name}.md}}"
+
+
+def _unmerge_opencode_agents(
+    fs: Fs, config: Path, text: str, permissions: dict[str, dict[str, str]]
+) -> str:
+    """Drop what the old merge wrote from the agent entries it wrote. An entry
+    left empty goes, so does an agent block left empty; model and the user's
+    other fields stay. Return the config text as it is after that.
+
+    A rewrite would lose JSONC comments, so a file with them stays as is.
+    """
+    if _PROMPT_DIR_REF not in text:
+        return text
+    try:
+        settings = json.loads(text)
+    except ValueError:
+        log.warn(
+            f"{config} is not plain JSON, maybe it has comments: left as is. "
+            "Drop description, mode, permission and prompt by hand from the "
+            "agents whose prompt points into agent-prompts/, then rerun"
+        )
+        return text
+    entries = settings.get("agent") if isinstance(settings, dict) else None
+    if not isinstance(entries, dict):
+        return text
+    merged = [
+        name
+        for name, entry in entries.items()
+        if isinstance(entry, dict) and entry.get("prompt") == _prompt_ref(name)
+    ]
+    if not merged:
+        return text
+    for name in merged:
+        _unmerge_entry(entries[name], permissions.get(name))
+        if not entries[name]:
+            del entries[name]
+    if not entries:
+        del settings["agent"]
+    log.info(
+        f"{config}: dropping what the old install.sh merged into agent "
+        f"{', '.join(merged)}"
+    )
+    new_text = json.dumps(settings, indent=2, ensure_ascii=False) + "\n"
+    fs.update_in_place(config, new_text)
+    return new_text
+
+
+def _unmerge_entry(entry: dict[str, Any], rendered: dict[str, str] | None) -> None:
+    """The merge was deep: a permission key the user added survived it, so of
+    permission only the keys the render sets to the same value go. An agent
+    gone from the repo has no render, its permission goes whole."""
+    for field in _MERGED_AGENT_FIELDS:
+        entry.pop(field, None)
+    permission = entry.get("permission")
+    if not isinstance(permission, dict):
+        return
+    if rendered is None:
+        del entry["permission"]
+        return
+    for key, value in rendered.items():
+        if permission.get(key) == value:
+            del permission[key]
+    if not permission:
+        del entry["permission"]
+
+
+def _remove_merged_prompts(
+    fs: Fs, prompts: Path, before: str, after: str, repo_agents: set[str]
+) -> None:
+    """Remove a prompt file of the old merge once the config no longer points
+    at it, and agent-prompts/ if that empties it. The file is the merge's if
+    it belongs to a repo agent or the config pointed at it before."""
+    if not prompts.is_dir():
+        return
+    entries = sorted(prompts.iterdir())
+    old: list[Path] = []
+    for entry in entries:
+        if entry.suffix != ".md" or entry.is_symlink() or not entry.is_file():
+            continue
+        ref = _prompt_ref(entry.stem)
+        if (entry.stem in repo_agents or ref in before) and ref not in after:
+            old.append(entry)
+    for prompt in old:
+        fs.remove_file(prompt)
+    if old and len(old) == len(entries):
+        fs.remove_empty_dir(prompts)
 
 
 def _remove_repo_link(fs: Fs, repo: Path, link: Path) -> None:

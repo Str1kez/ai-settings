@@ -43,11 +43,9 @@ fi
 log_info "Setting up Claude Code..."
 if [[ $DRY_RUN -eq 0 ]]; then
   ensure_dir "$HOME/.claude"
-  ensure_symlink "$AI_SETTINGS_ROOT/agents"            "$HOME/.claude/agents"
   ensure_symlink "$AI_SETTINGS_ROOT/settings/hooks"    "$HOME/.claude/hooks"
 else
   echo "[dry-run] ensure_dir $HOME/.claude"
-  echo "[dry-run] ensure_symlink $AI_SETTINGS_ROOT/agents -> $HOME/.claude/agents"
   echo "[dry-run] ensure_symlink $AI_SETTINGS_ROOT/settings/hooks -> $HOME/.claude/hooks"
 fi
 
@@ -82,8 +80,9 @@ fi
 # --- Skills, rules and agents: Claude Code, Codex, OpenCode, Gemini CLI, Cursor ---
 # sync.py links every skill flat into ~/.claude/skills and ~/.agents/skills,
 # links CLAUDE.md and GEMINI.md, writes the flat AGENTS.md that Codex,
-# OpenCode and Cursor need (they don't follow @imports) and merges agents into
-# OpenCode. It handles --dry-run itself.
+# OpenCode and Cursor need (they don't follow @imports), links every agent
+# into ~/.claude/agents and renders it as an OpenCode markdown agent. It
+# handles --dry-run itself.
 log_info "Syncing skills, rules and agents..."
 if [[ $DRY_RUN -eq 0 ]]; then
   python3 "$SCRIPT_DIR/sync.py" all

@@ -1,20 +1,18 @@
 """Agents: agents/<name>/AGENT.md in Claude Code format is the only source.
 
-OpenCode gets them the legacy way: prompts in agent-prompts/ plus a managed
-`agent` block merged into opencode.jsonc with jq. ADR 0001 moves OpenCode to
-markdown agents.
+Claude Code reads it as is, through a link per agent. OpenCode gets a markdown
+agent rendered from it.
 """
 
 from __future__ import annotations
 
 import json
+import os
 import re
-import shutil
-import subprocess
 from pathlib import Path
 from typing import NamedTuple, Union
 
-from aisettings.fs import Fs, SyncError
+from aisettings.fs import Fs, SyncError, link_target
 
 # Claude Code tool -> OpenCode permission key. In OpenCode, edit covers write,
 # edit and apply_patch.
@@ -31,49 +29,99 @@ _TOOL_TO_PERMISSION = {
     "WebSearch": "websearch",
 }
 _FRONTMATTER_RE = re.compile(r"^---\n(.*?)\n---\n(.*)\Z", re.DOTALL)
-_OPENCODE_SKELETON = '{\n  "$schema": "https://opencode.ai/config.json"\n}\n'
+_CLAUDE_AGENTS = Path(".claude/agents")
+_OPENCODE_AGENTS = Path(".config/opencode/agents")
+# The first lines of a render: the mark tells our files from the user's.
+_MARKER = "# managed-by: ai-settings"
+_MARKDOWN_HEADER = f"---\n{_MARKER}\n"
 
 # Runtime alias: no `X | Y` here, it must evaluate on Python 3.9.
 _Fields = dict[str, Union[str, list[str]]]
 
 
-class _Agent(NamedTuple):
+class Agent(NamedTuple):
     name: str
     description: str
     tools: list[str]
     body: str
+    path: Path
 
 
 def sync(fs: Fs, repo: Path, home: Path) -> None:
-    """Write OpenCode prompts and merge the managed agent block into opencode.jsonc.
+    agents = collect(repo)
+    _sync_claude(fs, repo, home / _CLAUDE_AGENTS, agents)
+    renders = {f"{agent.name}.md": _render_opencode(agent) for agent in agents}
+    _sync_renders(fs, home / _OPENCODE_AGENTS, renders)
 
-    model is never set: it belongs to the user, and the merge keeps it.
-    """
+
+def collect(repo: Path) -> list[Agent]:
     agents_dir = repo / "agents"
     if not agents_dir.is_dir():
         raise SyncError(f"agents dir not found: {agents_dir}")
+    return [_load(path) for path in sorted(agents_dir.glob("*/AGENT.md"))]
 
-    opencode = home / ".config/opencode"
-    managed: dict[str, object] = {}
-    for path in sorted(agents_dir.glob("*/AGENT.md")):
-        agent = _load(path)
-        managed[agent.name] = {
-            "description": agent.description,
-            "mode": "subagent",
-            "permission": _permission(agent.tools),
-            "prompt": f"{{file:./agent-prompts/{agent.name}.md}}",
-        }
-        prompt = opencode / "agent-prompts" / f"{agent.name}.md"
-        fs.write(prompt, agent.body.lstrip() + "\n")
 
-    config = opencode / "opencode.jsonc"
-    current = (
-        config.read_text(encoding="utf-8") if config.exists() else _OPENCODE_SKELETON
+def _sync_claude(fs: Fs, repo: Path, claude_agents: Path, agents: list[Agent]) -> None:
+    """Link every agent. A link into repo/agents/ that matches no agent goes:
+    its agent was renamed or deleted. Links elsewhere aren't ours."""
+    linked = {f"{agent.name}.md" for agent in agents}
+    for agent in agents:
+        fs.link(agent.path, claude_agents / f"{agent.name}.md")
+    if not claude_agents.is_dir():
+        return
+    for entry in sorted(claude_agents.iterdir()):
+        if not entry.is_symlink() or entry.name in linked:
+            continue
+        if link_target(entry).is_relative_to(repo / "agents"):
+            fs.unlink(entry)
+
+
+def _sync_renders(fs: Fs, agents_home: Path, renders: dict[str, str]) -> None:
+    """Write renders by file name. A file without the marked header isn't
+    ours: under a render's name it moves to backups, under another name it
+    stays. A render left from an agent that is gone goes."""
+    for file_name, content in sorted(renders.items()):
+        dst = agents_home / file_name
+        if os.path.lexists(dst) and not _is_render(dst):
+            fs.backup(dst)
+        fs.write(dst, content)
+    if not agents_home.is_dir():
+        return
+    for entry in sorted(agents_home.iterdir()):
+        if entry.name not in renders and _is_render(entry):
+            fs.remove_file(entry)
+
+
+def _is_render(path: Path) -> bool:
+    if path.is_symlink() or not path.is_file():
+        return False
+    return path.read_bytes().startswith(_MARKDOWN_HEADER.encode("utf-8"))
+
+
+def _render_opencode(agent: Agent) -> str:
+    """A markdown agent, its body is the prompt. No model: a subagent without
+    one runs on the model of the agent that called it."""
+    frontmatter = [
+        f"description: {_yaml_string(agent.description)}",
+        "mode: subagent",
+        "permission:",
+        *(
+            f"  {key}: {value}"
+            for key, value in opencode_permission(agent.tools).items()
+        ),
+    ]
+    return _MARKDOWN_HEADER + "\n".join(
+        [*frontmatter, "---", "", agent.body.strip(), ""]
     )
-    fs.update_in_place(config, _jq_merge(current, {"agent": managed}))
 
 
-def _load(path: Path) -> _Agent:
+def _yaml_string(text: str) -> str:
+    """YAML reads a JSON string as a double-quoted scalar, so quotes, colons
+    and line breaks in text survive as they are."""
+    return json.dumps(text, ensure_ascii=False)
+
+
+def _load(path: Path) -> Agent:
     match = _FRONTMATTER_RE.match(path.read_text(encoding="utf-8"))
     if not match:
         raise SyncError(f"{path}: no frontmatter found")
@@ -86,7 +134,7 @@ def _load(path: Path) -> _Agent:
     description = fields.get("description", name)
     if not isinstance(description, str):
         raise SyncError(f"{path}: description must be a string")
-    return _Agent(name, description.strip(), tools, match.group(2))
+    return Agent(name, description.strip(), tools, match.group(2), path)
 
 
 def _parse_fields(frontmatter: str) -> _Fields:
@@ -125,7 +173,7 @@ def _split_list(text: str) -> list[str]:
     return [item.strip() for item in text.split(",") if item.strip()]
 
 
-def _permission(tools: list[str]) -> dict[str, str]:
+def opencode_permission(tools: list[str]) -> dict[str, str]:
     """Listed tools are allowed. Without Edit/Write editing is denied, without
     Bash the shell; other keys keep OpenCode defaults."""
     keys = [_TOOL_TO_PERMISSION[tool] for tool in tools if tool in _TOOL_TO_PERMISSION]
@@ -133,20 +181,3 @@ def _permission(tools: list[str]) -> dict[str, str]:
     permission.setdefault("edit", "deny")
     permission.setdefault("bash", "deny")
     return permission
-
-
-def _jq_merge(config: str, managed: dict[str, object]) -> str:
-    """Deep-merge managed into config: our fields win, the user's fields stay."""
-    if shutil.which("jq") is None:
-        raise SyncError("jq not found, agents not merged into opencode.jsonc")
-    managed_json = json.dumps(managed, ensure_ascii=False)
-    result = subprocess.run(
-        ["jq", "--argjson", "managed", managed_json, ". * $managed"],
-        input=config,
-        capture_output=True,
-        encoding="utf-8",
-        check=False,
-    )
-    if result.returncode != 0:
-        raise SyncError(f"jq merge into opencode.jsonc: {result.stderr.strip()}")
-    return result.stdout

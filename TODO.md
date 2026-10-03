@@ -3,8 +3,10 @@
 ## В работе
 
 - [ ] Harness-agnostic раскладка по [ADR 0001](docs/adr/0001-harness-agnostic-deploy.md):
-  готов единый вход `scripts/sync.py`. Дальше скиллы, агенты для всех
-  харнессов, настройки Claude Code и раскатка на машины.
+  готовы единый вход `scripts/sync.py`, плоская раскладка скиллов с миграцией
+  старой и агенты для Claude Code и OpenCode. Дальше агенты для Codex, Gemini
+  и Cursor, настройки Claude Code, хук форматирования без uv, доки и раскатка
+  на машины.
 
 ## Следующее
 

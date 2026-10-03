@@ -1,10 +1,34 @@
 """Run repo scripts against a throwaway HOME."""
 
 import os
+import shutil
 import subprocess
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+
+
+def copy_scripts(repo: Path) -> None:
+    """Give repo its own copy of the deploy scripts. A test that changes what
+    the repo holds runs this copy, never the scripts of REPO_ROOT."""
+    shutil.copytree(
+        REPO_ROOT / "scripts",
+        repo / "scripts",
+        ignore=shutil.ignore_patterns("__pycache__"),
+    )
+
+
+def write(path: Path, text: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(text, encoding="utf-8")
+
+
+def run_sync(repo: Path, home: Path, *args: str) -> str:
+    """Run the copy of sync.py in repo with HOME=home, fail on error, return
+    its log."""
+    command: list[str | Path] = ["python3", repo / "scripts/sync.py", *args]
+    # Apple's python3 otherwise caches bytecode under $HOME/Library/Caches.
+    return run(command, home, PYTHONDONTWRITEBYTECODE="1").stderr
 
 
 def run_unchecked(

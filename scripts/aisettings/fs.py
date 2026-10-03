@@ -55,7 +55,7 @@ class Fs:
         else:
             change = f"link {dst} -> {src}"
             if dst.exists():
-                self._backup(dst)
+                self.backup(dst)
         if self._dry_run:
             log.dry_run(f"would {change}")
             return
@@ -108,11 +108,8 @@ class Fs:
         real.write_text(content, encoding="utf-8")
         log.ok(f"updated {path}")
 
-    # Migration from the old layout. Only legacy.py calls the methods below,
-    # and they go away together with it (ADR 0001), as does _planned_dirs.
-
     def remove_file(self, path: Path) -> None:
-        """Delete a regular file. Only for files an old install.sh generated."""
+        """Delete a regular file the installer wrote, now or in the old layout."""
         self._guard(path)
         if path.is_symlink() or not path.is_file():
             raise SyncError(f"refusing to remove {path}: not a regular file")
@@ -121,6 +118,9 @@ class Fs:
             return
         path.unlink()
         log.ok(f"removed {path}")
+
+    # Migration from the old layout. Only legacy.py calls the methods below,
+    # and they go away together with it (ADR 0001), as does _planned_dirs.
 
     def remove_empty_dir(self, path: Path) -> None:
         """Delete a dir the caller has emptied; rmdir fails on anything left."""
@@ -180,7 +180,7 @@ class Fs:
         staging.rename(link)
         log.ok(f"moved {staging} -> {link}, left by a stopped run")
 
-    def _backup(self, path: Path) -> None:
+    def backup(self, path: Path) -> None:
         """Move path under backups/<ts>/, mirroring its absolute location."""
         target = self._backup_dir / path.relative_to(path.anchor)
         if target.exists() or target.is_symlink():
