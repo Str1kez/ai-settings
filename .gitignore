@@ -13,3 +13,4 @@ dist/
 .cursor/
 .claude/sessions/
 .claude/cache/
+.scratch/
