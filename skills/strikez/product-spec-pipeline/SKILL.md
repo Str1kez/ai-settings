@@ -1,6 +1,6 @@
 ---
 name: product-spec-pipeline
-version: 1.2.0
+version: 1.3.0
 category: product
 description: >-
   Turn a raw product idea, feature request, improvement, or small product task
@@ -77,17 +77,19 @@ before drafting or reviewing the specification.
 
 ## Phase 2: Brainstorm the idea
 
-Invoke the installed `brainstorming` skill with the exact marker
-`embedded-mode=product-spec-pipeline` and the run directory path.
+Run this divergent pass yourself in the coordinator conversation. Keep it
+product-focused.
 
-- Give it `<run-dir>/project-context.md` as mandatory input.
-- Use its embedded mode, not its standalone design-to-implementation workflow.
-- Explore 2-3 materially different product directions.
-- Give trade-offs and a recommendation without silently selecting for the user.
-- Require the user to select or approve 1 direction before continuing.
-- Do not commit, write a project design doc, or invoke `writing-plans`.
-- Require the skill to write `<run-dir>/brainstorm.md` and return control.
+1. Read `<run-dir>/project-context.md` as mandatory input.
+2. Ask 1 question at a time until you can state the raw idea and its intended
+   outcome in 1 sentence each and the user confirms both.
+3. Offer 2-3 materially different product directions, each with trade-offs,
+   and recommend 1 of them without silently selecting it for the user.
+4. Require the user to select or approve 1 direction before continuing.
+5. Write the raw idea, considered directions, selected direction, rationale,
+   rejected alternatives, and unresolved questions to `<run-dir>/brainstorm.md`.
 
+Do not commit, write a project design doc, or draft an implementation plan.
 Do not proceed to grilling while several directions remain active.
 
 ## Phase 3: Select deep research
