@@ -2,13 +2,20 @@
 
 Библиотека кастомных скиллов для AI-платформ (Claude Code, Codex, OpenCode, Cursor, Gemini CLI).
 
-Все кастомные скиллы живут в `strikez/` — единый неймспейс `strikez:` в Claude Code.
-При установке (`scripts/install.sh`) автоматически генерируются слеш-команды `~/.claude/commands/strikez/`,
-что делает каждый скилл доступным через `/strikez:<name>` в интерфейсе.
+Все кастомные скиллы лежат как `skills/<namespace>/<skill>/`, сейчас это `strikez/`.
+Неймспейс нужен только для группировки в репе. В харнессы скиллы раскладываются плоско,
+под одним именем: `scripts/install.sh` линкует каждый в `~/.claude/skills/<skill>` (Claude Code)
+и `~/.agents/skills/<skill>` (Codex, OpenCode, Gemini CLI, Cursor).
+Claude Code сам отдаёт скилл как `/<skill>`, шимы в `~/.claude/commands` не генерируются.
+
+Поэтому имя скилла уникально по всей репе, а не внутри неймспейса. Установщик падает на дубле.
+Деплоятся только скиллы, которые отслеживает git: новый скилл надо сначала `git add`.
+Остальное в `skills/` (симлинки `npx skills`, `synced/`, `.trash/`) установщик не трогает.
 
 ## Правила
 
-1. Каждый скилл — отдельная папка с именем в `kebab-case`.
+1. Каждый скилл — отдельная папка `skills/<namespace>/<skill>/` с именем в `kebab-case`
+   по regex Agent Skills `^[a-z0-9]+(-[a-z0-9]+)*$`.
 2. Имя папки совпадает с полем `name` в YAML frontmatter `SKILL.md`.
 3. Обязательные файлы в папке скилла:
    - `SKILL.md` — основной файл на английском с YAML frontmatter.
@@ -48,6 +55,7 @@ tags: [git, markdown, russian, ...]
 - **Минимум 100 символов** — модель должна понимать, когда вызывать скилл.
 - Явно содержит фразу `Use when` или `Trigger`.
 - Явно содержит фразу `SKIP` или `Do NOT use`.
+- **Не больше 1024 символов** — лимит OpenCode.
 - Даёт модели достаточно сигналов, чтобы самой решить — вызывать или нет.
 
 Плохой description (не пройдёт skill-lint):
@@ -65,6 +73,7 @@ tags: [git, markdown, russian, ...]
 ## Skill-lint
 
 Все скиллы автоматически проверяются через `pytest tests/skill_lint/`. Линт прогоняется локально перед коммитом — вручную или через pre-commit hook. Список проверок см. в `tests/skill_lint/README.md`.
+Отдельно линт проверяет, что имена скиллов уникальны по всей репе.
 
 ## Стартовый набор
 
@@ -72,4 +81,5 @@ tags: [git, markdown, russian, ...]
 - `strikez/ru-pr-description` — PR-описание на русском по шаблону.
 - `strikez/en-pr-description` — PR-описание на английском по шаблону.
 - `strikez/changelog-entry` — запись в корневой `CHANGELOG.md` проекта (на английском).
+- `strikez/feature-architecture` — одна рекомендованная архитектура новой фичи поверх существующей кодовой базы.
 - `strikez/boilerplate` — развернуть новый проект: шаблон + GitHub репо + AI-правила + инструкция деплоя.

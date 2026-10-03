@@ -2,8 +2,13 @@
 from __future__ import annotations
 
 import re
+from collections import Counter
 from pathlib import Path
 
+from tests.skill_lint.conftest import discover_skill_paths
+
+NAME_RE = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")  # Agent Skills spec
+MAX_DESCRIPTION_LENGTH = 1024  # OpenCode limit
 SEMVER_RE = re.compile(r"^\d+\.\d+\.\d+$")
 REQUIRED_FIELDS = ("name", "version", "description", "category")
 SECRET_PATTERNS = [
@@ -40,6 +45,17 @@ def test_description_length(skill_frontmatter):
     assert len(desc) >= 100, f"description too short ({len(desc)} chars, need >=100)"
 
 
+def test_description_fits_opencode_limit(skill_frontmatter):
+    desc = str(skill_frontmatter.get("description", ""))
+    assert len(desc) <= MAX_DESCRIPTION_LENGTH, \
+        f"description too long ({len(desc)} chars, max {MAX_DESCRIPTION_LENGTH})"
+
+
+def test_name_matches_agent_skills_regex(skill_frontmatter):
+    name = str(skill_frontmatter.get("name", ""))
+    assert NAME_RE.match(name), f"name '{name}' doesn't match {NAME_RE.pattern}"
+
+
 def test_version_semver(skill_frontmatter):
     version = str(skill_frontmatter.get("version", ""))
     assert SEMVER_RE.match(version), f"version '{version}' is not semver X.Y.Z"
@@ -65,3 +81,10 @@ def test_no_obvious_secrets(skill_text: str):
     for pattern in SECRET_PATTERNS:
         match = pattern.search(skill_text)
         assert not match, f"Possible secret matched: {pattern.pattern}"
+
+
+def test_names_are_unique_across_namespaces():
+    # Every harness gets the skill under its folder name, flat.
+    counts = Counter(path.parent.name for path in discover_skill_paths())
+    duplicates = sorted(name for name, count in counts.items() if count > 1)
+    assert not duplicates, f"duplicate skill names: {duplicates}"

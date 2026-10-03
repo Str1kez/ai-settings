@@ -16,8 +16,9 @@ OpenCode не разворачивает `@imports` из `AGENTS.md` автом�
 ## Скиллы
 
 OpenCode автоматически находит personal skills в `~/.agents/skills/`. Эти
-симлинки создаёт тот же `install.sh`; отдельная копия в
-`~/.config/opencode/skills/` не нужна.
+симлинки создаёт тот же `install.sh`, по одному на скилл репы под плоским именем.
+Отдельная копия в `~/.config/opencode/skills/` не нужна. OpenCode режет
+`description` на 1024 символах, это проверяет skill-lint.
 
 Проверка:
 

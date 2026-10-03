@@ -10,7 +10,7 @@ import argparse
 import sys
 from pathlib import Path
 
-from aisettings import agents, log, rules
+from aisettings import agents, log, rules, skills
 from aisettings.fs import Fs, SyncError
 
 REPO = Path(__file__).resolve().parent.parent
@@ -28,9 +28,14 @@ def main() -> int:
                 rules.sync_cursor_project(fs, REPO, args.cursor_project)
             else:
                 rules.sync(fs, REPO, home)
+        elif args.artifact == "skills":
+            skills.sync(fs, REPO, home)
         elif args.artifact == "agents":
             agents.sync(fs, REPO, home)
         else:
+            # Skills first: the old ~/.claude/skills layout aborts the run
+            # before anything else is written.
+            skills.sync(fs, REPO, home)
             rules.sync(fs, REPO, home)
             agents.sync(fs, REPO, home)
     except SyncError as exc:
@@ -65,6 +70,11 @@ def _parser() -> argparse.ArgumentParser:
         type=_existing_dir,
         metavar="PATH",
         help="write only PATH/.cursor/rules/ai-settings.mdc",
+    )
+    artifacts.add_parser(
+        "skills",
+        parents=[common],
+        help="skills/<ns>/<skill> flat into ~/.claude/skills and ~/.agents/skills",
     )
     artifacts.add_parser(
         "agents", parents=[common], help="agents/*/AGENT.md for OpenCode"

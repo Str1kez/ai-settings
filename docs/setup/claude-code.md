@@ -9,7 +9,7 @@ ls -la ~/.claude/
 # ожидаем:
 # CLAUDE.md -> ~/.ai-settings/CLAUDE.md
 # agents   -> ~/.ai-settings/agents
-# skills   -> ~/.ai-settings/skills
+# skills/  (реальный каталог, внутри ссылки на скиллы репы)
 # hooks    -> ~/.ai-settings/settings/hooks
 # settings.json  (копия, не симлинк)
 ```
@@ -54,17 +54,25 @@ cd ~/.ai-settings && git pull && ./scripts/install.sh
 - Глобальный слой применяется автоматически ко всем проектам через `~/.claude/CLAUDE.md` — не надо импортировать его из проектного `AGENTS.md`.
 - Если нужно временно «заглушить» хук в конкретной сессии: `AI_SETTINGS_QUIET=1 claude`.
 
-## Slash-команды для скиллов
+## Скиллы
 
-`install.sh` автоматически генерирует файлы в `~/.claude/commands/<namespace>/` — по одному на каждый скилл с `SKILL.md`. После установки скиллы появляются в `/`-автодополнении Claude Code:
+`install.sh` линкует каждый скилл репы в `~/.claude/skills/<skill>`. Неймспейс `strikez/` в репе только группирует, в Claude Code скилл виден как `/<skill>`:
 
 ```
-/strikez:en-commit-message
-/strikez:ru-pr-description
+/en-commit-message
+/ru-pr-description
 ...
 ```
 
-Переименуй `skills/strikez/` → `skills/<your-handle>/` — команды подхватятся автоматически при следующем запуске `install.sh`.
+Шимы в `~/.claude/commands` больше не нужны и не создаются. `~/.claude/skills` — реальный каталог: сюда же пишут `npx skills` и синк аккаунтных скиллов, и ничего из этого не попадает в репу.
+
+Если `~/.claude/skills` всё ещё симлинк на `skills/` репы (старая раскладка), установщик остановится с ошибкой про миграцию и ничего не запишет. Миграцию каталога я делаю отдельно, не руками.
+
+Проверка:
+
+```bash
+ls -la ~/.claude/skills/en-commit-message
+```
 
 ## RTK (Rust Token Killer)
 
@@ -110,7 +118,8 @@ curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/refs/heads/master/instal
 # 1. Создать символические ссылки
 New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.claude\CLAUDE.md" -Target "$PWD\CLAUDE.md"
 New-Item -ItemType Junction -Path "$env:USERPROFILE\.claude\agents" -Target "$PWD\agents"
-New-Item -ItemType Junction -Path "$env:USERPROFILE\.claude\skills" -Target "$PWD\skills"
+New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.claude\skills"
+# Скиллы по одному: Junction на каждый skills\<namespace>\<skill> в .claude\skills\<skill>
 New-Item -ItemType Junction -Path "$env:USERPROFILE\.claude\hooks" -Target "$PWD\settings\hooks"
 
 # 2. Скопировать настройки

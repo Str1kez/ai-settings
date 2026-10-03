@@ -35,6 +35,19 @@
   под 3.10: ниже mypy не целится.
 
 ### Изменено
+- Скиллы раскладывает `sync.py skills`: каждый отслеживаемый git скилл
+  `skills/<ns>/<skill>/` линкуется плоско в `~/.claude/skills/<skill>` и
+  `~/.agents/skills/<skill>`, одинаковое имя во всех харнессах. Раньше Claude
+  Code не видел вложенные `strikez/<skill>`, а Gemini получал только
+  Superpowers. Дубль имени роняет установщик. Устаревшие ссылки на `skills/`
+  репы в этих двух каталогах удаляются, чужие остаются. Если
+  `~/.claude/skills` — старый симлинк в репу, установщик падает с ошибкой про
+  миграцию и ничего не пишет.
+- `feature-architecture` переехал в `skills/strikez/` и деплоится наравне с
+  остальными.
+- skill-lint проверяет уникальность имён по всей репе, `description` до 1024
+  символов (лимит OpenCode) и имя по regex Agent Skills.
+- Раздел Codex Skills в `AGENTS.md` стал харнесс-нейтральным разделом Skills.
 - Правила и агентов по харнессам раскладывает единый вход `scripts/sync.py`:
   подкоманды `all`, `rules`, `agents` и общий `--dry-run`. За ним stdlib-пакет
   `scripts/aisettings/`, совместимый с системным `python3` 3.9. `install.sh` и
@@ -70,6 +83,8 @@
   падал на чужих скиллах в `skills/synced/` и `skills/.trash/`.
 
 ### Удалено
+- Генерация шимов `~/.claude/commands/<ns>/*.md` в `install.sh`: Claude Code
+  отдаёт скиллы как `/<skill>` сам.
 - `scripts/sync-cursor.sh` — Python-скрипт с расширением `.sh`. Его заменили
   `sync.py rules` и `sync.py agents`.
 - Форк Superpowers (`skills/superpowers/`) и тест на пропуск Codex-плагина. Из

@@ -36,8 +36,10 @@ cd ~/.ai-settings && git pull
 
 ## Скиллы
 
-`install.sh` создаёт симлинки личных скиллов в `~/.agents/skills/<skill-name>/`.
+`install.sh` создаёт симлинк на каждый скилл репы в `~/.agents/skills/<skill>/`.
+Имя то же, что в Claude Code, без неймспейса `strikez/`.
 Codex читает их как personal skills после перезапуска приложения.
+Симлинки в `~/.agents/skills`, которые смотрят в `skills/` репы и больше не нужны, установщик удаляет. Остальное в этом каталоге он не трогает.
 
 Проверка:
 
@@ -45,7 +47,7 @@ Codex читает их как personal skills после перезапуска
 find -L ~/.agents/skills -maxdepth 2 -name SKILL.md -print
 ```
 
-Если добавил или переименовал скилл в `skills/`, запусти:
+Если добавил или переименовал скилл в `skills/` (новый скилл сначала `git add`), запусти:
 
 ```bash
 ~/.ai-settings/scripts/install.sh

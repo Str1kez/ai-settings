@@ -51,6 +51,17 @@ class Fs:
         dst.symlink_to(src)
         log.ok(change)
 
+    def unlink(self, link: Path) -> None:
+        """Remove a symlink. Refuses a real file or dir: that isn't ours to delete."""
+        self._guard(link)
+        if not link.is_symlink():
+            raise SyncError(f"refusing to remove {link}: not a symlink")
+        if self._dry_run:
+            log.dry_run(f"would remove {link} (was -> {os.readlink(link)})")
+            return
+        link.unlink()
+        log.ok(f"removed {link}")
+
     def write(self, dst: Path, content: str) -> None:
         """Write a generated file. A symlink at dst is replaced, not written through."""
         self._guard(dst)

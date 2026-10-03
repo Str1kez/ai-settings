@@ -44,12 +44,10 @@ log_info "Setting up Claude Code..."
 if [[ $DRY_RUN -eq 0 ]]; then
   ensure_dir "$HOME/.claude"
   ensure_symlink "$AI_SETTINGS_ROOT/agents"            "$HOME/.claude/agents"
-  ensure_symlink "$AI_SETTINGS_ROOT/skills"            "$HOME/.claude/skills"
   ensure_symlink "$AI_SETTINGS_ROOT/settings/hooks"    "$HOME/.claude/hooks"
 else
   echo "[dry-run] ensure_dir $HOME/.claude"
   echo "[dry-run] ensure_symlink $AI_SETTINGS_ROOT/agents -> $HOME/.claude/agents"
-  echo "[dry-run] ensure_symlink $AI_SETTINGS_ROOT/skills -> $HOME/.claude/skills"
   echo "[dry-run] ensure_symlink $AI_SETTINGS_ROOT/settings/hooks -> $HOME/.claude/hooks"
 fi
 
@@ -81,107 +79,17 @@ else
   fi
 fi
 
-# --- Shared personal skills (~/.agents/skills/) ---
-# Codex and OpenCode discover skills from ~/.agents/skills/<skill-name>/SKILL.md.
-# Symlink each skill from the repo so the repo stays source of truth.
-# Namespace prefix is dropped: strikez:write-meridian-article → write-meridian-article.
-log_info "Setting up shared personal skills (~/.agents/skills/)..."
-if [[ $DRY_RUN -eq 0 ]]; then
-  ensure_dir "$HOME/.agents/skills"
-  for ns_dir in "$AI_SETTINGS_ROOT/skills"/*/; do
-    [[ -d "$ns_dir" ]] || continue
-    namespace="$(basename "$ns_dir")"
-    for skill_dir in "$ns_dir"*/; do
-      [[ -f "$skill_dir/SKILL.md" ]] || continue
-      skill_name="$(basename "$skill_dir")"
-      target="$HOME/.agents/skills/$skill_name"
-      ensure_symlink "$skill_dir" "$target"
-    done
-  done
-else
-  for ns_dir in "$AI_SETTINGS_ROOT/skills"/*/; do
-    [[ -d "$ns_dir" ]] || continue
-    namespace="$(basename "$ns_dir")"
-    for skill_dir in "$ns_dir"*/; do
-      [[ -f "$skill_dir/SKILL.md" ]] || continue
-      skill_name="$(basename "$skill_dir")"
-      echo "[dry-run] ensure_symlink $skill_dir -> $HOME/.agents/skills/$skill_name"
-    done
-  done
-fi
-
-# --- Rules and agents: Claude Code, Codex, OpenCode, Gemini CLI, Cursor ---
-# sync.py links CLAUDE.md and GEMINI.md, writes the flat AGENTS.md that Codex,
+# --- Skills, rules and agents: Claude Code, Codex, OpenCode, Gemini CLI, Cursor ---
+# sync.py links every skill flat into ~/.claude/skills and ~/.agents/skills,
+# links CLAUDE.md and GEMINI.md, writes the flat AGENTS.md that Codex,
 # OpenCode and Cursor need (they don't follow @imports) and merges agents into
 # OpenCode. It handles --dry-run itself.
-log_info "Syncing rules and agents..."
+log_info "Syncing skills, rules and agents..."
 if [[ $DRY_RUN -eq 0 ]]; then
   python3 "$SCRIPT_DIR/sync.py" all
 else
   python3 "$SCRIPT_DIR/sync.py" all --dry-run
 fi
-
-# --- Claude Code: slash commands for personal skills ---
-# For each skills/<namespace>/<skill>/ found in the repo, generates
-# ~/.claude/commands/<namespace>/<skill>.md so skills appear in / autocomplete.
-# Rename skills/strikez/ to skills/<your-handle>/ — the namespace follows automatically.
-log_info "Generating personal skill slash commands for Claude Code..."
-
-_generate_skill_commands() {
-  local skills_root="$AI_SETTINGS_ROOT/skills"
-  local total=0
-
-  for ns_dir in "$skills_root"/*/; do
-    [[ -d "$ns_dir" ]] || continue
-    local ns
-    ns="$(basename "$ns_dir")"
-    local commands_dir="$HOME/.claude/commands/$ns"
-    local count=0
-
-    for skill_dir in "$ns_dir"*/; do
-      [[ -f "$skill_dir/SKILL.md" ]] || continue
-      local skill_name
-      skill_name="$(basename "$skill_dir")"
-
-      if [[ $DRY_RUN -eq 1 ]]; then
-        echo "[dry-run] write $commands_dir/$skill_name.md  ($ns:$skill_name)"
-        count=$((count + 1))
-        continue
-      fi
-
-      ensure_dir "$commands_dir"
-
-      local desc
-      desc=$(SKILL_MD="$skill_dir/SKILL.md" SKILL_NAME="$skill_name" python3 <<'PYEOF'
-import os, re
-txt = open(os.environ['SKILL_MD']).read()
-m = re.search(r'description:\s*\|?\n\s*(.+)', txt)
-if m:
-    d = m.group(1).strip()
-else:
-    m2 = re.search(r'description:\s*(.+)', txt, re.MULTILINE)
-    d = m2.group(1).strip() if m2 else os.environ.get('SKILL_NAME', 'skill')
-print(d.replace('"', "'"))
-PYEOF
-      )
-
-      cat > "$commands_dir/$skill_name.md" <<EOF
----
-description: "$desc"
----
-Invoke the \`$ns:$skill_name\` skill.
-EOF
-      log_info "  command: $ns:$skill_name"
-      count=$((count + 1))
-    done
-
-    if [[ $DRY_RUN -eq 0 && $count -gt 0 ]]; then
-      log_ok "Generated $count command(s) for namespace '$ns'"
-    fi
-  done
-}
-
-_generate_skill_commands
 
 # --- RTK (Rust Token Killer) ---
 log_info "Setting up RTK (Rust Token Killer)..."
