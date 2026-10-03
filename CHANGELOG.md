@@ -44,6 +44,7 @@
   Claude Code) — раньше требовался ручной шаг.
 
 ### Исправлено
+- Глобальный `CLAUDE.md`: убраны `@RTK.md` (дублировал `docs/ai/rtk-awareness.md`, файл лежит вне репы) и правило про несуществующий тул `TodoWrite`; в `/effort` добавлено значение `max`. В `rtk-awareness.md` добавлено предупреждение про `rtk init -g` без `--hook-only --no-patch`.
 - `install.sh` теперь создаёт `~/.gemini/AGENTS.md` для относительного импорта
   из `GEMINI.md` и подключает risk-based Superpowers через
   `~/.gemini/skills`.
