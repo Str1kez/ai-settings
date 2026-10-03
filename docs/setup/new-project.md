@@ -11,7 +11,7 @@
 Для Cursor прогони один раз в проекте:
 
 ```bash
-~/.ai-settings/scripts/sync-cursor.sh --project .
+~/.ai-settings/scripts/sync.py rules --cursor-project .
 ```
 
 ## Длинный путь (проектные специфики)

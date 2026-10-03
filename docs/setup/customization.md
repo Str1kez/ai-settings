@@ -238,7 +238,7 @@ git, gh, yc). Открой файл для структуры (секции по
 Я не пишу на <LANG>. Удали docs/ai/<LANG>.md и убери строку
 `- <Lang>: @docs/ai/<lang>.md` из секции 6 в AGENTS.md (или удали
 всю подсекцию language-specific, если там больше ничего не осталось).
-Проверь, что imports остались валидными: ./scripts/sync-cursor.sh --check
+Проверь, что imports остались валидными: ./scripts/sync.py rules --check
 ```
 
 ---
@@ -343,7 +343,7 @@ docs/ai/hard-gates.md.
 
 - **`CLAUDE.md`, `GEMINI.md`** — тонкие обёртки с единственной строкой `@./AGENTS.md`. Нужны для того, чтобы Claude Code и Gemini CLI подхватывали правила через свои конвенции именования.
 - **Симлинки в `~/.claude/`, `~/.codex/`, `~/.config/opencode/`, `~/.gemini/`, `~/.cursor/rules/`** — создаются `install.sh`. Руками не трогай, управляй через скрипт.
-- **`.cursor/rules/ai-settings.mdc`** (проектный), **`~/.codex/AGENTS.md`** и **`~/.config/opencode/AGENTS.md`** — **генерируемые** файлы (плоская версия AGENTS.md с развёрнутыми `@imports`). Правь исходный `AGENTS.md` / `docs/ai/*.md`, потом прогоняй `./scripts/install.sh` или `scripts/sync-cursor.sh --codex` / `--opencode` / `--global`.
+- **`.cursor/rules/ai-settings.mdc`** (проектный), **`~/.codex/AGENTS.md`** и **`~/.config/opencode/AGENTS.md`** — **генерируемые** файлы (плоская версия AGENTS.md с развёрнутыми `@imports`). Правь исходный `AGENTS.md` / `docs/ai/*.md`, потом прогоняй `./scripts/install.sh` или `./scripts/sync.py rules`.
 - **`scripts/`** — работают как есть. Менять только если понимаешь, что делаешь.
 - **`tests/`** — skill-lint. Если меняешь формат `SKILL.md` — обновляй проверки вместе, не удаляй тесты.
 

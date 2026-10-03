@@ -1,4 +1,5 @@
 """Pytest configuration and fixtures for skill-lint."""
+
 from __future__ import annotations
 
 import re
@@ -7,7 +8,6 @@ from pathlib import Path
 
 import pytest
 import yaml
-
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
@@ -30,7 +30,9 @@ def discover_skill_paths(repo_root: Path = REPO_ROOT) -> list[Path]:
     return sorted(repo_root / rel for rel in result.stdout.split("\0") if rel)
 
 
-@pytest.fixture(params=discover_skill_paths(), ids=lambda p: str(p.relative_to(REPO_ROOT)))
+@pytest.fixture(
+    params=discover_skill_paths(), ids=lambda p: str(p.relative_to(REPO_ROOT))
+)
 def skill_path(request: pytest.FixtureRequest) -> Path:
     return request.param
 

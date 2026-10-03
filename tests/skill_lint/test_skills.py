@@ -4,7 +4,6 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-
 SEMVER_RE = re.compile(r"^\d+\.\d+\.\d+$")
 REQUIRED_FIELDS = ("name", "version", "description", "category")
 SECRET_PATTERNS = [

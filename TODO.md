@@ -2,7 +2,9 @@
 
 ## В работе
 
-(пусто)
+- [ ] Harness-agnostic раскладка по [ADR 0001](docs/adr/0001-harness-agnostic-deploy.md):
+  готов единый вход `scripts/sync.py`. Дальше скиллы, агенты для всех
+  харнессов, настройки Claude Code и раскатка на машины.
 
 ## Следующее
 

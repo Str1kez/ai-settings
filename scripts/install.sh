@@ -43,13 +43,11 @@ fi
 log_info "Setting up Claude Code..."
 if [[ $DRY_RUN -eq 0 ]]; then
   ensure_dir "$HOME/.claude"
-  ensure_symlink "$AI_SETTINGS_ROOT/CLAUDE.md"         "$HOME/.claude/CLAUDE.md"
   ensure_symlink "$AI_SETTINGS_ROOT/agents"            "$HOME/.claude/agents"
   ensure_symlink "$AI_SETTINGS_ROOT/skills"            "$HOME/.claude/skills"
   ensure_symlink "$AI_SETTINGS_ROOT/settings/hooks"    "$HOME/.claude/hooks"
 else
   echo "[dry-run] ensure_dir $HOME/.claude"
-  echo "[dry-run] ensure_symlink $AI_SETTINGS_ROOT/CLAUDE.md -> $HOME/.claude/CLAUDE.md"
   echo "[dry-run] ensure_symlink $AI_SETTINGS_ROOT/agents -> $HOME/.claude/agents"
   echo "[dry-run] ensure_symlink $AI_SETTINGS_ROOT/skills -> $HOME/.claude/skills"
   echo "[dry-run] ensure_symlink $AI_SETTINGS_ROOT/settings/hooks -> $HOME/.claude/hooks"
@@ -112,57 +110,15 @@ else
   done
 fi
 
-# --- Codex CLI ---
-# Codex не резолвит @imports в AGENTS.md, поэтому кладём плоскую версию с
-# развёрнутыми импортами. Не симлинк, а обычный файл — иначе Codex будет
-# видеть только верхний уровень, не модули из docs/ai/.
-log_info "Setting up Codex CLI..."
+# --- Rules and agents: Claude Code, Codex, OpenCode, Gemini CLI, Cursor ---
+# sync.py links CLAUDE.md and GEMINI.md, writes the flat AGENTS.md that Codex,
+# OpenCode and Cursor need (they don't follow @imports) and merges agents into
+# OpenCode. It handles --dry-run itself.
+log_info "Syncing rules and agents..."
 if [[ $DRY_RUN -eq 0 ]]; then
-  ensure_dir "$HOME/.codex"
-  "$SCRIPT_DIR/sync-cursor.sh" --codex
+  python3 "$SCRIPT_DIR/sync.py" all
 else
-  echo "[dry-run] ensure_dir $HOME/.codex"
-  echo "[dry-run] $SCRIPT_DIR/sync-cursor.sh --codex"
-fi
-
-# --- OpenCode ---
-# OpenCode reads ~/.config/opencode/AGENTS.md but does not resolve @imports.
-# Skills are discovered from the shared ~/.agents/skills configured above.
-# Agents are converted from agents/*/AGENT.md (Claude Code format) into
-# ~/.config/opencode/agents/<name>.md (OpenCode markdown format).
-log_info "Setting up OpenCode..."
-if [[ $DRY_RUN -eq 0 ]]; then
-  ensure_dir "$HOME/.config/opencode"
-  "$SCRIPT_DIR/sync-cursor.sh" --opencode
-  "$SCRIPT_DIR/sync-cursor.sh" --opencode-agents
-else
-  echo "[dry-run] ensure_dir $HOME/.config/opencode"
-  echo "[dry-run] $SCRIPT_DIR/sync-cursor.sh --opencode"
-  echo "[dry-run] $SCRIPT_DIR/sync-cursor.sh --opencode-agents"
-fi
-
-# --- Gemini CLI ---
-log_info "Setting up Gemini CLI..."
-if [[ $DRY_RUN -eq 0 ]]; then
-  ensure_dir "$HOME/.gemini"
-  ensure_symlink "$AI_SETTINGS_ROOT/GEMINI.md" "$HOME/.gemini/GEMINI.md"
-  ensure_symlink "$AI_SETTINGS_ROOT/AGENTS.md" "$HOME/.gemini/AGENTS.md"
-else
-  echo "[dry-run] ensure_dir $HOME/.gemini"
-  echo "[dry-run] ensure_symlink $AI_SETTINGS_ROOT/GEMINI.md -> $HOME/.gemini/GEMINI.md"
-  echo "[dry-run] ensure_symlink $AI_SETTINGS_ROOT/AGENTS.md -> $HOME/.gemini/AGENTS.md"
-fi
-
-# --- Cursor (generate flat rules file) ---
-log_info "Setting up Cursor (via sync-cursor.sh)..."
-if [[ -x "$SCRIPT_DIR/sync-cursor.sh" ]]; then
-  if [[ $DRY_RUN -eq 0 ]]; then
-    "$SCRIPT_DIR/sync-cursor.sh" --global
-  else
-    echo "[dry-run] $SCRIPT_DIR/sync-cursor.sh --global"
-  fi
-else
-  log_warn "sync-cursor.sh not found or not executable; skipping"
+  python3 "$SCRIPT_DIR/sync.py" all --dry-run
 fi
 
 # --- Claude Code: slash commands for personal skills ---

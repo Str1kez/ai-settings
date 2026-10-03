@@ -9,7 +9,7 @@ ls -la ~/.codex/AGENTS.md
 # -> обычный файл, ~20 КБ (не симлинк)
 ```
 
-Почему не симлинк: Codex **не резолвит `@imports`** в стиле Claude/Gemini. Если положить туда симлинк на исходный `AGENTS.md` с `@docs/ai/persona.md`, Codex увидит только строку `@docs/ai/persona.md` как текст и не загрузит содержимое. Поэтому `install.sh` вызывает `sync-cursor.sh --codex`, который разворачивает все `@imports` прямо в тело файла.
+Почему не симлинк: Codex **не резолвит `@imports`** в стиле Claude/Gemini. Если положить туда симлинк на исходный `AGENTS.md` с `@docs/ai/persona.md`, Codex увидит только строку `@docs/ai/persona.md` как текст и не загрузит содержимое. Поэтому `install.sh` запускает `sync.py all`, а тот разворачивает все `@imports` прямо в тело файла.
 
 ## Обновление после `git pull`
 
@@ -20,11 +20,15 @@ cd ~/.ai-settings && git pull
 
 `install.sh` перегенерирует плоский `~/.codex/AGENTS.md`. Вручную прогонять ничего не надо.
 
-Если хочется обновить только Codex без остального — напрямую:
+Если хочется обновить только правила без остального — напрямую:
 
 ```bash
-~/.ai-settings/scripts/sync-cursor.sh --codex
+~/.ai-settings/scripts/sync.py rules
 ```
+
+Команда перегенерирует плоские правила сразу для Codex, OpenCode и Cursor и
+заодно проверяет ссылки `~/.claude/CLAUDE.md` и `~/.gemini/{GEMINI,AGENTS}.md`.
+Если на месте ссылки лежит обычный файл, он уезжает в `backups/<ts>/` в репе.
 
 ## `config.toml`
 
@@ -69,7 +73,7 @@ find -L ~/.agents/skills -maxdepth 2 -name SKILL.md -print
 
 > «напиши коммит»
 
-Если модель предлагает Conventional Commits с русским описанием (`feat(scope): ...`) и не ломает персону Афины — правила подхвачены. Если выдаёт generic английский — значит плоский файл не прогрузился; проверь `head ~/.codex/AGENTS.md` и перегенерируй через `sync-cursor.sh --codex`.
+Если модель предлагает Conventional Commits с русским описанием (`feat(scope): ...`) и не ломает персону Афины — правила подхвачены. Если выдаёт generic английский — значит плоский файл не прогрузился; проверь `head ~/.codex/AGENTS.md` и перегенерируй через `sync.py rules`.
 
 ## Windows
 

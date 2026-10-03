@@ -10,8 +10,8 @@ ls -la ~/.config/opencode/AGENTS.md
 ```
 
 OpenCode не разворачивает `@imports` из `AGENTS.md` автоматически. Поэтому
-`install.sh` вызывает `sync-cursor.sh --opencode`, который подставляет содержимое
-всех модулей из `docs/ai/` в глобальный файл OpenCode.
+`install.sh` запускает `sync.py all`, который подставляет содержимое всех
+модулей из `docs/ai/` в глобальный файл OpenCode.
 
 ## Скиллы
 
@@ -122,10 +122,11 @@ cd ~/.ai-settings && git pull
 После обновления полностью перезапусти OpenCode: конфигурационные файлы и
 список скиллов читаются при старте.
 
-Если нужно обновить только глобальные правила OpenCode:
+Если нужно обновить только правила (заодно у Codex и Cursor, плюс ссылки
+Claude Code и Gemini):
 
 ```bash
-~/.ai-settings/scripts/sync-cursor.sh --opencode
+~/.ai-settings/scripts/sync.py rules
 ```
 
 ## Проектные правила и runtime-конфиг

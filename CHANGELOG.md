@@ -27,8 +27,22 @@
 - `scripts/init-project.sh` создаёт в корне проекта пустой `opencode.jsonc`
   с `$schema` и подсказкой в комментарии — для project-level override модели,
   `agent`, `mcp` и других runtime-настроек OpenCode.
+- `sync.py` не создаёт файлы и ссылки в каталоге, который на деле лежит
+  внутри репы, например через старый симлинк каталога. Файл или каталог на
+  месте ссылки уезжает в `backups/<ts>/`, а не удаляется.
+- `ruff` и `mypy` в dev-зависимостях. По конфигу в `pyproject.toml` ruff
+  проверяет `scripts/` как код под Python 3.9, а `mypy --strict` — как код
+  под 3.10: ниже mypy не целится.
 
 ### Изменено
+- Правила и агентов по харнессам раскладывает единый вход `scripts/sync.py`:
+  подкоманды `all`, `rules`, `agents` и общий `--dry-run`. За ним stdlib-пакет
+  `scripts/aisettings/`, совместимый с системным `python3` 3.9. `install.sh` и
+  `init-project.sh` вызывают его вместо `sync-cursor.sh`, результат раскладки
+  прежний. Ссылки `~/.claude/CLAUDE.md` и `~/.gemini/{GEMINI,AGENTS}.md` тоже
+  ставит `sync.py rules`.
+- `install.sh --dry-run` показывает реальный план раскладки правил и агентов,
+  а не список команд, которые он запустил бы.
 - `product-spec-pipeline` анализирует существующий проект до работы с идеей и предлагает выбрать глубокие исследования, запускаемые отдельными агентами.
 - `product-spec-pipeline` начинает работу с поиска направлений: пользователь выбирает 1 из 2–3 вариантов, после чего `grilling` уточняет выбранный вариант. С версии 1.3.0 эту фазу пайплайн проводит сам, без `brainstorming` из Superpowers.
 - `docs/ai/python.md` адаптирован под команду: минимальная версия поднята до
@@ -44,6 +58,10 @@
   Claude Code) — раньше требовался ручной шаг.
 
 ### Исправлено
+- `sync.py rules --check` падает на битом `@import`. `sync-cursor.sh --check`
+  завершался успехом при любых импортах.
+- `sync.py rules --cursor-project` отказывается работать с несуществующим
+  каталогом. Раньше опечатка в пути молча создавала новый каталог.
 - Глобальный `CLAUDE.md`: убраны `@RTK.md` (дублировал `docs/ai/rtk-awareness.md`, файл лежит вне репы) и правило про несуществующий тул `TodoWrite`; в `/effort` добавлено значение `max`. В `rtk-awareness.md` добавлено предупреждение про `rtk init -g` без `--hook-only --no-patch`.
 - `install.sh` теперь создаёт `~/.gemini/AGENTS.md` для относительного импорта
   из `GEMINI.md` и подключает risk-based Superpowers через
@@ -52,6 +70,8 @@
   падал на чужих скиллах в `skills/synced/` и `skills/.trash/`.
 
 ### Удалено
+- `scripts/sync-cursor.sh` — Python-скрипт с расширением `.sh`. Его заменили
+  `sync.py rules` и `sync.py agents`.
 - Форк Superpowers (`skills/superpowers/`) и тест на пропуск Codex-плагина. Из
   `install.sh` ушли проверка SP-плагина Claude, пропуск Codex-плагина и симлинк
   `~/.gemini/skills`. Процесс ведут внешние matt-скиллы.

@@ -4,7 +4,7 @@
 
 ## Глобальная попытка
 
-`scripts/install.sh` вызывает `sync-cursor.sh --global` — пишет в `~/.cursor/rules/ai-settings.mdc`. Если твоя версия Cursor это подхватывает, правила применяются везде.
+`scripts/install.sh` запускает `sync.py all`, который среди прочего пишет `~/.cursor/rules/ai-settings.mdc`. Если твоя версия Cursor это подхватывает, правила применяются везде.
 
 ## Per-project (надёжнее)
 
@@ -36,11 +36,11 @@ alwaysApply: true
 После `git pull` в `~/.ai-settings` вручную прогони:
 
 ```bash
-# глобально:
-~/.ai-settings/scripts/sync-cursor.sh --global
+# глобально (заодно правила Codex, OpenCode и ссылки Claude Code, Gemini):
+~/.ai-settings/scripts/sync.py rules
 
 # для конкретного проекта:
-~/.ai-settings/scripts/sync-cursor.sh --project /path/to/project
+~/.ai-settings/scripts/sync.py rules --cursor-project /path/to/project
 ```
 
 Cursor подхватит новые правила при следующем открытии окна.
@@ -48,15 +48,15 @@ Cursor подхватит новые правила при следующем о
 ## Валидация без записи
 
 ```bash
-~/.ai-settings/scripts/sync-cursor.sh --check
+~/.ai-settings/scripts/sync.py rules --check
 ```
 
-Проверяет, что все `@imports` резолвятся; ничего не пишет. Удобно прогонять локально перед коммитом.
+Проверяет, что все `@imports` резолвятся, и падает на битом; ничего не пишет. Удобно прогонять локально перед коммитом.
 
 ## Windows
 
-`sync-cursor.sh` требует bash (macOS/Linux или WSL).
+`sync.py` рассчитан на macOS и Linux: нужен `python3` 3.9+, сторонних зависимостей нет.
 
-**WSL (рекомендуется):** запустить `./scripts/install.sh` или `./scripts/sync-cursor.sh --global` из WSL-терминала.
+**WSL (рекомендуется):** запустить `./scripts/install.sh` или `./scripts/sync.py rules` из WSL-терминала.
 
 **Без WSL (вручную):** скопировать `.cursor/rules/ai-settings.mdc` в директорию правил Cursor вручную.

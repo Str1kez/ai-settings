@@ -36,14 +36,14 @@ ai-settings/
 ├── agents/                      # 5 специализированных субагентов
 ├── skills/                      # скиллы в skills/<namespace>/, с semver-версионированием
 ├── settings/                    # эталонные settings.json / config.toml / хуки
-├── scripts/                     # install.sh, init-project.sh, sync-cursor.sh, ...
+├── scripts/                     # install.sh, sync.py, init-project.sh, ...
 ├── examples/                    # курируемые ссылки и промпты
 └── tests/skill_lint/            # автопроверки качества скиллов
 ```
 
 ## Использование
 
-**В новом проекте** — ничего делать не надо. Глобальные правила уже применяются автоматически через `~/.claude/CLAUDE.md`, `~/.codex/AGENTS.md`, `~/.config/opencode/AGENTS.md`, `~/.gemini/GEMINI.md` (для Cursor — запусти `~/.ai-settings/scripts/sync-cursor.sh --project .` один раз в проекте).
+**В новом проекте** — ничего делать не надо. Глобальные правила уже применяются автоматически через `~/.claude/CLAUDE.md`, `~/.codex/AGENTS.md`, `~/.config/opencode/AGENTS.md`, `~/.gemini/GEMINI.md` (для Cursor — запусти `~/.ai-settings/scripts/sync.py rules --cursor-project .` один раз в проекте).
 
 **Для проектной специфики** — в корне проекта:
 

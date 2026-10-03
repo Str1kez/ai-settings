@@ -100,7 +100,7 @@ EOF
 fi
 
 # Cursor rules for this project
-"$SCRIPT_DIR/sync-cursor.sh" --project "$PROJECT_ROOT"
+python3 "$SCRIPT_DIR/sync.py" rules --cursor-project "$PROJECT_ROOT"
 
 # .gitignore entries (append if missing)
 gitignore="$PROJECT_ROOT/.gitignore"

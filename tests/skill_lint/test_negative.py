@@ -8,7 +8,6 @@ import yaml
 
 from tests.skill_lint.test_skills import REQUIRED_FIELDS
 
-
 FIXTURE_BAD_SKILL = Path(__file__).parent / "fixtures" / "bad-skill" / "SKILL.md"
 
 
