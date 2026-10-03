@@ -7,10 +7,10 @@
 ```
 ls -la ~/.claude/
 # ожидаем:
-# CLAUDE.md -> ~/ai-settings/CLAUDE.md
-# agents   -> ~/ai-settings/agents
-# skills   -> ~/ai-settings/skills
-# hooks    -> ~/ai-settings/settings/hooks
+# CLAUDE.md -> ~/.ai-settings/CLAUDE.md
+# agents   -> ~/.ai-settings/agents
+# skills   -> ~/.ai-settings/skills
+# hooks    -> ~/.ai-settings/settings/hooks
 # settings.json  (копия, не симлинк)
 ```
 
@@ -27,7 +27,7 @@ ls -la ~/.claude/
 ## Обновление правил
 
 ```bash
-cd ~/ai-settings && git pull && ./scripts/install.sh
+cd ~/.ai-settings && git pull && ./scripts/install.sh
 ```
 
 Симлинки не трогаются — новое содержимое подхватывается автоматически.
@@ -41,7 +41,7 @@ cd ~/ai-settings && git pull && ./scripts/install.sh
 В корне проекта:
 
 ```bash
-~/ai-settings/scripts/init-project.sh
+~/.ai-settings/scripts/init-project.sh
 ```
 
 Это создаст:

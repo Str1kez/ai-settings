@@ -24,7 +24,7 @@ Risk-based Superpowers подключены через `~/.gemini/skills`. Ос�
 ## Обновление
 
 ```bash
-cd ~/ai-settings && git pull
+cd ~/.ai-settings && git pull
 ```
 
 Симлинк остаётся валидным. Перезапусти Gemini-сессию, чтобы подтянулись новые правила.

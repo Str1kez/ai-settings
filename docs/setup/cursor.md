@@ -11,7 +11,7 @@
 В корне проекта:
 
 ```bash
-~/ai-settings/scripts/init-project.sh
+~/.ai-settings/scripts/init-project.sh
 ```
 
 Скрипт положит `.cursor/rules/ai-settings.mdc` прямо в проект. Cursor подхватит при следующем открытии.
@@ -33,14 +33,14 @@ alwaysApply: true
 
 ## Обновление
 
-После `git pull` в `~/ai-settings` вручную прогони:
+После `git pull` в `~/.ai-settings` вручную прогони:
 
 ```bash
 # глобально:
-~/ai-settings/scripts/sync-cursor.sh --global
+~/.ai-settings/scripts/sync-cursor.sh --global
 
 # для конкретного проекта:
-~/ai-settings/scripts/sync-cursor.sh --project /path/to/project
+~/.ai-settings/scripts/sync-cursor.sh --project /path/to/project
 ```
 
 Cursor подхватит новые правила при следующем открытии окна.
@@ -48,7 +48,7 @@ Cursor подхватит новые правила при следующем о
 ## Валидация без записи
 
 ```bash
-~/ai-settings/scripts/sync-cursor.sh --check
+~/.ai-settings/scripts/sync-cursor.sh --check
 ```
 
 Проверяет, что все `@imports` резолвятся; ничего не пишет. Удобно прогонять локально перед коммитом.

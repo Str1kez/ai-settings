@@ -11,7 +11,7 @@
 Для Cursor прогони один раз в проекте:
 
 ```bash
-~/ai-settings/scripts/sync-cursor.sh --project .
+~/.ai-settings/scripts/sync-cursor.sh --project .
 ```
 
 ## Длинный путь (проектные специфики)
@@ -19,7 +19,7 @@
 В корне проекта:
 
 ```bash
-~/ai-settings/scripts/init-project.sh
+~/.ai-settings/scripts/init-project.sh
 ```
 
 Создаёт:
@@ -44,4 +44,4 @@
 
 ## После init
 
-Если CHANGELOG.md уже велся — скрипт его не трогает. Если нет, созданный шаблон Keep a Changelog можно сразу использовать — смотри скилл `changelog-entry` в `~/ai-settings/skills/strikez/changelog-entry/`.
+Если CHANGELOG.md уже велся — скрипт его не трогает. Если нет, созданный шаблон Keep a Changelog можно сразу использовать — смотри скилл `changelog-entry` в `~/.ai-settings/skills/strikez/changelog-entry/`.

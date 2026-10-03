@@ -14,8 +14,8 @@ ls -la ~/.codex/AGENTS.md
 ## Обновление после `git pull`
 
 ```bash
-cd ~/ai-settings && git pull
-~/ai-settings/scripts/install.sh
+cd ~/.ai-settings && git pull
+~/.ai-settings/scripts/install.sh
 ```
 
 `install.sh` перегенерирует плоский `~/.codex/AGENTS.md`. Вручную прогонять ничего не надо.
@@ -23,7 +23,7 @@ cd ~/ai-settings && git pull
 Если хочется обновить только Codex без остального — напрямую:
 
 ```bash
-~/ai-settings/scripts/sync-cursor.sh --codex
+~/.ai-settings/scripts/sync-cursor.sh --codex
 ```
 
 ## `config.toml`
@@ -44,7 +44,7 @@ find -L ~/.agents/skills -maxdepth 2 -name SKILL.md -print
 Если добавил или переименовал скилл в `skills/`, запусти:
 
 ```bash
-~/ai-settings/scripts/install.sh
+~/.ai-settings/scripts/install.sh
 ```
 
 Потом перезапусти Codex. Без перезапуска список скиллов может остаться старым.
@@ -53,7 +53,7 @@ find -L ~/.agents/skills -maxdepth 2 -name SKILL.md -print
 
 У Codex нет такой же системы субагентов, как у Claude Code. Но плоский `AGENTS.md` содержит ссылки на `agents/*/AGENT.md` в репе — модель может имитировать роли при ручном запросе:
 
-> «ты сейчас code-reviewer, проверь этот diff по правилам из `~/ai-settings/agents/code-reviewer/AGENT.md`»
+> «ты сейчас code-reviewer, проверь этот diff по правилам из `~/.ai-settings/agents/code-reviewer/AGENT.md`»
 
 ## Что глобально применено к Codex
 

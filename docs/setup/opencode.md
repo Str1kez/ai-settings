@@ -115,7 +115,7 @@ Claude Code уже настроен отдельно через `settings/claude
 ## Обновление
 
 ```bash
-cd ~/ai-settings && git pull
+cd ~/.ai-settings && git pull
 ./scripts/install.sh
 ```
 
@@ -125,7 +125,7 @@ cd ~/ai-settings && git pull
 Если нужно обновить только глобальные правила OpenCode:
 
 ```bash
-~/ai-settings/scripts/sync-cursor.sh --opencode
+~/.ai-settings/scripts/sync-cursor.sh --opencode
 ```
 
 ## Проектные правила и runtime-конфиг

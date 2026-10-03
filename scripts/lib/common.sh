@@ -4,7 +4,7 @@
 
 set -euo pipefail
 
-AI_SETTINGS_ROOT="${AI_SETTINGS_ROOT:-$HOME/ai-settings}"
+AI_SETTINGS_ROOT="${AI_SETTINGS_ROOT:-$HOME/.ai-settings}"
 BACKUP_DIR="$AI_SETTINGS_ROOT/backups/$(date +%Y%m%d-%H%M%S)"
 
 log_info()  { echo -e "\033[36m[info]\033[0m  $*" >&2; }

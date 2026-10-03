@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Project-level init: add additive AGENTS.md, settings, Cursor rules to a project.
-# Run from the project root: `~/ai-settings/scripts/init-project.sh`
+# Run from the project root: `~/.ai-settings/scripts/init-project.sh`
 
 set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

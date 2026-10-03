@@ -1,7 +1,7 @@
 # AGENTS.md
 
 <!-- Global AI settings for Claude Code, Codex, Cursor, Gemini CLI, OpenCode -->
-<!-- Source of truth: https://github.com/tsergeytovarov/ai-settings -->
+<!-- Source of truth: https://github.com/Str1kez/ai-settings -->
 <!-- Human-readable docs: ./docs/setup/ (in Russian) -->
 
 ## 1. Persona & Values

@@ -64,7 +64,7 @@ tags: [git, markdown, russian, ...]
 
 ## Skill-lint
 
-Все скиллы автоматически проверяются через `pytest tests/skill-lint/`. Линт прогоняется локально перед коммитом — вручную или через pre-commit hook. Список проверок см. в `tests/skill-lint/README.md`.
+Все скиллы автоматически проверяются через `pytest tests/skill_lint/`. Линт прогоняется локально перед коммитом — вручную или через pre-commit hook. Список проверок см. в `tests/skill_lint/README.md`.
 
 ## Стартовый набор
 

@@ -15,8 +15,8 @@
 > **Потом** запускай `install.sh`. Иначе ассистент будет вести себя как я, а не как ты.
 
 ```bash
-git clone https://github.com/tsergeytovarov/ai-settings.git ~/ai-settings
-cd ~/ai-settings
+git clone https://github.com/Str1kez/ai-settings.git ~/.ai-settings
+cd ~/.ai-settings
 
 # 1. Кастомизируй под себя — см. docs/setup/customization.md
 # 2. Установи:
@@ -38,17 +38,17 @@ ai-settings/
 ├── settings/                    # эталонные settings.json / config.toml / хуки
 ├── scripts/                     # install.sh, init-project.sh, sync-cursor.sh, ...
 ├── examples/                    # курируемые ссылки и промпты
-└── tests/skill-lint/            # автопроверки качества скиллов
+└── tests/skill_lint/            # автопроверки качества скиллов
 ```
 
 ## Использование
 
-**В новом проекте** — ничего делать не надо. Глобальные правила уже применяются автоматически через `~/.claude/CLAUDE.md`, `~/.codex/AGENTS.md`, `~/.config/opencode/AGENTS.md`, `~/.gemini/GEMINI.md` (для Cursor — запусти `~/ai-settings/scripts/sync-cursor.sh --project .` один раз в проекте).
+**В новом проекте** — ничего делать не надо. Глобальные правила уже применяются автоматически через `~/.claude/CLAUDE.md`, `~/.codex/AGENTS.md`, `~/.config/opencode/AGENTS.md`, `~/.gemini/GEMINI.md` (для Cursor — запусти `~/.ai-settings/scripts/sync-cursor.sh --project .` один раз в проекте).
 
 **Для проектной специфики** — в корне проекта:
 
 ```bash
-~/ai-settings/scripts/init-project.sh
+~/.ai-settings/scripts/init-project.sh
 ```
 
 Положит локальный `AGENTS.md` (additive-слой поверх глобального), `.claude/settings.json` и обновит `.gitignore`.
@@ -56,7 +56,7 @@ ai-settings/
 ## Обновление
 
 ```bash
-cd ~/ai-settings
+cd ~/.ai-settings
 git pull
 ./scripts/install.sh
 ```
