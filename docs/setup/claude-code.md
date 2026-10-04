@@ -59,8 +59,13 @@ claude -p --model haiku "List the subagent types available to you"
 | `Bash(*-delete*)` | `find -delete` |
 | `Bash(*rg *--pre*)` | `rg --pre`, который запускает программу на каждый файл |
 | `Bash(fd *-x*)`, `Bash(fd *-X*)` | `fd -x`, `fd -X` |
+| `Bash(git *--output*)` | `git diff`, `git log`, `git show` с `--output=<file>`, который пишет файл |
 
 Это паттерны по тексту команды. Обычные формы они ловят, нарочно запутанные вроде `fd -Hx` — нет. Иногда спросят лишнее, например на `rg --pretty`.
+
+`git branch` и `git remote` в allow только read-only формами, а не префиксом `:*`: префикс пропускал `git branch -D`, `git remote set-url` и создание ветки. Ask-гарды на флаги тут не спасают: `git branch -v <name>` молча создаёт ветку, а `git branch -r -D <ref>` удаляет remote-tracking ветку. Поэтому `-a`, `-r`, `-v` и `-vv` разрешены только точной формой. Префиксом разрешены `--show-current`, `--list`, `--contains`, `--no-contains`, `--merged` и `--no-merged`: после них git не принимает ни удаление, ни переименование, ни новую ветку. У `git remote` разрешены голый вызов, `-v`, `get-url` и `show`. Остальные формы спросят подтверждение.
+
+`Read` и `Grep` в шаблоне нет: в рабочем каталоге они идут без вопроса и так, а правило `Read(**)` с относительным путём дальше него не действует.
 
 ## RTK
 

@@ -9,16 +9,6 @@
   `tests/test_migrate_*.py`, раздел «Временное» в `ARCHITECTURE.md`.
   `agents.collect` и `agents.opencode_permission` после этого можно снова
   сделать приватными.
-- [ ] Закрыть опасные формы под широкими allow шаблона
-  `settings/claude-settings.json`: `Bash(git branch:*)` молча пропускает
-  `git branch -D`, `Bash(git remote:*)` — `git remote set-url`, после
-  которого `git push` уходит не туда, `Bash(git diff:*)` —
-  `git diff --output=<file>`. Сами правила нужны: rtk одобряет переписанную
-  команду только по allow-правилу исходной, встроенный read-only набор
-  Claude Code ему неизвестен. Вариант — ask-гарды на такие флаги, как для
-  `-exec`. Заодно убрать `Read(**)` и `Grep(**)`: allow-правило с
-  относительным путём действует только в текущем каталоге, а там чтение и
-  поиск и так идут без вопроса.
 
 ## Следующее
 
@@ -49,6 +39,9 @@
 
 ## Сделано
 
+- [x] Шаблон `settings/claude-settings.json` без опасных форм под allow:
+  `git branch` и `git remote` только read-only формами, ask-гард на
+  `git … --output`, без `Read(**)` и `Grep(**)` (2026-10-04).
 - [x] Доки под текущую раскладку: `ARCHITECTURE.md`, гайды в `docs/setup/`,
   граница поддержки — Claude Code и OpenCode. `init-project.sh` кладёт в
   проект только то, что читают харнессы; `changelog-entry` снова пишет на
