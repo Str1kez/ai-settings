@@ -1,96 +1,49 @@
-# Codex CLI — подключение `ai-settings`
+# Codex CLI
 
-## После `scripts/install.sh`
+> **Без поддержки.** Я не пользуюсь Codex CLI и не проверяю его. Раскладка сделана по документации, работает ли она — не знаю. Гайд оставлен для мейнтейнера, если такой появится, см. [ARCHITECTURE.md](../../ARCHITECTURE.md#поддержка).
 
-Проверь, что на месте плоский AGENTS.md с развёрнутыми импортами:
+Что ставит `install.sh`:
 
-```bash
-ls -la ~/.codex/AGENTS.md
-# -> обычный файл, ~20 КБ (не симлинк)
-```
+| Что | Куда |
+|---|---|
+| Правила | плоский `~/.codex/AGENTS.md` |
+| Скиллы | ссылка `~/.agents/skills/<name>` на каждый скилл репы |
+| Агенты | рендер `~/.codex/agents/<name>.toml` |
 
-Почему не симлинк: Codex **не резолвит `@imports`** в стиле Claude/Gemini. Если положить туда симлинк на исходный `AGENTS.md` с `@docs/ai/persona.md`, Codex увидит только строку `@docs/ai/persona.md` как текст и не загрузит содержимое. Поэтому `install.sh` запускает `sync.py all`, а тот разворачивает все `@imports` прямо в тело файла.
+`~/.codex/config.toml` установщик не трогает: модель, плагины и trusted projects остаются твоими.
 
-## Обновление после `git pull`
+## Правила
 
-```bash
-cd ~/.ai-settings && git pull
-~/.ai-settings/scripts/install.sh
-```
-
-`install.sh` перегенерирует плоский `~/.codex/AGENTS.md`. Вручную прогонять ничего не надо.
-
-Если хочется обновить только правила без остального — напрямую:
-
-```bash
-~/.ai-settings/scripts/sync.py rules
-```
-
-Команда перегенерирует плоские правила сразу для Codex, OpenCode и Cursor и
-заодно проверяет ссылки `~/.claude/CLAUDE.md` и `~/.gemini/{GEMINI,AGENTS}.md`.
-Если на месте ссылки лежит обычный файл, он уезжает в `backups/<ts>/` в репе.
-
-## `config.toml`
-
-`~/.codex/config.toml` **не трогается** установщиком — там твои настройки модели, плагинов, trusted projects. В репе эталона больше нет — было фиктивное содержимое, удалено в v0.1.1.
+Codex не разворачивает `@imports`. Из ссылки на `AGENTS.md` он увидел бы строку `@docs/ai/persona.md` как текст, а не модуль. Поэтому `sync.py rules` пишет плоский файл, в котором все модули уже внутри. Править его руками бесполезно: следующий прогон перезапишет.
 
 ## Скиллы
 
-`install.sh` создаёт симлинк на каждый скилл репы в `~/.agents/skills/<skill>/`.
-Имя то же, что в Claude Code.
-Codex читает их как personal skills после перезапуска приложения.
-Симлинки в `~/.agents/skills`, которые смотрят в `skills/` репы и больше не нужны, установщик удаляет. Остальное в этом каталоге он не трогает.
+Скиллы репы лежат ссылками в `~/.agents/skills` под теми же именами, что в Claude Code. Ссылки, которые смотрят в репу на удалённые скиллы, установщик убирает, остальное в каталоге не трогает. Список скиллов Codex читает на старте: после нового скилла его надо перезапустить.
 
-Проверка:
+## Агенты
 
-```bash
-find -L ~/.agents/skills -maxdepth 2 -name SKILL.md -print
-```
+Каждый `agents/<name>/AGENT.md` становится `~/.codex/agents/<name>.toml`: `name`, `description` и промпт в `developer_instructions`. Агентам без Edit и Write (`code-reviewer`, `pr-writer`) добавляется `sandbox_mode = "read-only"`. Модель не задаётся, агент берёт модель родителя.
 
-Если добавил или переименовал скилл в `skills/` (новый скилл сначала `git add`), запусти:
-
-```bash
-~/.ai-settings/scripts/install.sh
-```
-
-Потом перезапусти Codex. Без перезапуска список скиллов может остаться старым.
-
-## Субагенты
-
-`install.sh` кладёт по файлу на каждого агента репы в `~/.codex/agents/<name>.toml`: `name`, `description` и `developer_instructions` (промпт агента). Агентам без Edit/Write (`code-reviewer`, `pr-writer`) добавляется `sandbox_mode = "read-only"`. Модель не задаётся, агент берёт модель родителя.
-
-Первая строка файла — `# managed-by: ai-settings`. По ней установщик отличает свои файлы: устаревшие удаляет, а чужой файл под именем нашего агента уносит в `backups/<ts>/` репы. Файлы без метки под другими именами не трогает.
-
-```bash
-ls ~/.codex/agents
-```
-
-## Что глобально применено к Codex
-
-После `install.sh` Codex получает:
-
-- плоский `~/.codex/AGENTS.md` со всеми правилами общения, персоной Афины, hard gates, git workflow и platform-wide notes;
-- personal skills из `~/.agents/skills/`;
-- текущий `~/.codex/config.toml` остаётся пользовательским: модель, плагины и trusted projects не перезаписываются.
+Первая строка файла — `# managed-by: ai-settings`. Такой файл установщик считает своим: перезаписывает, а рендер удалённого агента удаляет. Чужой файл под именем агента репы уезжает в `backups/<ts>/`, файлы под другими именами остаются.
 
 ## Проверка
 
-Запусти Codex в произвольной папке, задай:
-
-> «напиши коммит»
-
-Если модель предлагает Conventional Commits с русским описанием (`feat(scope): ...`) и не ломает персону Афины — правила подхвачены. Если выдаёт generic английский — значит плоский файл не прогрузился; проверь `head ~/.codex/AGENTS.md` и перегенерируй через `sync.py rules`.
-
-## Windows
-
-`install.sh` требует bash (macOS/Linux или WSL).
-
-**WSL (рекомендуется):** запустить `./scripts/install.sh` из WSL-терминала.
-
-**Без WSL (вручную):**
-```powershell
-# В PowerShell:
-Copy-Item "AGENTS.md" "$env:USERPROFILE\.codex\AGENTS.md"
+```bash
+head ~/.codex/AGENTS.md
+find -L ~/.agents/skills -maxdepth 2 -name SKILL.md
+ls ~/.codex/agents
 ```
 
-> Путь на Windows: `%USERPROFILE%\.codex\AGENTS.md`
+Smoke-тест: запусти Codex в любой папке и попроси «напиши коммит». Conventional Commits на английском и персона Афины значат, что правила подхвачены. Generic-ответ значит, что плоский файл не прогрузился: перегенерируй его через `~/.ai-settings/scripts/sync.py rules`.
+
+## Проект
+
+Проектный `AGENTS.md` Codex читает сам, его создаёт [`init-project.sh`](new-project.md).
+
+## Обновление
+
+```bash
+cd ~/.ai-settings && git pull && ./scripts/install.sh
+```
+
+Только правила, без остального: `~/.ai-settings/scripts/sync.py rules`. Команда заодно обновляет плоские правила OpenCode и Cursor и проверяет ссылки Claude Code и Gemini.

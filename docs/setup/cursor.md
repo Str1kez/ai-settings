@@ -1,72 +1,44 @@
-# Cursor — подключение `ai-settings`
+# Cursor
 
-У Cursor нет стабильного user-global механизма правил (зависит от версии). Используем гибрид: глобальная попытка + per-project как надёжный fallback.
+> **Без поддержки.** Я не пользуюсь Cursor и не проверяю его. Раскладка сделана по документации, работает ли она — не знаю. Гайд оставлен для мейнтейнера, если такой появится, см. [ARCHITECTURE.md](../../ARCHITECTURE.md#поддержка).
 
-## Глобальная попытка
+Что ставит `install.sh`:
 
-`scripts/install.sh` запускает `sync.py all`, который среди прочего пишет `~/.cursor/rules/ai-settings.mdc`. Если твоя версия Cursor это подхватывает, правила применяются везде.
+| Что | Куда |
+|---|---|
+| Скиллы | ссылка `~/.agents/skills/<name>` на каждый скилл репы |
+| Агенты | рендер `~/.cursor/agents/<name>.md` |
+| Правила | плоский `~/.cursor/rules/ai-settings.mdc`, который Cursor не читает, см. ниже |
+
+## Правила
+
+Пользовательские правила Cursor берёт только из своего UI: Customize → Rules. Из файлов он читает правила проекта: `AGENTS.md` в корне и подкаталогах и `.mdc` в `.cursor/rules/`. Так написано в [документации](https://cursor.com/docs/rules). Поэтому `~/.cursor/rules/ai-settings.mdc`, который пишет `install.sh`, Cursor не видит. Убрать эту запись из установщика — задача для мейнтейнера Cursor, она записана в [TODO.md](../../TODO.md).
+
+Мои правила попадают в Cursor через проект:
+
+```bash
+cd my-project
+~/.ai-settings/scripts/init-project.sh --cursor
+```
+
+Скрипт кладёт `.cursor/rules/ai-settings.mdc` — плоскую копию глобальных правил с frontmatter `alwaysApply: true` — и прячет её от git через `.git/info/exclude`. Это копия моих личных правил, в истории проекта ей не место. Если файл уже закоммичен, скрипт предупредит, и его надо вынуть из индекса: `git rm --cached .cursor/rules/ai-settings.mdc`.
+
+Сама копия не обновляется. После правок в репе перезапусти в проекте `init-project.sh --cursor`, Cursor подхватит новые правила при следующем открытии окна.
 
 ## Скиллы
 
-Cursor читает скиллы из `~/.agents/skills/<skill>` (и из `~/.claude/skills`). `install.sh` кладёт туда по симлинку на каждый скилл репы, имена плоские, как в других харнессах.
+Cursor читает скиллы из `~/.agents/skills` и из `~/.claude/skills`. Скилл репы лежит в обоих под одним именем. Схлопывает ли Cursor такие дубли, как OpenCode, я не проверял.
 
-## Субагенты
+## Агенты
 
-`install.sh` кладёт по файлу на каждого агента репы в `~/.cursor/agents/<name>.md`: `name`, `description`, `model: inherit`. Агентам без Edit/Write (`code-reviewer`, `pr-writer`) добавляется `readonly: true`. Каталог `~/.cursor/agents` приоритетнее совместимого `~/.claude/agents`, так что Cursor берёт эти файлы, а не ссылки Claude Code.
+Каждый `agents/<name>/AGENT.md` становится `~/.cursor/agents/<name>.md`: `name`, `description`, `model: inherit`. Агентам без Edit и Write (`code-reviewer`, `pr-writer`) добавляется `readonly: true`. Каталог `~/.cursor/agents` приоритетнее совместимого `~/.claude/agents`, так что Cursor берёт эти файлы, а не ссылки Claude Code.
 
-Файлы с меткой `# managed-by: ai-settings` под frontmatter установщик считает своими: устаревшие удаляет. Чужой файл под именем нашего агента уходит в `backups/<ts>/` репы, остальные не трогаются.
+Файл с меткой `# managed-by: ai-settings` под frontmatter установщик считает своим: перезаписывает, а рендер удалённого агента удаляет. Чужой файл под именем агента репы уезжает в `backups/<ts>/`, остальные не трогаются.
 
-## Per-project (надёжнее)
-
-В корне проекта:
-
-```bash
-~/.ai-settings/scripts/init-project.sh
-```
-
-Скрипт положит `.cursor/rules/ai-settings.mdc` прямо в проект. Cursor подхватит при следующем открытии.
-
-## Что внутри `.mdc`
-
-Это **плоская** версия `AGENTS.md` со всеми резолвнутыми `@imports` + Cursor-frontmatter:
-
-```
----
-alwaysApply: true
----
-
-# AGENTS.md
-<резолвнутое содержимое всех модулей>
-```
-
-Размер — около 18–20 КБ (стартовый набор правил).
-
-## Обновление
-
-После `git pull` в `~/.ai-settings` вручную прогони:
-
-```bash
-# глобально (заодно правила Codex, OpenCode и ссылки Claude Code, Gemini):
-~/.ai-settings/scripts/sync.py rules
-
-# для конкретного проекта:
-~/.ai-settings/scripts/sync.py rules --cursor-project /path/to/project
-```
-
-Cursor подхватит новые правила при следующем открытии окна.
-
-## Валидация без записи
+## Проверка импортов
 
 ```bash
 ~/.ai-settings/scripts/sync.py rules --check
 ```
 
-Проверяет, что все `@imports` резолвятся, и падает на битом; ничего не пишет. Удобно прогонять локально перед коммитом.
-
-## Windows
-
-`sync.py` рассчитан на macOS и Linux: нужен `python3` 3.9+, сторонних зависимостей нет.
-
-**WSL (рекомендуется):** запустить `./scripts/install.sh` или `./scripts/sync.py rules` из WSL-терминала.
-
-**Без WSL (вручную):** скопировать `.cursor/rules/ai-settings.mdc` в директорию правил Cursor вручную.
+Разворачивает все `@imports`, падает на битом и ничего не пишет. Удобно прогнать перед коммитом.

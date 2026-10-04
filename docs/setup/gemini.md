@@ -1,31 +1,46 @@
-# Gemini CLI — подключение `ai-settings`
+# Gemini CLI
 
-## После `scripts/install.sh`
+> **Без поддержки.** Я не пользуюсь Gemini CLI и не проверяю его. Раскладка сделана по документации, работает ли она — не знаю. Гайд оставлен для мейнтейнера, если такой появится, см. [ARCHITECTURE.md](../../ARCHITECTURE.md#поддержка).
 
-```bash
-ls -la ~/.gemini/GEMINI.md ~/.gemini/AGENTS.md
-# -> ai-settings/GEMINI.md и ai-settings/AGENTS.md
-```
+Что ставит `install.sh`:
+
+| Что | Куда |
+|---|---|
+| Правила | ссылки `~/.gemini/GEMINI.md` и `~/.gemini/AGENTS.md` на файлы репы |
+| Скиллы | ссылка `~/.agents/skills/<name>` на каждый скилл репы |
+| Агенты | рендер `~/.gemini/agents/<name>.md` |
+
+## Правила
+
+Gemini разворачивает `@imports` сам: `GEMINI.md` → `@./AGENTS.md` → `@docs/ai/*.md`. Отдельная ссылка `~/.gemini/AGENTS.md` нужна, потому что импорт из `GEMINI.md` резолвится от каталога ссылки, то есть от `~/.gemini`, а не от репы.
+
+## Скиллы
+
+Скиллы Gemini берёт из `~/.agents/skills`: по ссылке на каждый скилл репы, имена те же, что в остальных харнессах. Отдельный `~/.gemini/skills` не нужен.
+
+## Агенты
+
+Каждый `agents/<name>/AGENT.md` становится `~/.gemini/agents/<name>.md`: `name`, `description` и `tools`. Инструменты Claude Code переводятся так: Read → `read_file`, `read_many_files`; Grep → `grep_search`; Glob → `glob`, `list_directory`; Bash → `run_shell_command`; Edit → `replace`; Write → `write_file`; WebFetch → `web_fetch`; WebSearch → `google_web_search`. У агентов без Edit и Write (`code-reviewer`, `pr-writer`) нет `replace` и `write_file`. Модель не задаётся, агент берёт модель родителя.
+
+Файл с меткой `# managed-by: ai-settings` под frontmatter установщик считает своим: перезаписывает, а рендер удалённого агента удаляет. Чужой файл под именем агента репы уезжает в `backups/<ts>/`, остальные не трогаются.
 
 ## Проверка
 
-Запусти Gemini CLI и задай любой вопрос, требующий правил, например:
+```bash
+ls -la ~/.gemini/GEMINI.md ~/.gemini/AGENTS.md ~/.gemini/agents
+```
 
-> «напиши коммит»
+Smoke-тест: попроси «напиши коммит». Персона Афины и Conventional Commits на английском значат, что правила подхвачены.
 
-Если модель отвечает в стиле персоны Афины на русском и предлагает conventional-commit сообщение — всё работает.
+## Проект
 
-## @imports
+По умолчанию Gemini читает только `GEMINI.md`: глобальный, в проекте и в его родителях. Проектный `AGENTS.md` он увидит, только если тот есть в `context.fileName` в `~/.gemini/settings.json`:
 
-Gemini CLI нативно поддерживает `@imports`, поэтому модули из `docs/ai/*.md` подтягиваются автоматически при загрузке `GEMINI.md` (через транзит `GEMINI.md → @./AGENTS.md → @docs/ai/*.md`). Отдельный симлинк `~/.gemini/AGENTS.md` нужен, потому что относительный импорт разрешается из глобальной папки Gemini, а не из директории исходного симлинка.
+```json
+{ "context": { "fileName": ["AGENTS.md", "GEMINI.md"] } }
+```
 
-Скиллы Gemini берёт из `~/.agents/skills/<skill>`: по симлинку на каждый скилл репы, имена те же, что в остальных харнессах. Отдельный `~/.gemini/skills` не нужен.
-
-## Субагенты
-
-`install.sh` кладёт по файлу на каждого агента репы в `~/.gemini/agents/<name>.md`: `name`, `description` и `tools`. Инструменты Claude Code переводятся так: Read → `read_file`, `read_many_files`; Grep → `grep_search`; Glob → `glob`, `list_directory`; Bash → `run_shell_command`; Edit → `replace`; Write → `write_file`; WebFetch → `web_fetch`; WebSearch → `google_web_search`. У агентов без Edit/Write (`code-reviewer`, `pr-writer`) нет `replace` и `write_file`. Модель не задаётся, агент берёт модель родителя.
-
-Файлы с меткой `# managed-by: ai-settings` под frontmatter установщик считает своими: устаревшие удаляет. Чужой файл под именем нашего агента уходит в `backups/<ts>/` репы, остальные не трогаются.
+Эту настройку я не включал. Есть вероятность, что с ней Gemini загрузит глобальные правила дважды: через `~/.gemini/GEMINI.md` и через ссылку `~/.gemini/AGENTS.md`. Перед включением это надо проверить.
 
 ## Обновление
 
@@ -33,16 +48,4 @@ Gemini CLI нативно поддерживает `@imports`, поэтому м
 cd ~/.ai-settings && git pull
 ```
 
-Симлинк остаётся валидным. Перезапусти Gemini-сессию, чтобы подтянулись новые правила.
-
-## Windows
-
-**WSL (рекомендуется):** запустить `./scripts/install.sh` — GEMINI.md симлинкуется автоматически.
-
-**Без WSL (вручную):**
-```powershell
-# В PowerShell:
-New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.gemini\GEMINI.md" -Target "$PWD\GEMINI.md"
-```
-
-> Путь на Windows: `%USERPROFILE%\.gemini\GEMINI.md`
+Ссылки остаются валидными, перезапусти сессию Gemini. Если поменялись агенты, нужен ещё `./scripts/install.sh`.
