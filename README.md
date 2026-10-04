@@ -33,13 +33,52 @@ ai-settings/
 ├── CLAUDE.md / GEMINI.md        # тонкие обёртки с импортом AGENTS.md
 ├── docs/ai/                     # модули, подключаемые через @imports
 ├── docs/setup/                  # гайды по подключению (на русском)
-├── agents/                      # 5 специализированных субагентов
-├── skills/                      # скиллы в skills/<namespace>/, с semver-версионированием
-├── settings/                    # эталонные settings.json / config.toml / хуки
-├── scripts/                     # install.sh, sync.py, init-project.sh, ...
+├── docs/adr/                    # архитектурные решения
+├── agents/<name>/AGENT.md       # субагенты в формате Claude, рендерятся под каждый харнесс
+├── skills/<namespace>/<name>/   # свои скиллы; неймспейс только группирует, имя уникально по всей репе
+├── settings/                    # шаблон settings.json для Claude Code и его хуки
+├── scripts/                     # install.sh → sync.py (пакет aisettings/), init-project.sh, deploy-skills.sh
 ├── examples/                    # курируемые ссылки и промпты
-└── tests/skill_lint/            # автопроверки качества скиллов
+└── tests/                       # pytest: установщик, миграции, skill-lint в tests/skill_lint/
 ```
+
+## Что куда раскладывается
+
+Репа не линкуется в хоум харнесса целым каталогом: в `~/.claude/{skills,agents,hooks}` и `~/.agents/skills` кладутся только поштучные ссылки. Целиком линкуются лишь файлы инструкций, потому что их `@imports` резолвятся от реального пути.
+
+| Харнесс | Правила | Скиллы | Агенты |
+|---|---|---|---|
+| Claude Code | симлинк `~/.claude/CLAUDE.md` | `~/.claude/skills/<name>` → репа | `~/.claude/agents/<name>.md` → `agents/<name>/AGENT.md` |
+| Codex CLI | плоский `~/.codex/AGENTS.md` | `~/.agents/skills/<name>` | `~/.codex/agents/<name>.toml` |
+| OpenCode | плоский `~/.config/opencode/AGENTS.md` | `~/.agents/skills` (видит и `~/.claude/skills`) | `~/.config/opencode/agents/<name>.md` |
+| Gemini CLI | симлинки `~/.gemini/{GEMINI,AGENTS}.md` | `~/.agents/skills` | `~/.gemini/agents/<name>.md` |
+| Cursor | `~/.cursor/rules/ai-settings.mdc` | `~/.agents/skills` (видит и `~/.claude/skills`) | `~/.cursor/agents/<name>.md` |
+| Claude Desktop | — | `deploy-skills.sh` (zip + rsync) | — |
+
+Агенты рендерятся из одного `AGENT.md` и помечаются `managed-by: ai-settings`: устаревшие свои установщик удаляет, чужие не трогает. Модель задаётся только в Claude, остальные харнессы наследуют модель родителя. Детали и причины — в [ADR 0001](docs/adr/0001-harness-agnostic-deploy.md).
+
+## Внешние скиллы
+
+Скиллы Matt Pocock и `find-skills` в репе не лежат. Их ставит `npx skills`: канонически в `~/.agents/skills` плюс ссылки в `~/.claude/skills`. Репа ими не владеет, поэтому `install.sh` их не трогает.
+
+```bash
+# matt-скиллы; список берётся из ~/.agents/.skill-lock.json
+npx skills add mattpocock/skills -g -a claude-code codex opencode gemini-cli cursor \
+  -s ask-matt code-review codebase-design diagnosing-bugs domain-modeling grill-me \
+  grill-with-docs grilling handoff implement improve-codebase-architecture prototype \
+  research resolving-merge-conflicts setup-matt-pocock-skills tdd teach to-questionnaire \
+  to-spec to-tickets triage wait-what wayfinder wizard writing-for-agents -y
+
+npx skills add vercel-labs/skills -g -s find-skills -y
+
+npx skills ls -g        # что стоит
+npx skills update -g    # обновить
+```
+
+Что живёт вне репы и вне `npx skills`:
+
+- `agterm` и `bmw-g20` живут вне репы, только в `~/.claude/skills`. `bmw-g20` — мой личный скилл.
+- `product-spec-pipeline` требует matt `grilling` на Phase 5. Без него pipeline дойдёт до этой фазы и встанет.
 
 ## Использование
 

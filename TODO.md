@@ -2,10 +2,13 @@
 
 ## В работе
 
-- [ ] Harness-agnostic раскладка по [ADR 0001](docs/adr/0001-harness-agnostic-deploy.md):
-  готовы единый вход `scripts/sync.py`, плоская раскладка скиллов с миграцией
-  старой, агенты во всех пяти харнессах и мёрдж `~/.claude/settings.json` без
-  потерь. Дальше хук форматирования без uv, доки и раскатка на машины.
+- [ ] Удалить `scripts/aisettings/legacy.py`, когда обе машины мигрированы:
+  вместе с ним уходят вызовы `legacy.*` в `sync.py`, помеченный блок
+  миграционных методов в `fs.py`, ветка `seeing_src` в `Fs.link` и
+  `tests/test_migrate_*.py`. `agents.collect` и `agents.opencode_permission`
+  после этого можно снова сделать приватными.
+- [ ] Проверить после раскатки, не задваиваются ли скиллы в OpenCode и
+  Cursor: они читают и `~/.claude/skills`, и `~/.agents/skills`.
 - [ ] Закрыть опасные формы под широкими allow шаблона
   `settings/claude-settings.json`: `Bash(git branch:*)` молча пропускает
   `git branch -D`, `Bash(git remote:*)` — `git remote set-url`, после
@@ -32,6 +35,10 @@
 
 ## Сделано
 
+- [x] Harness-agnostic раскладка по [ADR 0001](docs/adr/0001-harness-agnostic-deploy.md):
+  единый вход `scripts/sync.py`, плоские скиллы и агенты во всех пяти
+  харнессах, мёрдж `~/.claude/settings.json` без потерь, README с матрицей
+  и разделом про внешние скиллы (2026-10-04).
 - [x] Поддержка OpenCode: плоские глобальные правила, общие personal skills,
   установка и setup-гайд (2026-08-08).
 - [x] Риск-ориентированная политика тестов и ревью: критические контракты
