@@ -12,6 +12,7 @@ import re
 from pathlib import Path
 from typing import NamedTuple, Union
 
+from aisettings import tracked
 from aisettings.fs import Fs, SyncError, link_target
 
 # Claude Code tool -> OpenCode permission key. In OpenCode, edit covers write,
@@ -53,6 +54,9 @@ _TOOL_TO_GEMINI = {
     "WebSearch": ["google_web_search"],
 }
 _EDITING_TOOLS = {"Edit", "Write"}
+# A tool outside this set is dropped silently by the renders, so a typo would
+# quietly cost an agent its permission. The agent lint holds tools to it.
+KNOWN_TOOLS = frozenset(_TOOL_TO_PERMISSION) | frozenset(_TOOL_TO_GEMINI)
 
 # Runtime alias: no `X | Y` here, it must evaluate on Python 3.9.
 _Fields = dict[str, Union[str, list[str]]]
@@ -68,6 +72,7 @@ class Agent(NamedTuple):
 
 def sync(fs: Fs, repo: Path, home: Path) -> None:
     agents = collect(repo)
+    tracked.warn_untracked(repo, "agents", "AGENT.md")
     _sync_claude(fs, repo, home / _CLAUDE_AGENTS, agents)
     for agents_home, render in (
         (_OPENCODE_AGENTS, _render_opencode),
@@ -84,7 +89,10 @@ def collect(repo: Path) -> list[Agent]:
     agents_dir = repo / "agents"
     if not agents_dir.is_dir():
         raise SyncError(f"agents dir not found: {agents_dir}")
-    return [_load(path) for path in sorted(agents_dir.glob("*/AGENT.md"))]
+    return [
+        load(agent_dir / "AGENT.md")
+        for agent_dir in tracked.tracked_dirs(repo, "agents", "AGENT.md")
+    ]
 
 
 def _sync_claude(fs: Fs, repo: Path, claude_agents: Path, agents: list[Agent]) -> None:
@@ -210,12 +218,20 @@ def _yaml_string(text: str) -> str:
     return json.dumps(text, ensure_ascii=False)
 
 
-def _load(path: Path) -> Agent:
+def load(path: Path) -> Agent:
+    """Read one AGENT.md the way the renders see it; SyncError if it can't be."""
     match = _FRONTMATTER_RE.match(path.read_text(encoding="utf-8"))
     if not match:
         raise SyncError(f"{path}: no frontmatter found")
     fields = _parse_fields(match.group(1))
     name = path.parent.name
+    # Links and renders are named after the dir, but Claude Code shows the
+    # frontmatter name: a mismatch would split one agent into two names.
+    if fields.get("name") != name:
+        raise SyncError(
+            f"{path}: frontmatter name {fields.get('name')!r} must equal the "
+            f"directory name {name!r}"
+        )
 
     tools = fields.get("tools", [])
     if isinstance(tools, str):

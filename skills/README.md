@@ -8,8 +8,25 @@ Gemini CLI, Cursor). Claude Code сам отдаёт скилл как `/<skill>
 не генерируются.
 
 Деплоятся только скиллы, которые отслеживает git: новый скилл надо сначала `git add`.
-Неотслеживаемое в `skills/` остаётся от старой раскладки, где `~/.claude/skills` был симлинком
-на этот каталог: `install.sh` переносит такие записи в `~/.claude/skills`.
+Если в `skills/` лежит настоящий каталог с `SKILL.md`, который git не отслеживает и не
+игнорирует, `sync.py` предупредит, что скилл не задеплоен, и назовёт команду `git add`.
+Остальное неотслеживаемое в `skills/` остаётся от старой раскладки, где `~/.claude/skills` был
+симлинком на этот каталог: `install.sh` переносит такие записи в `~/.claude/skills`, предупреждений
+на них нет.
+
+## Новый скилл
+
+```bash
+scripts/new.py skill <name>
+```
+
+Скрипт создаёт `skills/<name>/` с `SKILL.md`, `README.md` и `CHANGELOG.md`. Имя он проверяет по
+regex из правил ниже, существующий каталог не перезаписывает и в конце печатает следующие шаги:
+
+1. заполнить `SKILL.md` (сначала `description`), `README.md` и запись в `CHANGELOG.md`;
+2. `git add skills/<name>`: без этого скилл не задеплоится;
+3. `.venv/bin/python -m pytest tests/skill_lint -v`;
+4. `scripts/install.sh --dry-run`, затем `scripts/install.sh`.
 
 ## Правила
 
@@ -26,28 +43,11 @@ Gemini CLI, Cursor). Claude Code сам отдаёт скилл как `/<skill>
 
 ## Шаблон `SKILL.md`
 
-```markdown
----
-name: <kebab-case, совпадает с именем папки>
-version: 1.0.0
-description: |
-  Use when <явный триггер: когда пользователь прямо просит>.
-  Also trigger automatically when <автоматический триггер: паттерн в контексте>.
-  SKIP: <явный анти-триггер: когда НЕ вызывать>.
-category: code | work
-tags: [git, markdown, russian, ...]
----
-
-# Purpose
-<Одно предложение: что делает скилл и зачем.>
-
-# Process
-1. ...
-2. ...
-
-# Output format
-<Формат вывода — в идеале с коротким примером.>
-```
+Шаблон лежит в `scripts/new.py` (`SKILL_MD`), второй копии в доке нет. Во frontmatter заготовки:
+`name` равен имени папки, `version: 1.0.0`, `description` с заготовками триггера и `SKIP`,
+`category: code` и пустой `tags`. `category` — например `code` или `work`, `tags` — свободный список
+(`git`, `markdown`, `russian`). Дальше три раздела на английском: `Purpose`, `Process`,
+`Output format`.
 
 ## Требования к полю `description`
 

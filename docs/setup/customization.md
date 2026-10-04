@@ -270,8 +270,9 @@ Pre-commit discipline, Merge strategy, Never). Верни в кодблоке.
 - в SKILL.md поменяй name, description (триггеры на моём языке) и tags;
 - в references/examples.md перепиши примеры;
 - переведи README.md скилла, в его CHANGELOG.md добавь запись о форке.
-Удали skills/en-commit-message/, если он не нужен. Новый скилл добавь в git
-(деплоятся только отслеживаемые), прогони
+Удали skills/en-commit-message/, если он не нужен. Для нового скилла с нуля есть
+scripts/new.py skill <name>. Новый скилл добавь в git
+(деплоятся только отслеживаемые, про остальные sync.py предупредит), прогони
 .venv/bin/python -m pytest tests/skill_lint и ./scripts/install.sh.
 ```
 
@@ -329,7 +330,7 @@ docs/ai/hard-gates.md.
 - **Ссылки и сгенерированные файлы в `~/.claude/`, `~/.agents/skills/`, `~/.codex/`, `~/.config/opencode/`, `~/.gemini/`, `~/.cursor/`** — их ставит `install.sh`, правки в них затрёт следующий прогон. Что откуда берётся — в [ARCHITECTURE.md](../../ARCHITECTURE.md).
 - **`.cursor/rules/ai-settings.mdc`** (проектный), **`~/.codex/AGENTS.md`** и **`~/.config/opencode/AGENTS.md`** — **генерируемые** файлы (плоская версия AGENTS.md с развёрнутыми `@imports`). Правь исходный `AGENTS.md` / `docs/ai/*.md`, потом прогоняй `./scripts/install.sh` или `./scripts/sync.py rules`.
 - **`scripts/`** — работают как есть. Менять только если понимаешь, что делаешь.
-- **`tests/`** — тесты установщика и skill-lint в `tests/skill_lint/`. Если меняешь формат `SKILL.md` — обновляй проверки вместе, не удаляй тесты.
+- **`tests/`** — тесты установщика, skill-lint в `tests/skill_lint/` и agent-lint в `tests/agent_lint/`. Если меняешь формат `SKILL.md` — обновляй проверки вместе, не удаляй тесты.
 
 ## После правок
 

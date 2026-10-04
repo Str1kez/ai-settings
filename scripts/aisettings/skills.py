@@ -7,20 +7,17 @@ CLI and Cursor read ~/.agents/skills/<name>/SKILL.md.
 
 from __future__ import annotations
 
-import subprocess
 from pathlib import Path
 
+from aisettings import tracked
 from aisettings.fs import Fs, SyncError, link_target
 
-_SKILL_PATHSPEC = "skills/*/SKILL.md"
-# <skill>/SKILL.md below skills/; "*" in a pathspec crosses "/", so a SKILL.md
-# nested inside a skill matches too and is dropped by depth.
-_SKILL_FILE_DEPTH_IN_SKILLS = 2
 _HARNESS_SKILL_DIRS = (Path(".claude/skills"), Path(".agents/skills"))
 
 
 def sync(fs: Fs, repo: Path, home: Path) -> None:
     skills = collect(repo)
+    tracked.warn_untracked(repo, "skills", "SKILL.md")
     targets = [home / rel for rel in _HARNESS_SKILL_DIRS]
     # Check every target before the first link: no half-done skill deploy.
     for skills_home in targets:
@@ -33,26 +30,7 @@ def collect(repo: Path) -> dict[str, Path]:
     """Map skill name to its directory. Only git-tracked skills count: on a
     machine not yet migrated, skills/ still holds npx symlinks and Claude
     Code's own synced/ and .trash/."""
-    return {skill_dir.name: skill_dir for skill_dir in _tracked_skill_dirs(repo)}
-
-
-def _tracked_skill_dirs(repo: Path) -> list[Path]:
-    try:
-        result = subprocess.run(
-            ["git", "ls-files", "-z", "--", _SKILL_PATHSPEC],
-            cwd=repo,
-            capture_output=True,
-            text=True,
-            check=True,
-        )
-    except (OSError, subprocess.CalledProcessError) as exc:
-        raise SyncError(f"can't list tracked skills with git: {exc}") from exc
-    files = (Path(rel) for rel in result.stdout.split("\0") if rel)
-    return sorted(
-        repo / f.parent
-        for f in files
-        if len(f.relative_to("skills").parts) == _SKILL_FILE_DEPTH_IN_SKILLS
-    )
+    return {d.name: d for d in tracked.tracked_dirs(repo, "skills", "SKILL.md")}
 
 
 def _sync_dir(fs: Fs, repo: Path, skills_home: Path, skills: dict[str, Path]) -> None:
