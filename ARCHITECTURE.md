@@ -59,8 +59,9 @@ ai-settings/
 │   ├── sync.py                # раскладка по харнессам, за ним пакет aisettings/
 │   ├── init-project.sh        # проектный слой: AGENTS.md, CHANGELOG.md, TODO.md
 │   ├── deploy-skills.sh       # скиллы в Claude Desktop
+│   ├── new.py                 # заготовка нового скилла или агента
 │   └── bump-skill-version.sh  # версия скилла и заготовка записи в его CHANGELOG
-└── tests/                     # pytest: установщик, миграции, skill-lint
+└── tests/                     # pytest: установщик, миграции, skill-lint, agent-lint
 ```
 
 ## Артефакты
@@ -76,6 +77,8 @@ Codex, OpenCode и Cursor импорты не разворачивают. Для
 ### Скиллы
 
 Деплоятся только скиллы, которые отслеживает git: `skills/<name>/SKILL.md`. На каждый `sync.py skills` ставит две ссылки под тем же именем: `~/.claude/skills/<name>` для Claude Code и `~/.agents/skills/<name>` для остальных харнессов. Ссылку в репу на скилл, которого больше нет, он удаляет, остальное в этих каталогах не трогает.
+
+Настоящий каталог в `skills/` с `SKILL.md`, который git не отслеживает и не игнорирует, скорее всего забытый `git add`. `sync.py` на каждом прогоне предупреждает о нём и называет команду. Симлинки (`npx skills`), `synced/` и `.trash/` под предупреждение не попадают. Новый скилл заводит `scripts/new.py skill <name>`: три файла по заготовке, имя проверяется по regex Agent Skills, существующий каталог не перезаписывается.
 
 Внешние скиллы ставит `npx skills`: канонично в `~/.agents/skills`, плюс ссылки в `~/.claude/skills`. Репа ими не владеет, установщик их не трогает. Команды — в [README](README.md#внешние-скиллы).
 
@@ -93,6 +96,8 @@ Claude Desktop — отдельный канал, эти каталоги он �
 | Cursor | `~/.cursor/agents/<name>.md` | `model: inherit`; без Edit и Write — `readonly: true` |
 
 Модель я задаю только в Claude Code. В остальных харнессах субагент работает на модели агента, который его вызвал.
+
+Агенты деплоятся по тому же правилу, что и скиллы: только отслеживаемые git, про неотслеживаемый каталог с `AGENT.md` `sync.py` предупреждает. Имя берётся из каталога, а Claude Code показывает `name` из frontmatter, поэтому при расхождении `sync.py` падает и называет файл. Заготовку делает `scripts/new.py agent <name>`, проверяет агентов agent-lint в `tests/agent_lint/`.
 
 Рендер помечен `# managed-by: ai-settings`. Помеченный файл установщик перезаписывает, а рендер агента, которого в репе больше нет, удаляет. Файл без метки под именем агента репы уезжает в `backups/<ts>/`, под другим именем остаётся на месте.
 
@@ -125,12 +130,12 @@ Claude Desktop — отдельный канал, эти каталоги он �
 
 ## Код установщика
 
-`install.sh` — тонкая обёртка: проверка на Windows, `sync.py all` и RTK. Раскладку целиком делает `scripts/sync.py` с подкомандами `all`, `rules`, `skills`, `agents` и `claude`. За ним пакет `scripts/aisettings/`, по модулю на тип артефакта: `rules.py`, `skills.py`, `agents.py`, `claude.py`. Каждое изменение в хоуме идёт через `Fs` из `fs.py`. На нём держатся `--dry-run`, бэкапы и гард, который не даёт писать в каталог, на деле лежащий внутри репы. Устройство модулей описано в [scripts/aisettings/README.md](scripts/aisettings/README.md).
+`install.sh` — тонкая обёртка: проверка на Windows, `sync.py all` и RTK. Раскладку целиком делает `scripts/sync.py` с подкомандами `all`, `rules`, `skills`, `agents` и `claude`. За ним пакет `scripts/aisettings/`, по модулю на тип артефакта: `rules.py`, `skills.py`, `agents.py`, `claude.py`. Общий для скиллов и агентов список отслеживаемых каталогов — в `tracked.py`. Каждое изменение в хоуме идёт через `Fs` из `fs.py`. На нём держатся `--dry-run`, бэкапы и гард, который не даёт писать в каталог, на деле лежащий внутри репы. Устройство модулей описано в [scripts/aisettings/README.md](scripts/aisettings/README.md).
 
 Проверки:
 
 ```bash
-.venv/bin/python -m pytest -q        # установщик, миграции, skill-lint
+.venv/bin/python -m pytest -q        # установщик, миграции, skill-lint, agent-lint
 .venv/bin/ruff check scripts tests
 .venv/bin/mypy
 ```

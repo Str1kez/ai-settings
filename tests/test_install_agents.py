@@ -11,7 +11,14 @@ from typing import Any
 import pytest
 import yaml
 
-from tests.helpers import REPO_ROOT, copy_scripts, run_sync, run_unchecked, write
+from tests.helpers import (
+    REPO_ROOT,
+    copy_scripts,
+    git_track,
+    run_sync,
+    run_unchecked,
+    write,
+)
 
 FOREIGN_OPENCODE_AGENT = "---\ndescription: mine\nmode: subagent\n---\nMy prompt.\n"
 
@@ -86,6 +93,7 @@ def repo(tmp_path: Path) -> Path:
             f"---\nname: {name}\ndescription: Use for {name} work.\n"
             f"model: sonnet\ntools: [Read, Grep]\n---\n\n# {name}\n",
         )
+    git_track(repo, "agents")
     return repo
 
 
@@ -222,6 +230,21 @@ def test_foreign_codex_agent_under_a_repo_agent_name_moves_to_backups(
     backups = sorted((repo / "backups").rglob("keeper.toml"))
     assert [path.read_text(encoding="utf-8") for path in backups] == ['name = "mine"\n']
     assert _toml_agent(home, "keeper")["name"] == "keeper"
+
+
+def test_agent_whose_frontmatter_name_differs_from_its_dir_fails_the_sync(
+    repo: Path, home: Path
+) -> None:
+    write(
+        repo / "agents/keeper/AGENT.md",
+        "---\nname: keeper-v2\ndescription: Keeps.\ntools: [Read]\n---\n\nKeeps.\n",
+    )
+
+    result = run_unchecked(["python3", repo / "scripts/sync.py", "agents"], home)
+
+    assert result.returncode != 0
+    assert "keeper-v2" in result.stderr and "'keeper'" in result.stderr
+    assert not (home / ".claude/agents").exists()
 
 
 def test_agent_prompt_with_toml_literal_quotes_fails_the_codex_sync(

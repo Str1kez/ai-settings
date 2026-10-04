@@ -23,6 +23,13 @@ def write(path: Path, text: str) -> None:
     path.write_text(text, encoding="utf-8")
 
 
+def git_track(repo: Path, *paths: str) -> None:
+    """Make repo a git repo if it isn't one yet and stage paths: a staged file
+    is tracked, which is all the deploy asks of a skill or an agent."""
+    subprocess.run(["git", "init", "-q"], cwd=repo, check=True)
+    subprocess.run(["git", "add", *paths], cwd=repo, check=True)
+
+
 def run_sync(repo: Path, home: Path, *args: str) -> str:
     """Run the copy of sync.py in repo with HOME=home, fail on error, return
     its log."""
