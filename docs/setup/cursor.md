@@ -10,6 +10,12 @@
 
 Cursor читает скиллы из `~/.agents/skills/<skill>` (и из `~/.claude/skills`). `install.sh` кладёт туда по симлинку на каждый скилл репы, имена плоские, как в других харнессах.
 
+## Субагенты
+
+`install.sh` кладёт по файлу на каждого агента репы в `~/.cursor/agents/<name>.md`: `name`, `description`, `model: inherit`. Агентам без Edit/Write (`code-reviewer`, `pr-writer`) добавляется `readonly: true`. Каталог `~/.cursor/agents` приоритетнее совместимого `~/.claude/agents`, так что Cursor берёт эти файлы, а не ссылки Claude Code.
+
+Файлы с меткой `# managed-by: ai-settings` под frontmatter установщик считает своими: устаревшие удаляет. Чужой файл под именем нашего агента уходит в `backups/<ts>/` репы, остальные не трогаются.
+
 ## Per-project (надёжнее)
 
 В корне проекта:

@@ -57,9 +57,13 @@ find -L ~/.agents/skills -maxdepth 2 -name SKILL.md -print
 
 ## Субагенты
 
-У Codex нет такой же системы субагентов, как у Claude Code. Но плоский `AGENTS.md` содержит ссылки на `agents/*/AGENT.md` в репе — модель может имитировать роли при ручном запросе:
+`install.sh` кладёт по файлу на каждого агента репы в `~/.codex/agents/<name>.toml`: `name`, `description` и `developer_instructions` (промпт агента). Агентам без Edit/Write (`code-reviewer`, `pr-writer`) добавляется `sandbox_mode = "read-only"`. Модель не задаётся, агент берёт модель родителя.
 
-> «ты сейчас code-reviewer, проверь этот diff по правилам из `~/.ai-settings/agents/code-reviewer/AGENT.md`»
+Первая строка файла — `# managed-by: ai-settings`. По ней установщик отличает свои файлы: устаревшие удаляет, а чужой файл под именем нашего агента уносит в `backups/<ts>/` репы. Файлы без метки под другими именами не трогает.
+
+```bash
+ls ~/.codex/agents
+```
 
 ## Что глобально применено к Codex
 

@@ -21,6 +21,12 @@ Gemini CLI нативно поддерживает `@imports`, поэтому м
 
 Скиллы Gemini берёт из `~/.agents/skills/<skill>`: по симлинку на каждый скилл репы, имена те же, что в остальных харнессах. Отдельный `~/.gemini/skills` не нужен.
 
+## Субагенты
+
+`install.sh` кладёт по файлу на каждого агента репы в `~/.gemini/agents/<name>.md`: `name`, `description` и `tools`. Инструменты Claude Code переводятся так: Read → `read_file`, `read_many_files`; Grep → `grep_search`; Glob → `glob`, `list_directory`; Bash → `run_shell_command`; Edit → `replace`; Write → `write_file`; WebFetch → `web_fetch`; WebSearch → `google_web_search`. У агентов без Edit/Write (`code-reviewer`, `pr-writer`) нет `replace` и `write_file`. Модель не задаётся, агент берёт модель родителя.
+
+Файлы с меткой `# managed-by: ai-settings` под frontmatter установщик считает своими: устаревшие удаляет. Чужой файл под именем нашего агента уходит в `backups/<ts>/` репы, остальные не трогаются.
+
 ## Обновление
 
 ```bash

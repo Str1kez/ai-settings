@@ -1,7 +1,7 @@
 """Agents: agents/<name>/AGENT.md in Claude Code format is the only source.
 
-Claude Code reads it as is, through a link per agent. OpenCode gets a markdown
-agent rendered from it.
+Claude Code reads it as is, through a link per agent. OpenCode, Gemini and
+Cursor get a markdown agent rendered from it, Codex a TOML one.
 """
 
 from __future__ import annotations
@@ -31,9 +31,28 @@ _TOOL_TO_PERMISSION = {
 _FRONTMATTER_RE = re.compile(r"^---\n(.*?)\n---\n(.*)\Z", re.DOTALL)
 _CLAUDE_AGENTS = Path(".claude/agents")
 _OPENCODE_AGENTS = Path(".config/opencode/agents")
+_GEMINI_AGENTS = Path(".gemini/agents")
+_CURSOR_AGENTS = Path(".cursor/agents")
+_CODEX_AGENTS = Path(".codex/agents")
 # The first lines of a render: the mark tells our files from the user's.
 _MARKER = "# managed-by: ai-settings"
 _MARKDOWN_HEADER = f"---\n{_MARKER}\n"
+_TOML_HEADER = f"{_MARKER}\n"
+_TOML_LITERAL_QUOTES = "'''"
+
+# Claude Code tool -> Gemini CLI tools. Tools with no entry have no Gemini
+# counterpart and are left out.
+_TOOL_TO_GEMINI = {
+    "Read": ["read_file", "read_many_files"],
+    "Grep": ["grep_search"],
+    "Glob": ["glob", "list_directory"],
+    "Bash": ["run_shell_command"],
+    "Edit": ["replace"],
+    "Write": ["write_file"],
+    "WebFetch": ["web_fetch"],
+    "WebSearch": ["google_web_search"],
+}
+_EDITING_TOOLS = {"Edit", "Write"}
 
 # Runtime alias: no `X | Y` here, it must evaluate on Python 3.9.
 _Fields = dict[str, Union[str, list[str]]]
@@ -50,8 +69,15 @@ class Agent(NamedTuple):
 def sync(fs: Fs, repo: Path, home: Path) -> None:
     agents = collect(repo)
     _sync_claude(fs, repo, home / _CLAUDE_AGENTS, agents)
-    renders = {f"{agent.name}.md": _render_opencode(agent) for agent in agents}
-    _sync_renders(fs, home / _OPENCODE_AGENTS, renders)
+    for agents_home, render in (
+        (_OPENCODE_AGENTS, _render_opencode),
+        (_GEMINI_AGENTS, _render_gemini),
+        (_CURSOR_AGENTS, _render_cursor),
+    ):
+        renders = {f"{agent.name}.md": render(agent) for agent in agents}
+        _sync_renders(fs, home / agents_home, renders, _MARKDOWN_HEADER)
+    codex = {f"{agent.name}.toml": _render_codex(agent) for agent in agents}
+    _sync_renders(fs, home / _CODEX_AGENTS, codex, _TOML_HEADER)
 
 
 def collect(repo: Path) -> list[Agent]:
@@ -76,26 +102,39 @@ def _sync_claude(fs: Fs, repo: Path, claude_agents: Path, agents: list[Agent]) -
             fs.unlink(entry)
 
 
-def _sync_renders(fs: Fs, agents_home: Path, renders: dict[str, str]) -> None:
+def _sync_renders(
+    fs: Fs, agents_home: Path, renders: dict[str, str], header: str
+) -> None:
     """Write renders by file name. A file without the marked header isn't
     ours: under a render's name it moves to backups, under another name it
     stays. A render left from an agent that is gone goes."""
     for file_name, content in sorted(renders.items()):
         dst = agents_home / file_name
-        if os.path.lexists(dst) and not _is_render(dst):
+        if os.path.lexists(dst) and not _is_render(dst, header):
             fs.backup(dst)
         fs.write(dst, content)
     if not agents_home.is_dir():
         return
     for entry in sorted(agents_home.iterdir()):
-        if entry.name not in renders and _is_render(entry):
+        if entry.name not in renders and _is_render(entry, header):
             fs.remove_file(entry)
 
 
-def _is_render(path: Path) -> bool:
+def _is_render(path: Path, header: str) -> bool:
     if path.is_symlink() or not path.is_file():
         return False
-    return path.read_bytes().startswith(_MARKDOWN_HEADER.encode("utf-8"))
+    return path.read_bytes().startswith(header.encode("utf-8"))
+
+
+def _markdown_agent(frontmatter: list[str], agent: Agent) -> str:
+    """The marked header, frontmatter lines and the agent's body as prompt."""
+    return _MARKDOWN_HEADER + "\n".join(
+        [*frontmatter, "---", "", agent.body.strip(), ""]
+    )
+
+
+def _is_read_only(agent: Agent) -> bool:
+    return not _EDITING_TOOLS.intersection(agent.tools)
 
 
 def _render_opencode(agent: Agent) -> str:
@@ -110,9 +149,59 @@ def _render_opencode(agent: Agent) -> str:
             for key, value in opencode_permission(agent.tools).items()
         ),
     ]
-    return _MARKDOWN_HEADER + "\n".join(
-        [*frontmatter, "---", "", agent.body.strip(), ""]
-    )
+    return _markdown_agent(frontmatter, agent)
+
+
+def _render_gemini(agent: Agent) -> str:
+    """A markdown agent, its body is the prompt. No model: it inherits the
+    parent's. Tools are what the agent is allowed to call."""
+    tools = [
+        gemini_tool
+        for tool in agent.tools
+        for gemini_tool in _TOOL_TO_GEMINI.get(tool, [])
+    ]
+    frontmatter = [
+        f"name: {_yaml_string(agent.name)}",
+        f"description: {_yaml_string(agent.description)}",
+        "tools:",
+        *(f"  - {tool}" for tool in tools),
+    ]
+    return _markdown_agent(frontmatter, agent)
+
+
+def _render_cursor(agent: Agent) -> str:
+    """A markdown agent, its body is the prompt. It runs on the parent's model;
+    without Edit/Write it is read-only."""
+    frontmatter = [
+        f"name: {_yaml_string(agent.name)}",
+        f"description: {_yaml_string(agent.description)}",
+        "model: inherit",
+    ]
+    if _is_read_only(agent):
+        frontmatter.append("readonly: true")
+    return _markdown_agent(frontmatter, agent)
+
+
+def _render_codex(agent: Agent) -> str:
+    """A TOML agent. The prompt is a literal string, so it can't hold the
+    literal quotes. Without Edit/Write the sandbox is read-only."""
+    prompt = agent.body.strip()
+    if _TOML_LITERAL_QUOTES in prompt:
+        raise SyncError(f"{agent.path}: body holds {_TOML_LITERAL_QUOTES}")
+    lines = [
+        f"name = {_toml_string(agent.name)}",
+        f"description = {_toml_string(agent.description)}",
+    ]
+    if _is_read_only(agent):
+        lines.append('sandbox_mode = "read-only"')
+    quotes = _TOML_LITERAL_QUOTES
+    lines.append(f"developer_instructions = {quotes}\n{prompt}\n{quotes}")
+    return _TOML_HEADER + "\n".join(lines) + "\n"
+
+
+def _toml_string(text: str) -> str:
+    """A JSON string is a valid TOML basic string: same escapes."""
+    return json.dumps(text, ensure_ascii=False)
 
 
 def _yaml_string(text: str) -> str:

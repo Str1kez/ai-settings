@@ -6,6 +6,11 @@
 ## [Unreleased]
 
 ### Добавлено
+- `install.sh` ставит агентов репы в Codex (`~/.codex/agents/<name>.toml`),
+  Gemini CLI (`~/.gemini/agents/<name>.md`) и Cursor (`~/.cursor/agents/<name>.md`).
+  `code-reviewer` и `pr-writer` остаются read-only: `sandbox_mode = "read-only"`
+  у Codex, `readonly: true` у Cursor, у Gemini нет `replace` и `write_file`.
+  Устаревшие файлы с меткой `managed-by: ai-settings` удаляются, чужие не трогаются.
 - Скилл `feature-architecture` — сводит разведку кодовой базы и продуктовое
   открытие в одну рекомендованную архитектуру фичи: диаграмма, точки
   интеграции, поток данных, честная оценка и явные допущения.
