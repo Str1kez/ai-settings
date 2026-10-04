@@ -2,13 +2,17 @@
 
 ## В работе
 
-- [ ] Удалить `scripts/aisettings/legacy.py`, когда обе машины мигрированы:
+- [ ] Удалить `scripts/aisettings/legacy.py`, когда обе машины мигрированы
+  (личная — 2026-10-04, рабочая — ещё нет):
   вместе с ним уходят вызовы `legacy.*` в `sync.py`, помеченный блок
   миграционных методов в `fs.py`, ветка `seeing_src` в `Fs.link` и
   `tests/test_migrate_*.py`. `agents.collect` и `agents.opencode_permission`
   после этого можно снова сделать приватными.
-- [ ] Проверить после раскатки, не задваиваются ли скиллы в OpenCode и
-  Cursor: они читают и `~/.claude/skills`, и `~/.agents/skills`.
+- [ ] Проверить, не задваиваются ли скиллы в Cursor: он читает и
+  `~/.claude/skills`, и `~/.agents/skills`. OpenCode 1.18 проверен: дубли
+  по имени схлопываются, остаётся копия из `~/.agents/skills`, на каждый
+  дубль — `WARN duplicate skill name` в логе. Обе ссылки ведут в один
+  источник, так что разницы нет.
 - [ ] Закрыть опасные формы под широкими allow шаблона
   `settings/claude-settings.json`: `Bash(git branch:*)` молча пропускает
   `git branch -D`, `Bash(git remote:*)` — `git remote set-url`, после
