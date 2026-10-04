@@ -1,9 +1,8 @@
-"""Skills: skills/<namespace>/<skill>/ in the repo, flat in every harness.
+"""Skills: skills/<skill>/ in the repo, linked under the same name in every
+harness.
 
-The namespace only groups skills in the repo. Claude Code reads
-~/.claude/skills/<name>/SKILL.md; Codex, OpenCode, Gemini CLI and Cursor read
-~/.agents/skills/<name>/SKILL.md. The name is the same everywhere, so it has
-to be unique across namespaces.
+Claude Code reads ~/.claude/skills/<name>/SKILL.md; Codex, OpenCode, Gemini
+CLI and Cursor read ~/.agents/skills/<name>/SKILL.md.
 """
 
 from __future__ import annotations
@@ -13,9 +12,10 @@ from pathlib import Path
 
 from aisettings.fs import Fs, SyncError, link_target
 
-_SKILL_PATHSPEC = "skills/*/*/SKILL.md"
-# <namespace>/<skill>/SKILL.md below skills/; "*" in a pathspec crosses "/".
-_SKILL_FILE_DEPTH_IN_SKILLS = 3
+_SKILL_PATHSPEC = "skills/*/SKILL.md"
+# <skill>/SKILL.md below skills/; "*" in a pathspec crosses "/", so a SKILL.md
+# nested inside a skill matches too and is dropped by depth.
+_SKILL_FILE_DEPTH_IN_SKILLS = 2
 _HARNESS_SKILL_DIRS = (Path(".claude/skills"), Path(".agents/skills"))
 
 
@@ -30,19 +30,10 @@ def sync(fs: Fs, repo: Path, home: Path) -> None:
 
 
 def collect(repo: Path) -> dict[str, Path]:
-    """Map skill name to its directory. Only git-tracked skills count: skills/
-    also holds npx symlinks and Claude Code's own synced/ and .trash/."""
-    by_name: dict[str, list[Path]] = {}
-    for skill_dir in _tracked_skill_dirs(repo):
-        by_name.setdefault(skill_dir.name, []).append(skill_dir)
-    duplicates = {name: dirs for name, dirs in by_name.items() if len(dirs) > 1}
-    if duplicates:
-        lines = [
-            f"  {name}: {', '.join(str(d.relative_to(repo)) for d in dirs)}"
-            for name, dirs in sorted(duplicates.items())
-        ]
-        raise SyncError("duplicate skill names:\n" + "\n".join(lines))
-    return {name: dirs[0] for name, dirs in by_name.items()}
+    """Map skill name to its directory. Only git-tracked skills count: on a
+    machine not yet migrated, skills/ still holds npx symlinks and Claude
+    Code's own synced/ and .trash/."""
+    return {skill_dir.name: skill_dir for skill_dir in _tracked_skill_dirs(repo)}
 
 
 def _tracked_skill_dirs(repo: Path) -> list[Path]:

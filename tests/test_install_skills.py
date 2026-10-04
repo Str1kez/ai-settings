@@ -32,7 +32,7 @@ def test_every_repo_skill_is_linked_flat_into_claude_and_agents(
     skills = _repo_skills()
 
     assert "feature-architecture" in skills
-    assert skills["feature-architecture"].parent.name == "strikez"
+    assert skills["feature-architecture"].parent == REPO_ROOT / "skills"
     for harness_skills in (
         installed_home / ".claude/skills",
         installed_home / ".agents/skills",
@@ -74,7 +74,7 @@ def test_stale_link_into_repo_skills_is_removed_and_foreign_links_stay(
         home_dir = tmp_path / skills_home
         home_dir.mkdir(parents=True)
         (home_dir / "ru-commit-message").symlink_to(
-            REPO_ROOT / "skills/strikez/ru-commit-message"
+            REPO_ROOT / "skills/ru-commit-message"
         )
         (home_dir / "matt-skill").symlink_to(foreign_target)
 
@@ -83,6 +83,20 @@ def test_stale_link_into_repo_skills_is_removed_and_foreign_links_stay(
     for skills_home in (".claude/skills", ".agents/skills"):
         assert not (tmp_path / skills_home / "ru-commit-message").is_symlink()
         assert (tmp_path / skills_home / "matt-skill").resolve() == foreign_target
+
+
+def test_link_left_by_the_namespaced_layout_is_relinked_to_the_flat_dir(
+    tmp_path: Path,
+) -> None:
+    for skills_home in (".claude/skills", ".agents/skills"):
+        home_dir = tmp_path / skills_home
+        home_dir.mkdir(parents=True)
+        (home_dir / "spec").symlink_to(REPO_ROOT / "skills/strikez/spec")
+
+    run([INSTALL], tmp_path)
+
+    for skills_home in (".claude/skills", ".agents/skills"):
+        assert (tmp_path / skills_home / "spec").resolve() == REPO_ROOT / "skills/spec"
 
 
 def test_legacy_agents_skills_symlink_stops_before_any_claude_link(

@@ -14,19 +14,6 @@
 
 ## Обязательно (иначе получишь не себя, а меня)
 
-### 0. Переименовать неймспейс скиллов
-
-Все кастомные скиллы живут в `skills/strikez/` — это **мой** личный неймспейс. В Claude Code они будут отображаться с префиксом `strikez:` и доступны как `/strikez:skill-name`. Переименуй папку под себя — обычно GitHub-хендл или имя:
-
-```bash
-git mv skills/strikez skills/<your-handle>
-git commit -m "chore(skills): переименовать неймспейс strikez → <your-handle>"
-```
-
-После этого `install.sh` автоматически подхватит новый неймспейс — хардкода нет, скрипт сканирует все поддиректории `skills/`.
-
----
-
 ### 1. `docs/ai/persona.md`
 
 Моя персона «Афина»: прямой, без лести, «ты», признаёт незнание. Перепиши под себя:
@@ -269,7 +256,7 @@ Pre-commit discipline, Merge strategy, Never). Верни в кодблоке.
 
 ---
 
-### 8. `skills/strikez/en-commit-message`, `ru-pr-description`, `changelog-entry`
+### 8. `skills/en-commit-message`, `ru-pr-description`, `changelog-entry`
 
 - Если коммитишь не на английском: удали `en-commit-message` или переделай в `ru-commit-message`.
 - `changelog-entry` — тоже пишет по-русски в формате Keep a Changelog. Адаптируй язык.
@@ -277,14 +264,14 @@ Pre-commit discipline, Merge strategy, Never). Верни в кодблоке.
 **Промпт (форк в английский аналог):**
 
 ```
-Скопируй папку skills/strikez/en-commit-message/ в skills/strikez/ru-commit-message/
+Скопируй папку skills/en-commit-message/ в skills/ru-commit-message/
 и переделай скилл под русский язык коммит-описаний:
 - В SKILL.md: поменяй name, description (триггеры типа «write a commit» вместо
   «напиши коммит»), tags.
 - В references/examples.md: перепиши все примеры на английские описания
   (imperative, lowercase first, no trailing period).
 - В CHANGELOG.md скилла и README.md: переведи.
-- После: удали исходную skills/strikez/en-commit-message/, если она не нужна.
+- После: удали исходную skills/en-commit-message/, если она не нужна.
 - Прогони `pytest tests/` — все проверки skill-lint должны пройти.
 
 Для changelog-entry — в нём шаблоны на русском, но формат (Keep a Changelog)
@@ -364,7 +351,7 @@ docs/ai/hard-gates.md.
 
 Не пытайся переписать всё за один заход. Работающий минимум:
 1. `persona.md` + `style.md` под себя — 80% эффекта.
-2. Удали `skills/strikez/ru-*`, если не твой язык.
+2. Удали `skills/ru-*`, если не твой язык.
 3. Живи неделю, смотри где ассистент ломается или звучит чужо — правь точечно.
 
 Всё остальное — опциональная тонкая настройка.

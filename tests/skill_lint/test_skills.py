@@ -2,10 +2,7 @@
 from __future__ import annotations
 
 import re
-from collections import Counter
 from pathlib import Path
-
-from tests.skill_lint.conftest import discover_skill_paths
 
 NAME_RE = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")  # Agent Skills spec
 MAX_DESCRIPTION_LENGTH = 1024  # OpenCode limit
@@ -81,10 +78,3 @@ def test_no_obvious_secrets(skill_text: str):
     for pattern in SECRET_PATTERNS:
         match = pattern.search(skill_text)
         assert not match, f"Possible secret matched: {pattern.pattern}"
-
-
-def test_names_are_unique_across_namespaces():
-    # Every harness gets the skill under its folder name, flat.
-    counts = Counter(path.parent.name for path in discover_skill_paths())
-    duplicates = sorted(name for name, count in counts.items() if count > 1)
-    assert not duplicates, f"duplicate skill names: {duplicates}"

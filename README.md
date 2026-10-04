@@ -35,7 +35,7 @@ ai-settings/
 ├── docs/setup/                  # гайды по подключению (на русском)
 ├── docs/adr/                    # архитектурные решения
 ├── agents/<name>/AGENT.md       # субагенты в формате Claude, рендерятся под каждый харнесс
-├── skills/<namespace>/<name>/   # свои скиллы; неймспейс только группирует, имя уникально по всей репе
+├── skills/<name>/               # свои скиллы, каждый линкуется в харнессы под своим именем
 ├── settings/                    # шаблон settings.json для Claude Code и его хуки
 ├── scripts/                     # install.sh → sync.py (пакет aisettings/), init-project.sh, deploy-skills.sh
 ├── examples/                    # курируемые ссылки и промпты

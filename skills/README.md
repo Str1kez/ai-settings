@@ -2,19 +2,18 @@
 
 Библиотека кастомных скиллов для AI-платформ (Claude Code, Codex, OpenCode, Cursor, Gemini CLI).
 
-Все кастомные скиллы лежат как `skills/<namespace>/<skill>/`, сейчас это `strikez/`.
-Неймспейс нужен только для группировки в репе. В харнессы скиллы раскладываются плоско,
-под одним именем: `scripts/install.sh` линкует каждый в `~/.claude/skills/<skill>` (Claude Code)
-и `~/.agents/skills/<skill>` (Codex, OpenCode, Gemini CLI, Cursor).
-Claude Code сам отдаёт скилл как `/<skill>`, шимы в `~/.claude/commands` не генерируются.
+Каждый скилл лежит в своей папке `skills/<skill>/`. `scripts/install.sh` линкует его под тем же
+именем в `~/.claude/skills/<skill>` (Claude Code) и `~/.agents/skills/<skill>` (Codex, OpenCode,
+Gemini CLI, Cursor). Claude Code сам отдаёт скилл как `/<skill>`, шимы в `~/.claude/commands`
+не генерируются.
 
-Поэтому имя скилла уникально по всей репе, а не внутри неймспейса. Установщик падает на дубле.
 Деплоятся только скиллы, которые отслеживает git: новый скилл надо сначала `git add`.
-Остальное в `skills/` (симлинки `npx skills`, `synced/`, `.trash/`) установщик не трогает.
+Неотслеживаемое в `skills/` остаётся от старой раскладки, где `~/.claude/skills` был симлинком
+на этот каталог: `install.sh` переносит такие записи в `~/.claude/skills`.
 
 ## Правила
 
-1. Каждый скилл — отдельная папка `skills/<namespace>/<skill>/` с именем в `kebab-case`
+1. Каждый скилл — отдельная папка `skills/<skill>/` с именем в `kebab-case`
    по regex Agent Skills `^[a-z0-9]+(-[a-z0-9]+)*$`.
 2. Имя папки совпадает с полем `name` в YAML frontmatter `SKILL.md`.
 3. Обязательные файлы в папке скилла:
@@ -72,14 +71,15 @@ tags: [git, markdown, russian, ...]
 
 ## Skill-lint
 
-Все скиллы автоматически проверяются через `pytest tests/skill_lint/`. Линт прогоняется локально перед коммитом — вручную или через pre-commit hook. Список проверок см. в `tests/skill_lint/README.md`.
-Отдельно линт проверяет, что имена скиллов уникальны по всей репе.
+Все скиллы проверяются через `.venv/bin/python -m pytest tests/skill_lint`. Линт прогоняется локально перед коммитом — вручную или через pre-commit hook. Список проверок см. в `tests/skill_lint/README.md`.
 
 ## Стартовый набор
 
-- `strikez/en-commit-message` — conventional commit на английском из staged diff.
-- `strikez/ru-pr-description` — PR-описание на русском по шаблону.
-- `strikez/en-pr-description` — PR-описание на английском по шаблону.
-- `strikez/changelog-entry` — запись в корневой `CHANGELOG.md` проекта (на английском).
-- `strikez/feature-architecture` — одна рекомендованная архитектура новой фичи поверх существующей кодовой базы.
-- `strikez/boilerplate` — развернуть новый проект: шаблон + GitHub репо + AI-правила + инструкция деплоя.
+- `en-commit-message` — conventional commit на английском из staged diff.
+- `ru-pr-description` — PR-описание на русском по шаблону.
+- `en-pr-description` — PR-описание на английском по шаблону.
+- `changelog-entry` — запись в корневой `CHANGELOG.md` проекта (на английском).
+- `feature-architecture` — одна рекомендованная архитектура новой фичи поверх существующей кодовой базы.
+- `boilerplate` — развернуть новый проект: шаблон + GitHub репо + AI-правила + инструкция деплоя.
+- `product-spec-pipeline` — продуктовая спецификация из идеи: анализ проекта, выбор направления, исследования, grilling и независимые ревью.
+- `spec` — короткий алиас `product-spec-pipeline`.

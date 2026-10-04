@@ -1,8 +1,8 @@
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-PIPELINE_SKILL = REPO_ROOT / "skills/strikez/product-spec-pipeline/SKILL.md"
-SPEC_ALIAS_SKILL = REPO_ROOT / "skills/strikez/spec/SKILL.md"
+PIPELINE_SKILL = REPO_ROOT / "skills/product-spec-pipeline/SKILL.md"
+SPEC_ALIAS_SKILL = REPO_ROOT / "skills/spec/SKILL.md"
 
 BRAINSTORM_PHASE = "## Phase 2: Brainstorm the idea"
 GRILLING_PHASE = "## Phase 5: Grill the selected direction"

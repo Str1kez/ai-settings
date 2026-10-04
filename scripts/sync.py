@@ -83,7 +83,7 @@ def _parser() -> argparse.ArgumentParser:
     artifacts.add_parser(
         "skills",
         parents=[common],
-        help="skills/<ns>/<skill> flat into ~/.claude/skills and ~/.agents/skills",
+        help="skills/<skill> into ~/.claude/skills and ~/.agents/skills",
     )
     artifacts.add_parser(
         "agents",

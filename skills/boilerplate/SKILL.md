@@ -1,11 +1,11 @@
 ---
 name: boilerplate
-version: 1.0.0
+version: 1.0.1
 description: |
   Use when starting a new project from scratch. Scaffolds project structure from
   public template repo, creates GitHub repo, copies AI settings snapshot, and
   generates a ready-to-execute deployment runbook for the Yandex Cloud VM.
-  Trigger: user calls /strikez:boilerplate or says "создать новый проект / развернуть проект".
+  Trigger: user calls /boilerplate or says "создать новый проект / развернуть проект".
   SKIP: if the project is already initialized (git repo exists, files present).
 category: devops
 tags: [scaffold, boilerplate, setup, new-project]

@@ -88,7 +88,7 @@ cd ~/.ai-settings && git pull && ./scripts/install.sh
 
 ## Скиллы
 
-`install.sh` линкует каждый скилл репы в `~/.claude/skills/<skill>`. Неймспейс `strikez/` в репе только группирует, в Claude Code скилл виден как `/<skill>`:
+`install.sh` линкует каждый скилл репы `skills/<skill>/` в `~/.claude/skills/<skill>`, в Claude Code он виден как `/<skill>`:
 
 ```
 /en-commit-message
@@ -156,7 +156,7 @@ New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.claude\CLAUDE.md" -Targ
 New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.claude\agents"
 # Агенты по одному: SymbolicLink на каждый agents\<name>\AGENT.md в .claude\agents\<name>.md
 New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.claude\skills"
-# Скиллы по одному: Junction на каждый skills\<namespace>\<skill> в .claude\skills\<skill>
+# Скиллы по одному: Junction на каждый skills\<skill> в .claude\skills\<skill>
 New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.claude\hooks"
 # Хуки по одному: SymbolicLink на каждый скрипт, который запускает шаблон, в .claude\hooks\<script>
 

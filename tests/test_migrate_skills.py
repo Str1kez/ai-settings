@@ -26,7 +26,7 @@ def repo(tmp_path: Path) -> Path:
     """A git repo with one tracked skill and its own copy of the deploy scripts."""
     repo = tmp_path / "repo"
     copy_scripts(repo)
-    write(repo / "skills/ns/tracked-skill/SKILL.md", TRACKED_SKILL)
+    write(repo / "skills/tracked-skill/SKILL.md", TRACKED_SKILL)
     subprocess.run(["git", "init", "-q"], cwd=repo, check=True)
     subprocess.run(["git", "add", "skills"], cwd=repo, check=True)
     return repo
@@ -79,11 +79,11 @@ def test_old_skills_link_becomes_a_real_dir_with_everything_git_does_not_track(
     assert _read(claude_skills / ".trash/old-skill/SKILL.md") == "trashed\n"
     pinned = (claude_skills / "pinned").resolve()
     assert pinned == claude_skills / "synced/account-skill"
-    assert os.listdir(repo / "skills") == ["ns"]
-    assert _read(repo / "skills/ns/tracked-skill/SKILL.md") == TRACKED_SKILL
+    assert os.listdir(repo / "skills") == ["tracked-skill"]
+    assert _read(repo / "skills/tracked-skill/SKILL.md") == TRACKED_SKILL
     for skills_home in (".claude/skills", ".agents/skills"):
         linked = home / skills_home / "tracked-skill"
-        assert linked.resolve() == repo / "skills/ns/tracked-skill"
+        assert linked.resolve() == repo / "skills/tracked-skill"
 
 
 def test_second_run_changes_nothing(repo: Path, home: Path) -> None:
@@ -127,7 +127,7 @@ def test_rerun_finishes_a_migration_that_stopped_halfway(
     assert _read(claude_skills / ".trash/old-skill/SKILL.md") == "trashed\n"
     assert _read(claude_skills / "synced/account-skill/SKILL.md") == "synced\n"
     assert (claude_skills / "matt").resolve() == home / ".agents/skills/matt"
-    assert os.listdir(repo / "skills") == ["ns"]
+    assert os.listdir(repo / "skills") == ["tracked-skill"]
 
 
 def test_only_exact_generated_shims_are_removed(repo: Path, home: Path) -> None:

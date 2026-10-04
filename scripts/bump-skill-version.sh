@@ -26,7 +26,7 @@ def bump(current: tuple[int, int, int], part: str) -> tuple[int, int, int]:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("skill_path", type=Path,
-                        help="Path to skill folder (e.g., skills/code/en-commit-message)")
+                        help="Path to skill folder (e.g., skills/en-commit-message)")
     parser.add_argument("part", choices=("major", "minor", "patch"))
     parser.add_argument("--note", default="", help="Changelog entry description")
     args = parser.parse_args()

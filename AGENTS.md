@@ -126,7 +126,7 @@ Do not call MCP servers, connectors, browser automation for external targets, or
 
 Every skill has the same name in every harness. Claude Code reads `~/.claude/skills/<name>/SKILL.md`; Codex, OpenCode, Gemini CLI and Cursor read `~/.agents/skills/<name>/SKILL.md`.
 
-Own skills live in this repo under `skills/<namespace>/<name>/`; the namespace only groups them, the name is unique across the repo. `scripts/install.sh` links them into both directories. External skills are installed with `npx skills`.
+Own skills live in this repo under `skills/<name>/`. `scripts/install.sh` links each of them into both directories. External skills are installed with `npx skills`.
 
 If a requested skill is not in the harness skill list, say so and do not claim it is installed. After adding or renaming a skill, rerun `scripts/install.sh` and restart the harness.
 

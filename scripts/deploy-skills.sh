@@ -43,7 +43,7 @@ rm -rf "$DIST_DIR"
 mkdir -p "$DIST_DIR"
 
 count=0
-for skill_dir in "$REPO_ROOT"/skills/*/*/; do
+for skill_dir in "$REPO_ROOT"/skills/*/; do
     [ -d "$skill_dir" ] || continue
     [ -f "$skill_dir/SKILL.md" ] || {
         echo "    skip: $skill_dir (нет SKILL.md)"
@@ -91,7 +91,7 @@ else
     echo "    target: $desktop_target"
     synced=0
     pending=()
-    for skill_dir in "$REPO_ROOT"/skills/*/*/; do
+    for skill_dir in "$REPO_ROOT"/skills/*/; do
         [ -d "$skill_dir" ] || continue
         [ -f "$skill_dir/SKILL.md" ] || continue
         skill_name="$(basename "$skill_dir")"
