@@ -47,6 +47,32 @@ cd my-project
 
 Что он создаёт и как это сочетается с matt-скиллами — в [гайде по новому проекту](docs/setup/new-project.md).
 
+## Свой скилл или агент
+
+Скилл — инструкция под повторяемую задачу: как писать коммит, как оформлять PR. Модель видит только его `name` и `description` и по ним решает, подгружать ли скилл в текущий диалог. Агент — субагент со своим контекстом, промптом и набором инструментов: главный агент отдаёт ему задачу целиком и получает назад результат. Агент нужен, когда задачу лучше увести из основного контекста или урезать инструменты, как у `code-reviewer`, который только читает.
+
+Заготовку для обоих делает `scripts/new.py`:
+
+```bash
+cd ~/.ai-settings
+scripts/new.py skill my-skill   # skills/my-skill/: SKILL.md, README.md, CHANGELOG.md
+scripts/new.py agent my-agent   # agents/my-agent/AGENT.md
+```
+
+Заполняю заготовку, начиная с `description`: только по нему модель решает, звать скилл или агента. Дальше:
+
+```bash
+git add skills/my-skill
+.venv/bin/python -m pytest tests/skill_lint tests/agent_lint   # нет .venv — сначала uv sync --frozen
+./scripts/install.sh
+```
+
+- `git add` обязателен. `install.sh` ставит только то, что отслеживает git, так на каждой машине оказывается один и тот же набор. Забытый каталог он не ставит и пишет `[warn] skills/my-skill/SKILL.md is not tracked by git, …`.
+- Линт ловит до коммита то, что иначе всплыло бы в работе: расплывчатый `description`, по которому модель не поймёт, когда звать, битые ссылки, дубли имён. Свежая заготовка его не проходит, пока в `description` остаются `<заготовки>`: так и задумано.
+- После `install.sh` перезапусти харнесс: список скиллов и агентов он читает на старте.
+
+Подробности — в [skills/README.md](skills/README.md) и [agents/README.md](agents/README.md).
+
 ## Обновление
 
 ```bash
@@ -62,7 +88,7 @@ cd ~/.ai-settings && git pull && ./scripts/install.sh
 - Харнессы: [Claude Code](docs/setup/claude-code.md), [OpenCode](docs/setup/opencode.md)
 - Без поддержки: [Codex CLI](docs/setup/codex.md), [Gemini CLI](docs/setup/gemini.md), [Cursor](docs/setup/cursor.md), [Claude Desktop](docs/setup/claude-desktop.md)
 - [Новый проект](docs/setup/new-project.md)
-- [Как устроен скилл](skills/README.md)
+- Свои [скиллы](skills/README.md) и [агенты](agents/README.md)
 - [Ссылки по AI-кодингу](docs/links.md)
 
 ## Лицензия
