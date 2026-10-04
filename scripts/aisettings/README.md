@@ -9,6 +9,7 @@ scripts/sync.py all [--dry-run]
 scripts/sync.py rules [--dry-run] [--check | --cursor-project PATH]
 scripts/sync.py skills [--dry-run]
 scripts/sync.py agents [--dry-run]
+scripts/sync.py claude [--dry-run]
 ```
 
 `--dry-run` печатает план и ничего не меняет. `rules --check` разворачивает `@imports` и падает на битом.
@@ -24,7 +25,8 @@ scripts/sync.py agents [--dry-run]
 - `rules.py` — ссылки на `CLAUDE.md` и `GEMINI.md`, плоский `AGENTS.md` для Codex, OpenCode и Cursor.
 - `skills.py` — каждый отслеживаемый скилл `skills/<ns>/<skill>/` плоско в `~/.claude/skills` и `~/.agents/skills`.
 - `legacy.py` — одноразовые миграции со старой раскладки. Каждая ищет старое состояние и без него ничего не делает. Общий хелпер `migrate_dir_link` превращает симлинк каталога в репу в реальный каталог и переносит туда всё, что git не отслеживает. Модуль временный: уходит, когда обе машины мигрированы.
-- `agents.py` — парсер `agents/<name>/AGENT.md` и агенты OpenCode.
+- `agents.py` — парсер `agents/<name>/AGENT.md`: ссылки для Claude Code и рендер для OpenCode, Codex, Gemini CLI и Cursor.
+- `claude.py` — мёрдж шаблона `settings/claude-settings.json` в `~/.claude/settings.json` и ссылки на скрипты хуков в `~/.claude/hooks`. Шаблон владеет `$schema`, `permissions.{allow,ask,deny}` и своими хуками, остальное в файле пользовательское и не трогается. Шаблон же задаёт список скриптов: линкуется каждый `~/.claude/hooks/<script>`, который он запускает, и только в такой форме в начале команды. Оба файла читаются и проверяются до первого изменения в хоуме. Изменённые строки `settings.json` уходят в лог без контекста, чтобы не показать значения пользователя.
 - `log.py` — строки логов в stderr.
 
 ## Ограничения

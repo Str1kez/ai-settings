@@ -54,7 +54,11 @@ class Fs:
             change = f"relink {dst} -> {src} (was -> {old_target})"
         else:
             change = f"link {dst} -> {src}"
-            if dst.exists():
+            # A dry run can see src itself at dst, through an old dir link it
+            # would replace; a real run's guard refuses such a dir. Nothing to
+            # back up then.
+            seeing_src = self._dry_run and dst.resolve() == src.resolve()
+            if dst.exists() and not seeing_src:
                 self.backup(dst)
         if self._dry_run:
             log.dry_run(f"would {change}")

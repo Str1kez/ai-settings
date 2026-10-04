@@ -8,19 +8,21 @@ if [[ "${AI_SETTINGS_QUIET:-0}" == "1" ]]; then
   exit 0
 fi
 
-SKILLS_DIR="${HOME}/.claude/skills"
-AGENTS_DIR="${HOME}/.claude/agents"
+# Counts the paths that are files; a link counts if its target is one.
+# Globs follow the links install.sh puts in ~/.claude.
+count_files() {
+  local count=0 path
+  for path in "$@"; do
+    if [[ -f "$path" ]]; then
+      count=$((count + 1))
+    fi
+  done
+  echo "$count"
+}
 
-skill_count=0
-agent_count=0
-
-if [[ -d "$SKILLS_DIR" ]]; then
-  skill_count=$(find "$SKILLS_DIR" -mindepth 2 -maxdepth 3 -name SKILL.md 2>/dev/null | wc -l | tr -d ' ')
-fi
-
-if [[ -d "$AGENTS_DIR" ]]; then
-  agent_count=$(find "$AGENTS_DIR" -mindepth 2 -maxdepth 2 -name AGENT.md 2>/dev/null | wc -l | tr -d ' ')
-fi
+# Claude Code loads ~/.claude/skills/<name>/SKILL.md and ~/.claude/agents/<name>.md.
+skill_count=$(count_files "$HOME"/.claude/skills/*/SKILL.md)
+agent_count=$(count_files "$HOME"/.claude/agents/*.md)
 
 RTK_WARNING=""
 if ! command -v rtk &>/dev/null; then

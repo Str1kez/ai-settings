@@ -41,7 +41,7 @@ fi
 
 # Project .claude/settings.json — minimal override if absent
 claude_dir="$PROJECT_ROOT/.claude"
-ensure_dir "$claude_dir"
+mkdir -p "$claude_dir"
 project_settings="$claude_dir/settings.json"
 if [[ ! -f "$project_settings" ]]; then
   cat > "$project_settings" <<'EOF'

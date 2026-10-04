@@ -8,10 +8,10 @@
 ls -la ~/.claude/
 # ожидаем:
 # CLAUDE.md -> ~/.ai-settings/CLAUDE.md
-# agents   -> ~/.ai-settings/agents
+# agents/  (реальный каталог, внутри ссылки <name>.md на агентов репы)
 # skills/  (реальный каталог, внутри ссылки на скиллы репы)
-# hooks    -> ~/.ai-settings/settings/hooks
-# settings.json  (копия, не симлинк)
+# hooks/   (реальный каталог, внутри ссылки на скрипты из settings/hooks)
+# settings.json  (твой файл, установщик мёрджит в него шаблон)
 ```
 
 ## Проверка загрузки
@@ -31,10 +31,38 @@ cd ~/.ai-settings && git pull && ./scripts/install.sh
 ```
 
 Симлинки не трогаются — новое содержимое подхватывается автоматически.
-`~/.claude/settings.json` обновляется автоматически: `install.sh` мержит
-секции `permissions`, `hooks` и `$schema` из шаблона через jq, сохраняя
-твои `enabledPlugins`, `extraKnownMarketplaces` и другие кастомные ключи.
-Требует `jq` (устанавливается через `brew install jq`).
+
+## settings.json
+
+`~/.claude/settings.json` — твой файл: в него пишут сам Claude Code, плагины и agterm. `install.sh` мёрджит в него шаблон `settings/claude-settings.json` через `sync.py claude`, `jq` для этого не нужен. Правила мёржа:
+
+- `$schema` и списки `permissions.allow`, `permissions.ask` и `permissions.deny` берутся из шаблона целиком. Своё правило в эти списки я добавляю в шаблон, иначе следующий прогон его сотрёт.
+- Остальные ключи остаются как были: `model`, `env`, `enabledPlugins`, `permissions.defaultMode` и всё прочее.
+- Хуки мёрджатся по событиям. Запись установщика — это хук из шаблона или хук, который запускает скрипт установщика из `~/.claude/hooks/`: тот, что запускает шаблон или линковал прошлый прогон. Такие записи заменяются шаблонными, и каждая остаётся ровно одна. Чужие записи, например хуки agterm, стоят где стояли. Запись на твой скрипт из `~/.claude/hooks/` тоже остаётся, даже если самого скрипта на этой машине ещё нет.
+- Повторный прогон ничего не меняет. Если `settings.json` не читается как JSON или его `permissions` и `hooks` не той формы, установщик ничего не трогает и падает с ошибкой.
+
+Какие строки `settings.json` меняются, установщик пишет в лог. Контекст вокруг них он не показывает, чтобы не светить твои значения, например токены из `env`. План видно до прогона:
+
+```bash
+~/.ai-settings/scripts/install.sh --dry-run
+```
+
+`~/.claude/hooks` — реальный каталог. На каждый скрипт, который запускает шаблон, в нём ссылка `<script>` → `settings/hooks/<script>`. Свои скрипты можно класть туда же: установщик их не трогает и их записи в `settings.json` оставляет. Ссылка на скрипт, который шаблон больше не запускает, уходит вместе со своей записью. Шаблон запускает скрипт только в виде `~/.claude/hooks/<script>` в начале команды: другую форму установщик отвергает. Старую раскладку, где `~/.claude/hooks` — симлинк на `settings/hooks/`, установщик переводит сам: всё, что git там не отслеживает, переезжает в новый каталог.
+
+### Поиск и permissions
+
+`rtk hook claude` переписывает `find`, `grep`, `rg`, `cat`, `git …`, `pytest` и другие команды в `rtk …` и решает по правилам исходной команды. Если она в allow и не попадает под ask, хук одобряет переписанную сам. Под ask он её переписывает, но не одобряет, а команду под deny не трогает. Поэтому в allow лежат сами тулы (`find`, `grep`, `rg`, `git log` …), а rtk-форм там нет, кроме мета-команд `rtk gain` и `rtk discover`: их Claude зовёт напрямую. Прямой вызов вроде `rtk find …` спросит подтверждение. `fd` и `.venv/bin/*` rtk не переписывает, их решает сам Claude Code.
+
+Флаги, которые запускают команды, перехватывают ask-правила. По ним rtk не одобряет, а Claude Code спрашивает даже поверх allow и поверх одобрения хука. Порядок deny → ask → allow, `*` в любом месте правила и то, что решение PreToolUse-хука не обходит ask и deny, описаны в [документации Claude Code](https://code.claude.com/docs/en/permissions).
+
+| Правило в `ask` | Что ловит |
+|---|---|
+| `Bash(*-exec*)` | `find -exec`, `find -execdir`, `fd --exec` |
+| `Bash(*-delete*)` | `find -delete` |
+| `Bash(*rg *--pre*)` | `rg --pre`, который запускает программу на каждый файл |
+| `Bash(fd *-x*)`, `Bash(fd *-X*)` | `fd -x`, `fd -X` |
+
+Это паттерны по тексту команды. Обычные формы они ловят, нарочно запутанные вроде `fd -Hx` — нет. Иногда спросят лишнее, например на `rg --pretty`.
 
 ## Проектные переопределения
 
@@ -121,13 +149,18 @@ curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/refs/heads/master/instal
 # В PowerShell (с правами администратора):
 # 1. Создать символические ссылки
 New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.claude\CLAUDE.md" -Target "$PWD\CLAUDE.md"
-New-Item -ItemType Junction -Path "$env:USERPROFILE\.claude\agents" -Target "$PWD\agents"
+New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.claude\agents"
+# Агенты по одному: SymbolicLink на каждый agents\<name>\AGENT.md в .claude\agents\<name>.md
 New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.claude\skills"
 # Скиллы по одному: Junction на каждый skills\<namespace>\<skill> в .claude\skills\<skill>
-New-Item -ItemType Junction -Path "$env:USERPROFILE\.claude\hooks" -Target "$PWD\settings\hooks"
+New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.claude\hooks"
+# Хуки по одному: SymbolicLink на каждый скрипт, который запускает шаблон, в .claude\hooks\<script>
 
-# 2. Скопировать настройки
-Copy-Item "settings\claude-settings.json" "$env:USERPROFILE\.claude\settings.json"
+# 2. Скопировать настройки, если settings.json ещё нет.
+#    В существующий файл permissions и хуки из шаблона переносятся руками.
+if (-not (Test-Path "$env:USERPROFILE\.claude\settings.json")) {
+    Copy-Item "settings\claude-settings.json" "$env:USERPROFILE\.claude\settings.json"
+}
 ```
 
 **RTK на Windows:**

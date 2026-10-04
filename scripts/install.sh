@@ -39,51 +39,14 @@ fi
 
 [[ $DRY_RUN -eq 1 ]] && log_warn "DRY RUN — no changes will be made"
 
-# --- Claude Code ---
-log_info "Setting up Claude Code..."
-if [[ $DRY_RUN -eq 0 ]]; then
-  ensure_dir "$HOME/.claude"
-  ensure_symlink "$AI_SETTINGS_ROOT/settings/hooks"    "$HOME/.claude/hooks"
-else
-  echo "[dry-run] ensure_dir $HOME/.claude"
-  echo "[dry-run] ensure_symlink $AI_SETTINGS_ROOT/settings/hooks -> $HOME/.claude/hooks"
-fi
-
-# settings.json — merge managed keys (permissions, hooks, $schema) into existing file.
-# User-owned keys (enabledPlugins, extraKnownMarketplaces, etc.) are preserved.
-settings_target="$HOME/.claude/settings.json"
-settings_source="$AI_SETTINGS_ROOT/settings/claude-settings.json"
-if [[ ! -f "$settings_target" ]]; then
-  log_info "No existing ~/.claude/settings.json — installing from template"
-  if [[ $DRY_RUN -eq 0 ]]; then
-    cp "$settings_source" "$settings_target"
-  else
-    echo "[dry-run] cp $settings_source $settings_target"
-  fi
-else
-  log_info "Merging managed keys into ~/.claude/settings.json..."
-  if [[ $DRY_RUN -eq 0 ]]; then
-    if command -v jq &>/dev/null; then
-      tmp=$(mktemp)
-      jq --argjson tpl "$(cat "$settings_source")" \
-        '. * {"$schema": $tpl["$schema"], permissions: $tpl.permissions, hooks: $tpl.hooks}' \
-        "$settings_target" > "$tmp" && mv "$tmp" "$settings_target"
-      log_ok "settings.json updated (permissions + hooks merged)"
-    else
-      log_warn "jq not found — skipping merge. Install jq or manually copy: diff $settings_source $settings_target"
-    fi
-  else
-    echo "[dry-run] jq-merge permissions + hooks from $settings_source -> $settings_target"
-  fi
-fi
-
-# --- Skills, rules and agents: Claude Code, Codex, OpenCode, Gemini CLI, Cursor ---
+# --- Skills, rules, agents and Claude Code settings, for every harness ---
 # sync.py links every skill flat into ~/.claude/skills and ~/.agents/skills,
 # links CLAUDE.md and GEMINI.md, writes the flat AGENTS.md that Codex,
 # OpenCode and Cursor need (they don't follow @imports), links every agent
-# into ~/.claude/agents and renders it as an OpenCode markdown agent. It
-# handles --dry-run itself.
-log_info "Syncing skills, rules and agents..."
+# into ~/.claude/agents and renders it for the other harnesses. It merges
+# settings/claude-settings.json into ~/.claude/settings.json and links the
+# hook scripts it runs into ~/.claude/hooks. It handles --dry-run itself.
+log_info "Syncing skills, rules, agents and Claude Code settings..."
 if [[ $DRY_RUN -eq 0 ]]; then
   python3 "$SCRIPT_DIR/sync.py" all
 else
@@ -107,7 +70,7 @@ else
   fi
 fi
 
-# Claude Code hook is wired via the claude-settings.json merge above
+# Claude Code hook is wired via the settings.json merge in sync.py
 # (PreToolUse -> "rtk hook claude", native binary command, no extra setup).
 # OpenCode has no equivalent settings.json merge, so wire its plugin explicitly.
 log_info "Setting up RTK OpenCode plugin..."

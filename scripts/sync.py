@@ -10,7 +10,7 @@ import argparse
 import sys
 from pathlib import Path
 
-from aisettings import agents, legacy, log, rules, skills
+from aisettings import agents, claude, legacy, log, rules, skills
 from aisettings.fs import Fs, SyncError
 
 REPO = Path(__file__).resolve().parent.parent
@@ -34,6 +34,9 @@ def main() -> int:
         elif args.artifact == "agents":
             legacy.migrate_agents(fs, REPO, home)
             agents.sync(fs, REPO, home)
+        elif args.artifact == "claude":
+            legacy.migrate_hooks(fs, REPO, home)
+            claude.sync(fs, REPO, home)
         else:
             # Skills first: they migrate the old layout, and a layout they
             # can't handle aborts the run before rules and agents are written.
@@ -42,6 +45,8 @@ def main() -> int:
             rules.sync(fs, REPO, home)
             legacy.migrate_agents(fs, REPO, home)
             agents.sync(fs, REPO, home)
+            legacy.migrate_hooks(fs, REPO, home)
+            claude.sync(fs, REPO, home)
     except SyncError as exc:
         log.error(str(exc))
         return 1
@@ -85,6 +90,12 @@ def _parser() -> argparse.ArgumentParser:
         parents=[common],
         help="agents/<name>/AGENT.md linked into ~/.claude/agents, rendered "
         "into ~/.config/opencode/agents",
+    )
+    artifacts.add_parser(
+        "claude",
+        parents=[common],
+        help="settings/claude-settings.json merged into ~/.claude/settings.json, "
+        "the hook scripts it runs linked into ~/.claude/hooks",
     )
     return parser
 

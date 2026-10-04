@@ -54,6 +54,10 @@ def migrate_agents(fs: Fs, repo: Path, home: Path) -> None:
     )
 
 
+def migrate_hooks(fs: Fs, repo: Path, home: Path) -> None:
+    migrate_dir_link(fs, repo, home / ".claude/hooks", repo / "settings/hooks")
+
+
 def migrate_dir_link(fs: Fs, repo: Path, link: Path, source: Path) -> None:
     """Turn link, an old symlink to the repo dir source, into a real dir.
 
