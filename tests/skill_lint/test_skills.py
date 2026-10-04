@@ -8,6 +8,9 @@ NAME_RE = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")  # Agent Skills spec
 MAX_DESCRIPTION_LENGTH = 1024  # OpenCode limit
 SEMVER_RE = re.compile(r"^\d+\.\d+\.\d+$")
 REQUIRED_FIELDS = ("name", "version", "description", "category")
+# What scripts/new.py leaves in a fresh SKILL.md: <explicit trigger: ...>.
+# Such a draft passes every other description rule.
+PLACEHOLDER_RE = re.compile(r"<[^>\n]+>")
 SECRET_PATTERNS = [
     re.compile(r"(?i)aws[_-]?secret[_-]?access[_-]?key"),
     re.compile(r"(?i)api[_-]?key\s*=\s*['\"][A-Za-z0-9_-]{20,}['\"]"),
@@ -46,6 +49,13 @@ def test_description_fits_opencode_limit(skill_frontmatter):
     desc = str(skill_frontmatter.get("description", ""))
     assert len(desc) <= MAX_DESCRIPTION_LENGTH, \
         f"description too long ({len(desc)} chars, max {MAX_DESCRIPTION_LENGTH})"
+
+
+def test_description_has_no_scaffold_placeholders(skill_frontmatter):
+    desc = str(skill_frontmatter.get("description", ""))
+    leftovers = PLACEHOLDER_RE.findall(desc)
+    assert not leftovers, \
+        f"description still holds placeholders from scripts/new.py: {leftovers}"
 
 
 def test_name_matches_agent_skills_regex(skill_frontmatter):

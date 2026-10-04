@@ -7,6 +7,7 @@ import yaml
 
 from tests.agent_lint.rules import problems
 from tests.helpers import copy_scripts, run_unchecked
+from tests.skill_lint.test_skills import PLACEHOLDER_RE
 
 
 @pytest.fixture
@@ -42,6 +43,17 @@ def test_new_skill_gets_the_three_files_with_a_frontmatter_that_names_it(
         encoding="utf-8"
     )
     assert "git add skills/my-skill" in log
+
+
+def test_new_skill_is_a_draft_that_the_lint_rejects_until_it_is_filled_in(
+    repo: Path, tmp_path: Path
+) -> None:
+    code, log = _new(repo, tmp_path, "skill", "my-skill")
+
+    assert code == 0, log
+    text = (repo / "skills/my-skill/SKILL.md").read_text(encoding="utf-8")
+    description = yaml.safe_load(text.split("---\n")[1])["description"]
+    assert PLACEHOLDER_RE.search(description)
 
 
 def test_new_agent_is_a_draft_that_the_lint_rejects_until_it_is_filled_in(
