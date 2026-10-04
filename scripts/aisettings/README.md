@@ -1,6 +1,6 @@
 # aisettings
 
-Пакет за `scripts/sync.py`. Раскладывает артефакты репы по хоумам харнессов: Claude Code, Codex, OpenCode, Gemini CLI, Cursor. `install.sh` зовёт `sync.py all`, `init-project.sh` — `sync.py rules --cursor-project`.
+Пакет за `scripts/sync.py`. Раскладывает артефакты репы по хоумам харнессов: Claude Code, Codex, OpenCode, Gemini CLI, Cursor. `install.sh` зовёт `sync.py all`, `init-project.sh --cursor` — `sync.py rules --cursor-project`.
 
 ## Запуск
 

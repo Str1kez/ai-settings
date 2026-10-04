@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
-# Project-level init: add additive AGENTS.md, settings, Cursor rules to a project.
-# Run from the project root: `~/.ai-settings/scripts/init-project.sh`
+# Project layer of ai-settings: the files my global rules expect in a project.
+# Run from the project root: `~/.ai-settings/scripts/init-project.sh [--cursor] [PATH]`
+#
+# install.sh already brings the global rules, skills and agents to every
+# harness, so none of them is copied here. Only files that belong to the
+# project are created, and only when missing.
 
 set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -8,74 +12,66 @@ AI_SETTINGS_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 export AI_SETTINGS_ROOT
 source "$SCRIPT_DIR/lib/common.sh"
 
-PROJECT_ROOT="${1:-$PWD}"
+usage() {
+  cat <<EOF
+Usage: $0 [--cursor] [PATH]
+  PATH       project root, the current directory by default
+  --cursor   also write .cursor/rules/ai-settings.mdc and keep it out of git
+EOF
+}
+
+CURSOR=0
+PROJECT_ROOT="$PWD"
+for arg in "$@"; do
+  case "$arg" in
+    --cursor) CURSOR=1 ;;
+    -h|--help) usage; exit 0 ;;
+    -*) usage >&2; exit 2 ;;
+    *) PROJECT_ROOT="$arg" ;;
+  esac
+done
 PROJECT_ROOT="$(cd "$PROJECT_ROOT" && pwd)"
 
 log_info "Initializing ai-settings for project: $PROJECT_ROOT"
 
-# Project-specific AGENTS.md (additive; global layer is installed for every supported agent)
-project_agents="$PROJECT_ROOT/AGENTS.md"
-if [[ ! -f "$project_agents" ]]; then
-  cat > "$project_agents" <<'EOF'
-# AGENTS.md (project-local)
-
-<!-- Additive layer. Global rules apply automatically via ~/.claude/CLAUDE.md,
-     ~/.codex/AGENTS.md, ~/.config/opencode/AGENTS.md, and ~/.gemini/GEMINI.md. -->
-
-## Project context
-<!-- TODO: опиши проект в 2-3 предложениях -->
-
-## Tech stack (project-specific)
-<!-- TODO: конкретные версии и фреймворки этого проекта -->
-
-## Local conventions
-<!-- TODO: проектные решения, отличающиеся от глобальных -->
-
-## Commands (project-specific)
-<!-- TODO: команды, специфичные для этого проекта -->
-EOF
-  log_ok "Created $project_agents"
+# Claude Code, Codex, OpenCode and Cursor read AGENTS.md from the project root
+# (Claude Code checked on 2.1.289). Gemini CLI reads only GEMINI.md unless its
+# context.fileName lists AGENTS.md. Codex and Cursor don't read CLAUDE.md, and
+# a new AGENTS.md next to it would split the project rules in two files.
+if [[ -f "$PROJECT_ROOT/AGENTS.md" ]]; then
+  log_info "AGENTS.md exists; not touching it"
+elif [[ -f "$PROJECT_ROOT/CLAUDE.md" ]]; then
+  log_warn "CLAUDE.md without AGENTS.md: Codex and Cursor don't read it. Consider renaming it to AGENTS.md, Claude Code reads that too"
 else
-  log_warn "$project_agents exists; not overwriting"
-fi
+  cat > "$PROJECT_ROOT/AGENTS.md" <<'EOF'
+# AGENTS.md
 
-# Project .claude/settings.json — minimal override if absent
-claude_dir="$PROJECT_ROOT/.claude"
-mkdir -p "$claude_dir"
-project_settings="$claude_dir/settings.json"
-if [[ ! -f "$project_settings" ]]; then
-  cat > "$project_settings" <<'EOF'
-{
-  "$schema": "https://json.schemastore.org/claude-code-settings",
-  "permissions": {
-    "allow": [],
-    "ask": [],
-    "deny": []
-  }
-}
+<!-- Instructions for coding agents that are specific to this project.
+     Personal preferences belong in the global rules, not here. -->
+
+## Project
+
+<!-- What this project is, in 2-3 sentences. -->
+
+## Stack
+
+<!-- Languages, frameworks and versions used here. -->
+
+## Commands
+
+<!-- How to install, run, test, lint and build. -->
+
+## Conventions
+
+<!-- Project decisions that override the global rules, with the reason. -->
 EOF
-  log_ok "Created $project_settings (empty override)"
+  log_ok "Created AGENTS.md"
 fi
 
-# Project opencode.jsonc — runtime config override (model, agent, mcp, etc.)
-# AGENTS.md already covers project rules; this is for OpenCode-specific
-# runtime settings that mustn't leak into other agents.
-opencode_config="$PROJECT_ROOT/opencode.jsonc"
-if [[ ! -f "$opencode_config" ]]; then
-  cat > "$opencode_config" <<'EOF'
-{
-  "$schema": "https://opencode.ai/config.json"
-  // Project-local overrides, merged field-level over the global config, e.g.:
-  // "model": "anthropic/claude-opus-4-1",
-  // "agent": { "code-reviewer": { "model": "anthropic/claude-opus-4-1" } }
-}
-EOF
-  log_ok "Created $opencode_config (empty override)"
-fi
-
-# CHANGELOG.md + TODO.md templates
+# The global rules keep CHANGELOG.md (Russian, Keep a Changelog) and TODO.md
+# in the project root.
 if [[ ! -f "$PROJECT_ROOT/CHANGELOG.md" ]]; then
-  cat > "$PROJECT_ROOT/CHANGELOG.md" <<EOF
+  cat > "$PROJECT_ROOT/CHANGELOG.md" <<'EOF'
 # CHANGELOG
 
 Формат — [Keep a Changelog](https://keepachangelog.com/ru/1.1.0/).
@@ -99,17 +95,33 @@ EOF
   log_ok "Created TODO.md"
 fi
 
-# Cursor rules for this project
-python3 "$SCRIPT_DIR/sync.py" rules --cursor-project "$PROJECT_ROOT"
-
-# .gitignore entries (append if missing)
-gitignore="$PROJECT_ROOT/.gitignore"
-touch "$gitignore"
-for line in ".claude/sessions/" ".claude/cache/" ".cursor/sessions/"; do
-  if ! grep -Fxq "$line" "$gitignore" 2>/dev/null; then
-    echo "$line" >> "$gitignore"
-    log_info ".gitignore += $line"
+# Cursor takes user rules only from its settings UI, so the global rules reach
+# it as a copy inside the project. The copy is personal: .git/info/exclude
+# keeps it out of git and, unlike .gitignore, isn't committed itself.
+if [[ $CURSOR -eq 1 ]]; then
+  cursor_rule=".cursor/rules/ai-settings.mdc"
+  python3 "$SCRIPT_DIR/sync.py" rules --cursor-project "$PROJECT_ROOT"
+  if ! git -C "$PROJECT_ROOT" rev-parse --git-dir >/dev/null 2>&1; then
+    log_warn "Not a git repo: after git init, rerun with --cursor to keep $cursor_rule out of git"
+  else
+    # --no-index: a pattern counts even if the file is already tracked.
+    if ! git -C "$PROJECT_ROOT" check-ignore -q --no-index "$cursor_rule"; then
+      exclude="$(cd "$PROJECT_ROOT" && git rev-parse --git-path info/exclude)"
+      [[ "$exclude" == /* ]] || exclude="$PROJECT_ROOT/$exclude"
+      # Exclude patterns are relative to the top of the repo, the project may
+      # be a subdirectory of it.
+      prefix="$(git -C "$PROJECT_ROOT" rev-parse --show-prefix)"
+      mkdir -p "$(dirname "$exclude")"
+      echo "/$prefix$cursor_rule" >> "$exclude"
+      log_ok "Excluded $cursor_rule from git"
+    fi
+    if git -C "$PROJECT_ROOT" ls-files --error-unmatch "$cursor_rule" >/dev/null 2>&1; then
+      log_warn "$cursor_rule is already in git; untrack it: git rm --cached $cursor_rule"
+    fi
   fi
-done
+fi
 
 log_ok "Project init complete: $PROJECT_ROOT"
+if [[ ! -d "$PROJECT_ROOT/docs/agents" ]]; then
+  log_info "Matt's engineering skills need a per-repo setup: run /setup-matt-pocock-skills in the project"
+fi
