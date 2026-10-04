@@ -33,7 +33,6 @@
   записи о том, что добавлено и убрано в этом же цикле — `brainstorming`,
   мёрдж агентов в `opencode.jsonc`, Superpowers через `~/.gemini/skills`,
   `sync-cursor.sh`.
-- [ ] ML-helper: секция про versioning датасетов (DVC / lakeFS).
 
 ## Идеи / бэклог
 

@@ -279,8 +279,8 @@ Pre-commit discipline, Merge strategy, Never). Верни в кодблоке.
 
 ### 9. `agents/`
 
-5 субагентов: `code-reviewer`, `debugger`, `fastapi-backend`, `ml-helper`, `pr-writer`.
-- `fastapi-backend`, `ml-helper` — узко-стековые. Если не работаешь с FastAPI/LiteStar или ML — удали соответствующие папки, чтобы они не всплывали ложными триггерами.
+4 субагента: `code-reviewer`, `debugger`, `fastapi-backend`, `pr-writer`.
+- `fastapi-backend` — узко-стековый. Если не работаешь с FastAPI/LiteStar — удали папку, чтобы агент не всплывал ложным триггером.
 - `code-reviewer`, `debugger`, `pr-writer` — общие, оставляй.
 - Фронтенд (Vue) отдельного субагента пока не имеет — заведи по аналогии, если Vue-проекты регулярные.
 - После удаления папки запусти `./scripts/install.sh`: он уберёт ссылку и рендеры удалённого агента во всех харнессах.
