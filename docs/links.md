@@ -21,6 +21,7 @@
 - [VoltAgent — 100+ subagent templates](https://github.com/VoltAgent/awesome-claude-code-subagents).
 - [awesome-claude-code](https://github.com/hesreallyhim/awesome-claude-code).
 - [Anthropic Skills marketplace](https://claude.com/claude-code/skills) — официальные skills.
+- [skills.sh](https://skills.sh/) — каталог и лидерборд open agent skills от Vercel. Ставятся через `npx skills add <owner/repo>`, по тому же CLI работают matt-скиллы и `find-skills` в README.
 
 ## Конкретные примеры
 

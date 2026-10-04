@@ -34,11 +34,11 @@ ai-settings/
 ├── docs/ai/                     # модули, подключаемые через @imports
 ├── docs/setup/                  # гайды по подключению (на русском)
 ├── docs/adr/                    # архитектурные решения
+├── docs/links.md                # курируемые ссылки по AI-кодингу
 ├── agents/<name>/AGENT.md       # субагенты в формате Claude, рендерятся под каждый харнесс
 ├── skills/<name>/               # свои скиллы, каждый линкуется в харнессы под своим именем
 ├── settings/                    # шаблон settings.json для Claude Code и его хуки
 ├── scripts/                     # install.sh → sync.py (пакет aisettings/), init-project.sh, deploy-skills.sh
-├── examples/                    # курируемые ссылки и промпты
 └── tests/                       # pytest: установщик, миграции, skill-lint в tests/skill_lint/
 ```
 
