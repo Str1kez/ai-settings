@@ -6,6 +6,11 @@
 ## [Unreleased]
 
 ### Добавлено
+- Хук `format-python.sh` на `PostToolUse` (`Write|Edit`): после правки `.py`
+  гоняет `ruff check --fix` и `ruff format` из ближайшего `.venv/bin/ruff`,
+  иначе из PATH, `uv` не вызывает. Установщик убирает старый инлайн-хук
+  с `uv run ruff` из `settings.json`, на другие хуки с `uv run` пишет
+  предупреждение.
 - `install.sh` ставит агентов репы в Codex (`~/.codex/agents/<name>.toml`),
   Gemini CLI (`~/.gemini/agents/<name>.md`) и Cursor (`~/.cursor/agents/<name>.md`).
   `code-reviewer` и `pr-writer` остаются read-only: `sandbox_mode = "read-only"`

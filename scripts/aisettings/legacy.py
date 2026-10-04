@@ -28,6 +28,12 @@ _SHIM_RE = re.compile(
 # an entry of the merge is told from the user's.
 _MERGED_AGENT_FIELDS = ("description", "mode", "prompt")
 _PROMPT_DIR_REF = "{file:./agent-prompts/"
+# The inline hook that was added to settings.json by hand before format-python.sh.
+# `uv run` initializes the uv cache on every call and fails where it is read-only.
+LEGACY_HOOK_COMMANDS = (
+    "FILE=$(jq -r '.tool_input.file_path') && if [[ \"$FILE\" == *.py ]]; then "
+    'uv run ruff check --fix "$FILE"; uv run ruff format "$FILE"; fi',
+)
 
 
 def migrate_skills(fs: Fs, repo: Path, home: Path) -> None:

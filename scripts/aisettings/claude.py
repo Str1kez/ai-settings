@@ -19,7 +19,7 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any, NoReturn
 
-from aisettings import log
+from aisettings import legacy, log
 from aisettings.fs import Fs, SyncError, link_target
 
 _TEMPLATE = Path("settings/claude-settings.json")
@@ -31,6 +31,7 @@ _PERMISSION_LISTS = ("allow", "ask", "deny")
 # hook command in a shell, which expands ~. Group 1 is the script's name.
 _HOOK_SCRIPT_RE = re.compile(r"~/\.claude/hooks/([^/\s]+)(?=\s|$)")
 _HOOKS_DIR_MENTION = ".claude/hooks/"
+_UV_RUN_RE = re.compile(r"\buv\s+run\b")
 
 # Runtime aliases: no `X | Y` here, they must evaluate on Python 3.9.
 _Json = dict[str, Any]
@@ -55,12 +56,23 @@ def sync(fs: Fs, repo: Path, home: Path) -> None:
 
     is_installers = _installers_test(template, set(scripts) | linked)
     merged = _merge(settings, template, is_installers)
+    _warn_uv_run(merged["hooks"])
     if merged == settings:
         log.info(f"up to date {path}")
         return
     if existed:
         log.info(f"{path} changes:\n{_diff(settings, merged)}")
     fs.update_in_place(path, _dump(merged))
+
+
+def _warn_uv_run(hooks: _Json) -> None:
+    """`uv run` fails where the uv cache is read-only; such hooks stay as they are."""
+    for command in sorted(_commands(hooks)):
+        if _UV_RUN_RE.search(command):
+            log.warn(
+                "a hook runs `uv run`, which fails where the uv cache is "
+                f"read-only: {command}"
+            )
 
 
 def _read(path: Path) -> _Json:
@@ -138,11 +150,12 @@ def _links_into(entry: Path, source: Path) -> bool:
 
 def _installers_test(template: _Json, scripts: set[str]) -> _HookTest:
     """A hook entry is the installer's if the template holds it or its command,
-    or if the script it runs from ~/.claude/hooks is in scripts: the template
-    runs it or an earlier run linked it. Any other script there is the user's,
+    or if it is a legacy command of the installer's, or if the script it runs
+    from ~/.claude/hooks is in scripts: the template runs it or an earlier run
+    linked it. Any other script there is the user's,
     even one that isn't on this machine yet."""
     hooks = [hook for group in _groups(template.get("hooks", {})) for hook in group]
-    commands = _commands(template.get("hooks", {}))
+    commands = _commands(template.get("hooks", {})) | set(legacy.LEGACY_HOOK_COMMANDS)
 
     def is_installers(hook: Any) -> bool:
         if hook in hooks:

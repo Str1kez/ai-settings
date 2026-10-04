@@ -71,6 +71,9 @@
         "SessionStart": [{ "hooks": [{ "type": "command", "command": "~/.claude/hooks/session-start-reminder.sh" }] }],
         "PreToolUse": [
             { "matcher": "Bash", "hooks": [{ "type": "command", "command": "rtk hook claude" }] }
+        ],
+        "PostToolUse": [
+            { "matcher": "Write|Edit", "hooks": [{ "type": "command", "command": "~/.claude/hooks/format-python.sh" }] }
         ]
     }
 }

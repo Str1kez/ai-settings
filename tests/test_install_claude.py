@@ -246,3 +246,52 @@ def test_session_start_banner_counts_the_installed_skills_and_agents(
     assert counts, banner.stdout
     assert int(counts[1]) == len(discover_skill_paths())
     assert int(counts[2]) == len(list((REPO_ROOT / "agents").glob("*/AGENT.md")))
+
+
+LEGACY_FORMAT = (
+    "FILE=$(jq -r '.tool_input.file_path') && if [[ \"$FILE\" == *.py ]]; then "
+    'uv run ruff check --fix "$FILE"; uv run ruff format "$FILE"; fi'
+)
+FORMAT = "~/.claude/hooks/format-python.sh"
+
+
+def test_legacy_uv_format_hook_is_replaced_by_the_managed_one(
+    repo: Path, home: Path
+) -> None:
+    template = {
+        **TEMPLATE,
+        "hooks": {
+            "PostToolUse": [{"matcher": "Write|Edit", "hooks": [_command(FORMAT)]}]
+        },
+    }
+    write(repo / "settings/claude-settings.json", json.dumps(template))
+    write(repo / "settings/hooks/format-python.sh", "#!/bin/sh\n")
+    _write_settings(
+        home,
+        {
+            "hooks": {
+                "PostToolUse": [
+                    {"matcher": "Write|Edit", "hooks": [_command(LEGACY_FORMAT)]},
+                    *AGTERM_HOOKS["PostToolUse"],
+                ]
+            }
+        },
+    )
+
+    run_sync(repo, home, "claude")
+    run_sync(repo, home, "claude")
+
+    assert _settings(home)["hooks"]["PostToolUse"] == [
+        *AGTERM_HOOKS["PostToolUse"],
+        {"matcher": "Write|Edit", "hooks": [_command(FORMAT)]},
+    ]
+
+
+def test_other_hooks_that_run_uv_get_a_warning_and_stay(repo: Path, home: Path) -> None:
+    mine = {"Stop": [{"hooks": [_command("uv run my-checker")]}]}
+    _write_settings(home, {"hooks": mine})
+
+    log = run_sync(repo, home, "claude")
+
+    assert "uv run my-checker" in log
+    assert _settings(home)["hooks"]["Stop"] == mine["Stop"]
