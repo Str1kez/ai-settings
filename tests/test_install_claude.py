@@ -252,20 +252,11 @@ LEGACY_FORMAT = (
     "FILE=$(jq -r '.tool_input.file_path') && if [[ \"$FILE\" == *.py ]]; then "
     'uv run ruff check --fix "$FILE"; uv run ruff format "$FILE"; fi'
 )
-FORMAT = "~/.claude/hooks/format-python.sh"
 
 
-def test_legacy_uv_format_hook_is_replaced_by_the_managed_one(
+def test_legacy_uv_format_hook_goes_and_the_users_hooks_stay(
     repo: Path, home: Path
 ) -> None:
-    template = {
-        **TEMPLATE,
-        "hooks": {
-            "PostToolUse": [{"matcher": "Write|Edit", "hooks": [_command(FORMAT)]}]
-        },
-    }
-    write(repo / "settings/claude-settings.json", json.dumps(template))
-    write(repo / "settings/hooks/format-python.sh", "#!/bin/sh\n")
     _write_settings(
         home,
         {
@@ -279,12 +270,8 @@ def test_legacy_uv_format_hook_is_replaced_by_the_managed_one(
     )
 
     run_sync(repo, home, "claude")
-    run_sync(repo, home, "claude")
 
-    assert _settings(home)["hooks"]["PostToolUse"] == [
-        *AGTERM_HOOKS["PostToolUse"],
-        {"matcher": "Write|Edit", "hooks": [_command(FORMAT)]},
-    ]
+    assert _settings(home)["hooks"]["PostToolUse"] == AGTERM_HOOKS["PostToolUse"]
 
 
 def test_other_hooks_that_run_uv_get_a_warning_and_stay(repo: Path, home: Path) -> None:
