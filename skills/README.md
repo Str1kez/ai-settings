@@ -1,6 +1,6 @@
 # Skills
 
-Библиотека кастомных скиллов для AI-платформ (Claude Code, Codex, OpenCode, Cursor, Gemini CLI).
+Библиотека кастомных скиллов для Claude Code и OpenCode. Ссылки ставятся и для Codex, Gemini CLI и Cursor, но эти харнессы я не поддерживаю.
 
 Каждый скилл лежит в своей папке `skills/<skill>/`. `scripts/install.sh` линкует его под тем же
 именем в `~/.claude/skills/<skill>` (Claude Code) и `~/.agents/skills/<skill>` (Codex, OpenCode,
@@ -67,7 +67,7 @@ tags: [git, markdown, russian, ...]
 
 - Semver (`major.minor.patch`) в поле `version` frontmatter.
 - `CHANGELOG.md` внутри папки скилла — запись для каждой версии.
-- Помощник: `scripts/bump-skill-version.sh <skill-path> <major|minor|patch>` автоматизирует бамп + запись в CHANGELOG + commit.
+- Помощник: `scripts/bump-skill-version.sh <skill-path> <major|minor|patch> [--note "..."]` поднимает версию во frontmatter и добавляет заготовку записи в CHANGELOG скилла. Коммит — руками.
 
 ## Skill-lint
 
@@ -78,8 +78,7 @@ tags: [git, markdown, russian, ...]
 - `en-commit-message` — conventional commit на английском из staged diff.
 - `ru-pr-description` — PR-описание на русском по шаблону.
 - `en-pr-description` — PR-описание на английском по шаблону.
-- `changelog-entry` — запись в корневой `CHANGELOG.md` проекта (на английском).
+- `changelog-entry` — запись в корневой `CHANGELOG.md` проекта (на русском).
 - `feature-architecture` — одна рекомендованная архитектура новой фичи поверх существующей кодовой базы.
-- `boilerplate` — развернуть новый проект: шаблон + GitHub репо + AI-правила + инструкция деплоя.
 - `product-spec-pipeline` — продуктовая спецификация из идеи: анализ проекта, выбор направления, исследования, grilling и независимые ревью.
 - `spec` — короткий алиас `product-spec-pipeline`.
