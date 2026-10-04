@@ -49,21 +49,30 @@ def main() -> int:
     new = bump(current, args.part)
     new_str = "{}.{}.{}".format(*new)
 
-    text = VERSION_RE.sub(f"{match.group(1)}{new_str}", text, count=1)
-    skill_md.write_text(text, encoding="utf-8")
-
-    # Prepend CHANGELOG entry (after header, before first `## [...]` section)
+    # Prepend CHANGELOG entry (after header, before first `## [...]` section).
+    # Header case varies between skills (`# CHANGELOG`, `# Changelog`).
     date = dt.date.today().isoformat()
     note = args.note or "(описать изменения)"
     cl_text = changelog.read_text(encoding="utf-8")
     new_entry = f"## [{new_str}] — {date}\n### Изменено\n- {note}\n\n"
-    cl_text = re.sub(
+    cl_text, inserted = re.subn(
         r"^(# CHANGELOG[^\n]*\n(?:[^\n]*\n)*?)(## )",
         lambda m: m.group(1) + new_entry + m.group(2),
         cl_text,
         count=1,
-        flags=re.DOTALL,
+        flags=re.DOTALL | re.IGNORECASE,
     )
+    # Fail before any write: a bumped version without its entry fails skill-lint
+    # later, far from the cause.
+    if not inserted:
+        print(
+            f"[error] no `# CHANGELOG` header followed by a `## ` section in {changelog}",
+            file=sys.stderr,
+        )
+        return 3
+
+    text = VERSION_RE.sub(f"{match.group(1)}{new_str}", text, count=1)
+    skill_md.write_text(text, encoding="utf-8")
     changelog.write_text(cl_text, encoding="utf-8")
 
     print(f"[ok] bumped {args.skill_path.name}: {'.'.join(map(str, current))} -> {new_str}")
