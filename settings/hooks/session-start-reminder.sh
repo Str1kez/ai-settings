@@ -29,8 +29,17 @@ if ! command -v rtk &>/dev/null; then
   RTK_WARNING=$'\nrtk hook is wired (rtk hook claude) but rtk binary not found. Install: brew install rtk'
 fi
 
-cat <<EOF
-[ai-settings] Loaded: ${skill_count} skill(s), ${agent_count} subagent(s).
-Reminder: check for relevant skill/subagent BEFORE non-trivial tasks.
-Silence: AI_SETTINGS_QUIET=1${RTK_WARNING}
-EOF
+user_message="[ai-settings] Loaded: ${skill_count} skill(s), ${agent_count} subagent(s). Silence: AI_SETTINGS_QUIET=1${RTK_WARNING}"
+model_context="Reminder: check for relevant skill/subagent BEFORE non-trivial tasks."
+
+# Plain stdout of SessionStart goes to the model only. systemMessage is what the user sees.
+USER_MESSAGE="$user_message" MODEL_CONTEXT="$model_context" python3 -c '
+import json, os
+print(json.dumps({
+    "systemMessage": os.environ["USER_MESSAGE"],
+    "hookSpecificOutput": {
+        "hookEventName": "SessionStart",
+        "additionalContext": os.environ["MODEL_CONTEXT"],
+    },
+}))
+'
