@@ -10,7 +10,7 @@ import argparse
 import sys
 from pathlib import Path
 
-from aisettings import agents, claude, legacy, log, rules, skills
+from aisettings import agents, claude, log, rules, skills
 from aisettings.fs import Fs, SyncError
 
 REPO = Path(__file__).resolve().parent.parent
@@ -29,23 +29,17 @@ def main() -> int:
             else:
                 rules.sync(fs, REPO, home)
         elif args.artifact == "skills":
-            legacy.migrate_skills(fs, REPO, home)
             skills.sync(fs, REPO, home)
         elif args.artifact == "agents":
-            legacy.migrate_agents(fs, REPO, home)
             agents.sync(fs, REPO, home)
         elif args.artifact == "claude":
-            legacy.migrate_hooks(fs, REPO, home)
             claude.sync(fs, REPO, home)
         else:
-            # Skills first: they migrate the old layout, and a layout they
-            # can't handle aborts the run before rules and agents are written.
-            legacy.migrate_skills(fs, REPO, home)
+            # Skills first: a skills dir linked into the repo stops the run
+            # before anything is written.
             skills.sync(fs, REPO, home)
             rules.sync(fs, REPO, home)
-            legacy.migrate_agents(fs, REPO, home)
             agents.sync(fs, REPO, home)
-            legacy.migrate_hooks(fs, REPO, home)
             claude.sync(fs, REPO, home)
     except SyncError as exc:
         log.error(str(exc))

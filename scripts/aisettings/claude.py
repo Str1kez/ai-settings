@@ -19,7 +19,7 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any, NoReturn
 
-from aisettings import legacy, log
+from aisettings import log
 from aisettings.fs import Fs, SyncError, link_target
 
 _TEMPLATE = Path("settings/claude-settings.json")
@@ -150,12 +150,11 @@ def _links_into(entry: Path, source: Path) -> bool:
 
 def _installers_test(template: _Json, scripts: set[str]) -> _HookTest:
     """A hook entry is the installer's if the template holds it or its command,
-    or if it is a legacy command of the installer's, or if the script it runs
-    from ~/.claude/hooks is in scripts: the template runs it or an earlier run
-    linked it. Any other script there is the user's,
+    or if the script it runs from ~/.claude/hooks is in scripts: the template
+    runs it or an earlier run linked it. Any other script there is the user's,
     even one that isn't on this machine yet."""
     hooks = [hook for group in _groups(template.get("hooks", {})) for hook in group]
-    commands = _commands(template.get("hooks", {})) | set(legacy.LEGACY_HOOK_COMMANDS)
+    commands = _commands(template.get("hooks", {}))
 
     def is_installers(hook: Any) -> bool:
         if hook in hooks:

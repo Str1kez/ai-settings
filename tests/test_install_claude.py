@@ -248,33 +248,7 @@ def test_session_start_banner_counts_the_installed_skills_and_agents(
     assert int(counts[2]) == len(list((REPO_ROOT / "agents").glob("*/AGENT.md")))
 
 
-LEGACY_FORMAT = (
-    "FILE=$(jq -r '.tool_input.file_path') && if [[ \"$FILE\" == *.py ]]; then "
-    'uv run ruff check --fix "$FILE"; uv run ruff format "$FILE"; fi'
-)
-
-
-def test_legacy_uv_format_hook_goes_and_the_users_hooks_stay(
-    repo: Path, home: Path
-) -> None:
-    _write_settings(
-        home,
-        {
-            "hooks": {
-                "PostToolUse": [
-                    {"matcher": "Write|Edit", "hooks": [_command(LEGACY_FORMAT)]},
-                    *AGTERM_HOOKS["PostToolUse"],
-                ]
-            }
-        },
-    )
-
-    run_sync(repo, home, "claude")
-
-    assert _settings(home)["hooks"]["PostToolUse"] == AGTERM_HOOKS["PostToolUse"]
-
-
-def test_other_hooks_that_run_uv_get_a_warning_and_stay(repo: Path, home: Path) -> None:
+def test_hooks_that_run_uv_get_a_warning_and_stay(repo: Path, home: Path) -> None:
     mine = {"Stop": [{"hooks": [_command("uv run my-checker")]}]}
     _write_settings(home, {"hooks": mine})
 

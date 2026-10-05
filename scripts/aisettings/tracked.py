@@ -1,9 +1,7 @@
 """Which artifact dirs git tracks: skills/<name>/SKILL.md, agents/<name>/AGENT.md.
 
 Only tracked ones deploy, so every machine gets the same set from the repo. A
-dir nobody ran `git add` on would land on this machine and nowhere else, and
-skills/ also holds what the old layout let tools write there: npx symlinks,
-Claude Code's synced/ and .trash/.
+dir nobody ran `git add` on would land on this machine and nowhere else.
 """
 
 from __future__ import annotations

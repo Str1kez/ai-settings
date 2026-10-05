@@ -61,7 +61,7 @@ ai-settings/
 │   ├── deploy-skills.sh       # скиллы в Claude Desktop
 │   ├── new.py                 # заготовка нового скилла или агента
 │   └── bump-skill-version.sh  # версия скилла и заготовка записи в его CHANGELOG
-└── tests/                     # pytest: установщик, миграции, skill-lint, agent-lint
+└── tests/                     # pytest: установщик, skill-lint, agent-lint
 ```
 
 ## Артефакты
@@ -135,21 +135,10 @@ Claude Desktop — отдельный канал, эти каталоги он �
 Проверки:
 
 ```bash
-.venv/bin/python -m pytest -q        # установщик, миграции, skill-lint, agent-lint
+.venv/bin/python -m pytest -q        # установщик, skill-lint, agent-lint
 .venv/bin/ruff check scripts tests
 .venv/bin/mypy
 ```
-
-## Временное: миграция со старой раскладки
-
-Старый `install.sh` линковал каталоги целиком и мёрджил агентов в `opencode.jsonc`. `scripts/aisettings/legacy.py` переводит такую машину на новую раскладку за первый прогон:
-
-- симлинки `~/.claude/skills`, `~/.claude/agents` и `~/.claude/hooks` в репу становятся реальными каталогами, и всё, что git в репе не отслеживает, переезжает туда;
-- уходят шимы `~/.claude/commands/<ns>/` и ссылка `~/.gemini/skills`;
-- из блока `agent` в `opencode.jsonc` уходят поля старого мёрджа, промпты из `~/.config/opencode/agent-prompts/` удаляются, а `model` и другие свои поля остаются. Если в `opencode.jsonc` есть комментарии, установщик файл не трогает и предупреждает. Тогда поля убираются руками, и `install.sh` запускается ещё раз;
-- ссылки на старые пути `skills/<ns>/<skill>` перелинковываются на `skills/<skill>`.
-
-Модуль я удаляю вместе с этим разделом, когда мигрированы обе машины. Задача записана в [TODO.md](TODO.md).
 
 ## Известные ограничения
 

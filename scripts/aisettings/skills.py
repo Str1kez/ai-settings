@@ -27,9 +27,8 @@ def sync(fs: Fs, repo: Path, home: Path) -> None:
 
 
 def collect(repo: Path) -> dict[str, Path]:
-    """Map skill name to its directory. Only git-tracked skills count: on a
-    machine not yet migrated, skills/ still holds npx symlinks and Claude
-    Code's own synced/ and .trash/."""
+    """Map skill name to its directory. Only git-tracked skills count, see
+    tracked.py."""
     return {d.name: d for d in tracked.tracked_dirs(repo, "skills", "SKILL.md")}
 
 

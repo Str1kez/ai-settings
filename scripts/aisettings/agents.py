@@ -71,7 +71,7 @@ class Agent(NamedTuple):
 
 
 def sync(fs: Fs, repo: Path, home: Path) -> None:
-    agents = collect(repo)
+    agents = _collect(repo)
     tracked.warn_untracked(repo, "agents", "AGENT.md")
     _sync_claude(fs, repo, home / _CLAUDE_AGENTS, agents)
     for agents_home, render in (
@@ -85,7 +85,7 @@ def sync(fs: Fs, repo: Path, home: Path) -> None:
     _sync_renders(fs, home / _CODEX_AGENTS, codex, _TOML_HEADER)
 
 
-def collect(repo: Path) -> list[Agent]:
+def _collect(repo: Path) -> list[Agent]:
     agents_dir = repo / "agents"
     if not agents_dir.is_dir():
         raise SyncError(f"agents dir not found: {agents_dir}")
@@ -154,7 +154,7 @@ def _render_opencode(agent: Agent) -> str:
         "permission:",
         *(
             f"  {key}: {value}"
-            for key, value in opencode_permission(agent.tools).items()
+            for key, value in _opencode_permission(agent.tools).items()
         ),
     ]
     return _markdown_agent(frontmatter, agent)
@@ -278,7 +278,7 @@ def _split_list(text: str) -> list[str]:
     return [item.strip() for item in text.split(",") if item.strip()]
 
 
-def opencode_permission(tools: list[str]) -> dict[str, str]:
+def _opencode_permission(tools: list[str]) -> dict[str, str]:
     """Listed tools are allowed. Without Edit/Write editing is denied, without
     Bash the shell; other keys keep OpenCode defaults."""
     keys = [_TOOL_TO_PERMISSION[tool] for tool in tools if tool in _TOOL_TO_PERMISSION]
