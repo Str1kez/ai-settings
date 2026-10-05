@@ -1,6 +1,6 @@
 ---
 name: feature-architecture
-version: 1.0.0
+version: 1.0.1
 category: architecture
 description: Use when proposing the architecture for a NEW feature on top of an existing codebase — after discovery/recon, when you must commit to one design with a diagram, integration points, data flow, and a rough effort estimate. Do NOT use for documenting existing architecture or writing an implementation plan.
 ---
@@ -24,7 +24,7 @@ verified or inferred; never reference a diagram you did not actually embed.**
 - The deliverable is a design proposal, not implementation.
 
 Not for: documenting existing architecture (use a blueprint skill); writing the
-implementation plan (use superpowers:writing-plans).
+implementation plan (the implementation plan is a separate step).
 
 ## Inputs
 

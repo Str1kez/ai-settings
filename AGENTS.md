@@ -1,7 +1,7 @@
 # AGENTS.md
 
 <!-- Global AI settings for Claude Code, Codex, Cursor, Gemini CLI, OpenCode -->
-<!-- Source of truth: https://github.com/tsergeytovarov/ai-settings -->
+<!-- Source of truth: https://github.com/Str1kez/ai-settings -->
 <!-- Human-readable docs: ./docs/setup/ (in Russian) -->
 
 ## 1. Persona & Values
@@ -122,28 +122,13 @@ Do not call MCP servers, connectors, browser automation for external targets, or
 ## 16. RTK (token-optimized bash output)
 @./docs/ai/rtk-awareness.md
 
-## Codex Skills
+## Skills
 
-Codex personal skills are installed under `~/.agents/skills/<skill-name>/SKILL.md`.
-Run `scripts/install.sh` after changing `skills/` so symlinks stay current, then restart Codex so the app refreshes its skill list.
+Every skill has the same name in every harness. Claude Code reads `~/.claude/skills/<name>/SKILL.md`; Codex, OpenCode, Gemini CLI and Cursor read `~/.agents/skills/<name>/SKILL.md`.
 
-Codex does not natively discover project-local Claude skills from `.claude/skills/`.
+Own skills live in this repo under `skills/<name>/`. `scripts/install.sh` links each of them into both directories. External skills are installed with `npx skills`.
 
-If a requested skill is not in the current Codex skill list, but a matching file exists at
-`.claude/skills/<skill-name>/SKILL.md`, treat that file as project workflow documentation:
-read it and follow it manually, but do not claim the skill is installed.
-
-If this workflow should become a real Codex skill, install it under:
-
-`~/.agents/skills/<skill-name>/SKILL.md`
-
-A symlink is preferred over copying, so the repo remains the source of truth.
-
-After installing a skill, restart Codex.
-
-Do not assume Claude command namespaces carry over to Codex.
-Example: Claude command `strikez:write-meridian-article` maps to a Codex personal skill
-named `write-meridian-article`, not `strikez:write-meridian-article`.
+If a requested skill is not in the harness skill list, say so and do not claim it is installed. After adding or renaming a skill, rerun `scripts/install.sh` and restart the harness.
 
 ## Compact Instructions
 

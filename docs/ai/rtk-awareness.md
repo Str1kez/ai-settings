@@ -15,6 +15,8 @@ Two different "rtk" projects exist on crates.io. Verify correct install: `rtk ga
 
 ## Hook behavior
 
+Не запускай `rtk init -g` без `--hook-only --no-patch`: хук Claude Code ставит `install.sh`, а голый `rtk init -g` дописывает `@RTK.md` в `CLAUDE.md` репы.
+
 All other commands (git, npm, pytest, grep, etc.) are automatically rewritten by the PreToolUse hook (`rtk hook claude`, native binary command — no wrapper script). Built-in tools (Read, Grep, Glob) are NOT affected.
 
 OpenCode uses its own mechanism: a plugin at `~/.config/opencode/plugins/rtk.ts`, installed automatically by `install.sh` via `rtk init -g --opencode --hook-only --no-patch` — see `docs/setup/opencode.md`.

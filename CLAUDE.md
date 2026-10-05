@@ -7,7 +7,6 @@
 ## Claude Code-specific notes
 
 - Always use the `Skill` tool (never `Read` on skill files) when invoking a skill.
-- Use `TodoWrite` for tasks with 3+ steps; keep exactly one item `in_progress` at a time.
 - Use the `Agent` tool with `subagent_type` to delegate heavy, isolated tasks (see `~/.claude/agents/` or `./agents/` in this repo).
 - Before complex work: inspect descriptions of potentially relevant skills.
   Invoke a skill only when its stated trigger matches the task; checking the
@@ -16,7 +15,7 @@
 
 ## Claude Code controls
 
-Model switches use `/model`. Effort switches use `/effort` with `low`, `medium`, `high`, or `xhigh`.
+Model switches use `/model`. Effort switches use `/effort` with `low`, `medium`, `high`, `xhigh`, or `max`.
 
 ## Session hooks
 

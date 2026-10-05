@@ -1,147 +1,82 @@
-# OpenCode — подключение `ai-settings`
+# OpenCode
 
-## После `scripts/install.sh`
+Что ставит `install.sh`:
 
-Проверь, что на месте плоский файл с глобальными правилами:
+| Что | Куда |
+|---|---|
+| Правила | плоский `~/.config/opencode/AGENTS.md` |
+| Скиллы | ссылка `~/.agents/skills/<name>` на каждый скилл репы |
+| Агенты | markdown-агент `~/.config/opencode/agents/<name>.md` |
+| RTK | плагин `~/.config/opencode/plugins/rtk.ts` |
 
-```bash
-ls -la ~/.config/opencode/AGENTS.md
-# -> обычный файл, не симлинк
-```
+Агенты живут в markdown-файлах, а `opencode.jsonc` установщик не трогает: провайдеры, модели, MCP и плагины в нём твои. Проверено на OpenCode 1.18.34.
 
-OpenCode не разворачивает `@imports` из `AGENTS.md` автоматически. Поэтому
-`install.sh` вызывает `sync-cursor.sh --opencode`, который подставляет содержимое
-всех модулей из `docs/ai/` в глобальный файл OpenCode.
+## Правила
+
+OpenCode не разворачивает `@imports`, поэтому `sync.py rules` пишет плоский `AGENTS.md`, в котором все модули уже внутри. Править его руками бесполезно: следующий прогон перезапишет.
 
 ## Скиллы
 
-OpenCode автоматически находит personal skills в `~/.agents/skills/`. Эти
-симлинки создаёт тот же `install.sh`; отдельная копия в
-`~/.config/opencode/skills/` не нужна.
+OpenCode читает скиллы и из `~/.agents/skills`, и из `~/.claude/skills`. Скилл репы лежит в обоих под одним именем. OpenCode оставляет копию из `~/.agents/skills` и на каждый дубль пишет в лог `WARN duplicate skill name`. Обе ссылки ведут в один каталог репы, так что разницы нет.
 
-Проверка:
-
-```bash
-find -L ~/.agents/skills -maxdepth 2 -name SKILL.md -print
-```
+`description` скилла OpenCode режет на 1024 символах, это проверяет skill-lint.
 
 ## Агенты
 
-`install.sh` конвертирует `agents/*/AGENT.md` (Claude Code формат) и мерджит
-их в блок `agent` файла `~/.config/opencode/opencode.jsonc`. Промпты лежат
-отдельно в `~/.config/opencode/agent-prompts/<name>.md` и подключаются через
-`{file:./agent-prompts/<name>.md}`.
+Каждый `agents/<name>/AGENT.md` становится `~/.config/opencode/agents/<name>.md`:
 
-`install.sh` управляет полями `description`, `mode`, `permission`, `prompt`.
-Поле `model` **не задаётся** установщиком — это пользовательское поле. Без него
-primary-агент берёт глобально настроенный `model`, а subagent наследует модель
-родителя.
+- `description` из `AGENT.md` и `mode: subagent`;
+- `permission` из `tools`: без Edit и Write — `edit: deny`, без Bash — `bash: deny`, остальные ключи по умолчанию OpenCode;
+- тело `AGENT.md` становится промптом.
 
-Существующие пользовательские поля агентов (`model`, `temperature` и т.д.)
-при повторном `install.sh` сохраняются: merge обновляет только managed-поля.
+Модель установщик не задаёт: субагент работает на модели агента, который его вызвал.
 
-Проверка:
+Первая строка frontmatter — комментарий `# managed-by: ai-settings`. Такой файл принадлежит установщику: следующий прогон его перезапишет, а рендер агента, удалённого из репы, удалит. Правки в нём пропадут. Файл без метки установщик не трогает, а если его имя совпало с агентом репы, уносит в `backups/<ts>/`.
 
-```bash
-opencode debug config
-```
+### Своя модель для агента
 
-### Указать модель агента глобально
+Поверх markdown-агента модель задаётся в JSON-конфиге. Глобально — в `~/.config/opencode/opencode.jsonc`, для одного проекта — в `opencode.json` или `opencode.jsonc` в его корне:
 
-Добавь в `~/.config/opencode/opencode.jsonc`:
-
-```json
-{
-  "agent": {
-    "code-reviewer": { "model": "anthropic/claude-opus-4-1" },
-    "pr-writer":     { "model": "anthropic/claude-haiku-4-5" }
-  }
-}
-```
-
-### Переопределить модель агента в конкретном проекте
-
-Конфиги OpenCode мерджатся field-level. Положи в корень проекта `opencode.json`:
-
-```json
+```jsonc
 {
   "$schema": "https://opencode.ai/config.json",
   "agent": {
-    "code-reviewer": { "model": "anthropic/claude-opus-4-1" }
+    "code-reviewer": { "model": "opencode/claude-opus-5-5" },
+    "pr-writer": { "model": "opencode/claude-haiku-4-5" }
   }
 }
 ```
 
-Переопределяется только `model` для указанного агента. Остальные поля
-(`description`, `prompt`, `permission`) берутся из глобального определения.
+Список моделей — `opencode models`. Так можно задать `model` и ключ `permission`, которого нет в рендере. То, что задаёт рендер, из JSON не переопределить: `description`, `mode`, промпт и его ключи `permission`. OpenCode читает JSON-конфиги раньше markdown-агентов, и markdown ложится сверху. Так устроено в исходниках OpenCode, документация порядок не описывает.
 
-Список доступных моделей: `opencode models`.
+## RTK
 
-### Зависимости
-
-Конвертация агентов требует `jq` для merge в `opencode.jsonc`. Если `jq` нет
-— выводится предупреждение, агент-блок не записывается. Установка: `brew install jq`.
-
-## RTK (Rust Token Killer)
-
-`install.sh` ставит плагин автоматически (если бинарник `rtk` уже есть в PATH):
+`install.sh` ставит плагин сам, если бинарник `rtk` уже есть в PATH:
 
 ```bash
 rtk init -g --opencode --hook-only --no-patch
 ```
 
-Флаги `--hook-only --no-patch` гарантируют, что команда трогает только
-OpenCode: без `CLAUDE.md`/`RTK.md` и без патча `~/.claude/settings.json` —
-Claude Code уже настроен отдельно через `settings/claude-settings.json`
-(`rtk hook claude`).
+Флаги `--hook-only --no-patch` ограничивают команду OpenCode: она не пишет `CLAUDE.md` и `RTK.md` и не патчит `~/.claude/settings.json`, Claude Code настроен отдельно. Плагин `~/.config/opencode/plugins/rtk.ts` своей логики не содержит и отдаёт каждую команду бинарнику (`rtk rewrite <cmd>`). Проверка: `rtk init --show`.
 
-Команда кладёт плагин `~/.config/opencode/plugins/rtk.ts` — он делегирует всю
-логику переписывания команд бинарнику `rtk` (`rtk rewrite <cmd>`), сам плагин
-не содержит никакой rewrite-логики. Проверка: `rtk init --show`.
+Если `rtk` поставлен после `install.sh`, прогони его ещё раз или выполни команду выше руками.
 
-Если бинарника `rtk` не было на момент установки — поставь его
-(`brew install rtk`) и перезапусти `install.sh`, или прогони команду выше
-вручную.
+## Проверка
 
-## Пользовательская конфигурация
+```bash
+ls ~/.config/opencode/agents
+opencode debug config   # агенты, их модели и права
+opencode debug skill    # скиллы
+```
 
-`~/.config/opencode/opencode.jsonc` остаётся пользовательским: провайдеры,
-модели, MCP-серверы и плагины (кроме RTK, см. выше) установщик не трогает.
-Единственное исключение в самом `opencode.jsonc` — блок `agent`: `install.sh`
-мерджит туда managed-поля (`description`, `mode`, `permission`, `prompt`) из
-`agents/*/AGENT.md`. Поля `model`, `temperature` и другие пользовательские
-настройки агентов сохраняются при повторных запусках.
+## Проект
+
+Проектный `AGENTS.md` OpenCode читает сам, его создаёт [`init-project.sh`](new-project.md). Модель агента для одного проекта — в `opencode.json` в корне проекта, пример выше. Скрипт этот файл не создаёт: пустой конфиг ничего не настраивает.
 
 ## Обновление
 
 ```bash
-cd ~/ai-settings && git pull
-./scripts/install.sh
+cd ~/.ai-settings && git pull && ./scripts/install.sh
 ```
 
-После обновления полностью перезапусти OpenCode: конфигурационные файлы и
-список скиллов читаются при старте.
-
-Если нужно обновить только глобальные правила OpenCode:
-
-```bash
-~/ai-settings/scripts/sync-cursor.sh --opencode
-```
-
-## Проектные правила и runtime-конфиг
-
-Правила проекта покрывает `AGENTS.md`: OpenCode автоматически читает ближайший
-такой файл от текущей директории до корня worktree, и `scripts/init-project.sh`
-уже создаёт его — отдельного механизма для правил не нужно.
-
-Runtime-конфиг (модель, `agent`, `mcp`, `permission`, плагины) — это другое:
-`scripts/init-project.sh` создаёт в корне проекта пустой `opencode.jsonc` с
-`$schema` и комментарием-подсказкой. Он мерджится field-level над глобальным
-`~/.config/opencode/opencode.jsonc`, так что можно переопределить, например,
-модель конкретного агента только для этого проекта (см. пример выше).
-
-## Windows
-
-`install.sh` требует bash: используй WSL или выполни ручную генерацию из WSL в
-Windows-профиль. Глобальный путь OpenCode определяется через XDG config и по
-умолчанию имеет вид `~/.config/opencode/AGENTS.md`.
+После обновления перезапусти OpenCode полностью: конфиг и список скиллов он читает на старте. Только правила: `~/.ai-settings/scripts/sync.py rules`.

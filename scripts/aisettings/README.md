@@ -1,0 +1,46 @@
+# aisettings
+
+Пакет за `scripts/sync.py`. Раскладывает артефакты репы по хоумам харнессов: Claude Code, Codex, OpenCode, Gemini CLI, Cursor. `install.sh` зовёт `sync.py all`, `init-project.sh --cursor` — `sync.py rules --cursor-project`.
+
+## Запуск
+
+```bash
+scripts/sync.py all [--dry-run]
+scripts/sync.py rules [--dry-run] [--check | --cursor-project PATH]
+scripts/sync.py skills [--dry-run]
+scripts/sync.py agents [--dry-run]
+scripts/sync.py claude [--dry-run]
+```
+
+`--dry-run` печатает план и ничего не меняет. `rules --check` разворачивает `@imports` и падает на битом.
+
+## Модули
+
+- `fs.py` — через `Fs` идёт каждое изменение в хоуме:
+  - `link` ставит симлинк. Чужую ссылку заменяет, настоящий файл или каталог уносит в `backups/<ts>/`.
+  - `write` пишет сгенерированный файл. Симлинк на его месте заменяет и сквозь него не пишет.
+  - `update_in_place` правит файл пользователя там, где он лежит, в том числе сквозь симлинк в дотфайлы.
+  - `remove_file` удаляет файл, который сгенерировал установщик, например рендер агента, которого в репе больше нет.
+  - Гард: `Fs` отказывается что-либо создавать в каталоге, который на деле лежит внутри репы. Так старый симлинк каталога в репу не превратит раскладку в запись в репу.
+- `rules.py` — ссылки на `CLAUDE.md` и `GEMINI.md`, плоский `AGENTS.md` для Codex, OpenCode и Cursor.
+- `skills.py` — каждый отслеживаемый скилл `skills/<skill>/` в `~/.claude/skills` и `~/.agents/skills`.
+- `tracked.py` — какие каталоги `skills/<name>/` и `agents/<name>/` отслеживает git. Деплоятся только они. Каталог, удалённый без `git rm`, считается отсутствующим. Настоящий каталог с маркером (`SKILL.md`, `AGENT.md`), которого git не отслеживает и не игнорирует, — предупреждение о забытом `git add`.
+- `agents.py` — парсер `agents/<name>/AGENT.md` (падает, если `name` во frontmatter не равен имени каталога): ссылки для Claude Code и рендер для OpenCode, Codex, Gemini CLI и Cursor.
+- `claude.py` — мёрдж шаблона `settings/claude-settings.json` в `~/.claude/settings.json` и ссылки на скрипты хуков в `~/.claude/hooks`. Шаблон владеет `$schema`, `permissions.{allow,ask,deny}` и своими хуками, остальное в файле пользовательское и не трогается. Шаблон же задаёт список скриптов: линкуется каждый `~/.claude/hooks/<script>`, который он запускает, и только в такой форме в начале команды. Оба файла читаются и проверяются до первого изменения в хоуме. Изменённые строки `settings.json` уходят в лог без контекста, чтобы не показать значения пользователя.
+- `log.py` — строки логов в stderr.
+
+## Ограничения
+
+Пакет запускает системный `python3`, а на чистом маке это 3.9. Поэтому только stdlib, без `match/case` и без `X | Y` вне аннотаций, в каждом модуле `from __future__ import annotations`. Интеграционные тесты гоняют `sync.py` именно этим интерпретатором.
+
+## Новый тип артефакта
+
+Модуль с функцией `sync(fs, repo, home)`, подкоманда в `sync.py` и вызов в ветке `all`. В хоум пишу только через `Fs`, иначе dry-run, гард и бэкапы перестают работать.
+
+## Проверки
+
+```bash
+.venv/bin/python -m pytest -q
+.venv/bin/ruff check scripts tests
+.venv/bin/mypy
+```

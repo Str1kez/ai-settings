@@ -1,17 +1,22 @@
 """Skill-lint rules — apply to every SKILL.md under skills/."""
+
 from __future__ import annotations
 
 import re
 from pathlib import Path
 
-
+NAME_RE = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")  # Agent Skills spec
+MAX_DESCRIPTION_LENGTH = 1024  # OpenCode limit
 SEMVER_RE = re.compile(r"^\d+\.\d+\.\d+$")
 REQUIRED_FIELDS = ("name", "version", "description", "category")
+# What scripts/new.py leaves in a fresh SKILL.md: <explicit trigger: ...>.
+# Such a draft passes every other description rule.
+PLACEHOLDER_RE = re.compile(r"<[^>\n]+>")
 SECRET_PATTERNS = [
     re.compile(r"(?i)aws[_-]?secret[_-]?access[_-]?key"),
     re.compile(r"(?i)api[_-]?key\s*=\s*['\"][A-Za-z0-9_-]{20,}['\"]"),
     re.compile(r"ghp_[A-Za-z0-9]{30,}"),  # GitHub PAT
-    re.compile(r"sk-[A-Za-z0-9]{30,}"),    # OpenAI/Anthropic-style
+    re.compile(r"sk-[A-Za-z0-9]{30,}"),  # OpenAI/Anthropic-style
 ]
 
 
@@ -26,19 +31,41 @@ def test_required_fields(skill_frontmatter):
 
 def test_description_has_trigger(skill_frontmatter):
     desc = str(skill_frontmatter.get("description", ""))
-    assert re.search(r"\b(Use when|Trigger)\b", desc), \
+    assert re.search(r"\b(Use when|Trigger)\b", desc), (
         "description must contain 'Use when' or 'Trigger'"
+    )
 
 
 def test_description_has_skip(skill_frontmatter):
     desc = str(skill_frontmatter.get("description", ""))
-    assert re.search(r"\b(SKIP|Do NOT use)\b", desc), \
+    assert re.search(r"\b(SKIP|Do NOT use)\b", desc), (
         "description must contain 'SKIP' or 'Do NOT use'"
+    )
 
 
 def test_description_length(skill_frontmatter):
     desc = str(skill_frontmatter.get("description", ""))
     assert len(desc) >= 100, f"description too short ({len(desc)} chars, need >=100)"
+
+
+def test_description_fits_opencode_limit(skill_frontmatter):
+    desc = str(skill_frontmatter.get("description", ""))
+    assert len(desc) <= MAX_DESCRIPTION_LENGTH, (
+        f"description too long ({len(desc)} chars, max {MAX_DESCRIPTION_LENGTH})"
+    )
+
+
+def test_description_has_no_scaffold_placeholders(skill_frontmatter):
+    desc = str(skill_frontmatter.get("description", ""))
+    leftovers = PLACEHOLDER_RE.findall(desc)
+    assert not leftovers, (
+        f"description still holds placeholders from scripts/new.py: {leftovers}"
+    )
+
+
+def test_name_matches_agent_skills_regex(skill_frontmatter):
+    name = str(skill_frontmatter.get("name", ""))
+    assert NAME_RE.match(name), f"name '{name}' doesn't match {NAME_RE.pattern}"
 
 
 def test_version_semver(skill_frontmatter):
@@ -51,15 +78,15 @@ def test_changelog_exists(skill_path: Path, skill_frontmatter):
     assert changelog.is_file(), f"{changelog} missing"
     content = changelog.read_text(encoding="utf-8")
     version = skill_frontmatter["version"]
-    assert f"[{version}]" in content, \
-        f"CHANGELOG.md has no entry for version {version}"
+    assert f"[{version}]" in content, f"CHANGELOG.md has no entry for version {version}"
 
 
 def test_name_matches_folder(skill_path: Path, skill_frontmatter):
     folder_name = skill_path.parent.name
     declared = skill_frontmatter.get("name", "")
-    assert declared == folder_name, \
+    assert declared == folder_name, (
         f"frontmatter name '{declared}' != folder '{folder_name}'"
+    )
 
 
 def test_no_obvious_secrets(skill_text: str):

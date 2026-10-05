@@ -1,106 +1,95 @@
 # ai-settings
 
-Централизованная библиотека настроек для AI coding-ассистентов: **Claude Code**, **Codex CLI**, **OpenCode**, **Cursor** и **Gemini CLI**. Единое место, где живут персона агента, стандарты кода, стилистика общения, специализированные субагенты и переиспользуемые скиллы.
+Мои настройки AI-ассистентов для кода в одной репе: персона агента, стандарты кода, стиль общения, скиллы и субагенты. `install.sh` раскладывает их по харнессам, и правка в репе доходит до каждого.
 
-Подробный дизайн: [`docs/superpowers/specs/2026-04-18-ai-settings-design.md`](docs/superpowers/specs/2026-04-18-ai-settings-design.md).
+Поддерживаю я **Claude Code** и **OpenCode**: ими пользуюсь и их проверяю. Установщик раскладывает настройки ещё в Codex CLI, Gemini CLI, Cursor и Claude Desktop, но эти харнессы я не использую и не поддерживаю, работает ли там раскладка — не знаю. Их код и гайды оставлены для мейнтейнеров, если такие появятся.
+
+Как это устроено — в [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ## Установка
 
-> ⚠️ **СТОП. Прочитай это перед `install.sh`.**
->
-> Это мой личный пресет: персона «Афина», русский язык, мой стек (Python/Vue/FastAPI/LiteStar, локально в Docker), мои скиллы (русские коммиты, PR-описания).
->
-> **Сначала** клонируй репо и пройди [docs/setup/customization.md](docs/setup/customization.md) — там чеклист, что править (persona, style, стек) и готовые промпты под каждую секцию (LLM задаст 4–6 вопросов и вернёт готовый файл).
->
-> **Потом** запускай `install.sh`. Иначе ассистент будет вести себя как я, а не как ты.
+> **Стоп. Это мой личный пресет:** персона Афина, русский язык, мой стек (Python, FastAPI, LiteStar, Vue, локально в Docker) и мои скиллы. Сначала пройди [кастомизацию](docs/setup/customization.md): там чеклист, что править, и промпты, с которыми LLM соберёт файлы под тебя. Иначе ассистент будет вести себя как я.
+
+Нужны macOS или Linux, на Windows — WSL.
 
 ```bash
-git clone https://github.com/tsergeytovarov/ai-settings.git ~/ai-settings
-cd ~/ai-settings
-
-# 1. Кастомизируй под себя — см. docs/setup/customization.md
-# 2. Установи:
+git clone https://github.com/Str1kez/ai-settings.git ~/.ai-settings
+cd ~/.ai-settings
+./scripts/install.sh --dry-run   # план, ничего не меняет
 ./scripts/install.sh
 ```
 
-Установщик идемпотентный — безопасно запускать повторно. Существующие файлы бэкапятся в `backups/<timestamp>/`.
+Повторный прогон ничего не меняет. Файл, который стоит на месте ссылки, установщик уносит в `backups/<ts>/`.
 
-## Структура
+### Внешние скиллы
 
-```
-ai-settings/
-├── AGENTS.md                    # source of truth (читают все платформы)
-├── CLAUDE.md / GEMINI.md        # тонкие обёртки с импортом AGENTS.md
-├── docs/ai/                     # модули, подключаемые через @imports
-├── docs/setup/                  # гайды по подключению (на русском)
-├── agents/                      # 5 специализированных субагентов
-├── skills/                      # скиллы в skills/<namespace>/, с semver-версионированием
-├── settings/                    # эталонные settings.json / config.toml / хуки
-├── scripts/                     # install.sh, init-project.sh, sync-cursor.sh, ...
-├── examples/                    # курируемые ссылки и промпты
-└── tests/skill-lint/            # автопроверки качества скиллов
-```
-
-## Использование
-
-**В новом проекте** — ничего делать не надо. Глобальные правила уже применяются автоматически через `~/.claude/CLAUDE.md`, `~/.codex/AGENTS.md`, `~/.config/opencode/AGENTS.md`, `~/.gemini/GEMINI.md` (для Cursor — запусти `~/ai-settings/scripts/sync-cursor.sh --project .` один раз в проекте).
-
-**Для проектной специфики** — в корне проекта:
+Скиллы Matt Pocock и `find-skills` в репе не лежат. Их ставит `npx skills`: канонично в `~/.agents/skills`, плюс ссылки в `~/.claude/skills`. Репа ими не владеет, поэтому `install.sh` их не трогает.
 
 ```bash
-~/ai-settings/scripts/init-project.sh
+npx skills add mattpocock/skills -g    # интерактивно: скиллы, харнессы, ссылки или копии
+npx skills add vercel-labs/skills -g -s find-skills
+
+npx skills ls -g        # что стоит
+npx skills update -g    # обновить
 ```
 
-Положит локальный `AGENTS.md` (additive-слой поверх глобального), `.claude/settings.json` и обновит `.gitignore`.
+Из matt-скиллов выбери минимум `grilling` и `setup-matt-pocock-skills`: первый нужен `product-spec-pipeline` на Phase 5, без него pipeline встанет на этой фазе, второй настраивает проект после `init-project.sh`. Остальные по вкусу. Харнессы отмечай Claude Code и OpenCode, способ установки — ссылки. Скиллы `agterm` и мой личный `bmw-g20` живут вне репы и вне `npx skills`.
+
+## В проекте
+
+После `install.sh` правила, скиллы и агенты работают в любом проекте. Проектный слой добавляет `init-project.sh`:
+
+```bash
+cd my-project
+~/.ai-settings/scripts/init-project.sh            # AGENTS.md, CHANGELOG.md, TODO.md
+~/.ai-settings/scripts/init-project.sh --cursor   # плюс мои правила для Cursor, без поддержки
+```
+
+Что он создаёт и как это сочетается с matt-скиллами — в [гайде по новому проекту](docs/setup/new-project.md).
+
+## Свой скилл или агент
+
+Скилл — инструкция под повторяемую задачу: как писать коммит, как оформлять PR. Модель видит только его `name` и `description` и по ним решает, подгружать ли скилл в текущий диалог. Агент — субагент со своим контекстом, промптом и набором инструментов: главный агент отдаёт ему задачу целиком и получает назад результат. Агент нужен, когда задачу лучше увести из основного контекста или урезать инструменты, как у `code-reviewer`, который только читает.
+
+Заготовку для обоих делает `scripts/new.py`:
+
+```bash
+cd ~/.ai-settings
+scripts/new.py skill my-skill   # skills/my-skill/: SKILL.md, README.md, CHANGELOG.md
+scripts/new.py agent my-agent   # agents/my-agent/AGENT.md
+```
+
+Заполняю заготовку, начиная с `description`: только по нему модель решает, звать скилл или агента. Дальше:
+
+```bash
+git add skills/my-skill
+.venv/bin/python -m pytest tests/skill_lint tests/agent_lint   # нет .venv — сначала uv sync --frozen
+./scripts/install.sh
+```
+
+- `git add` обязателен. `install.sh` ставит только то, что отслеживает git, так на каждой машине оказывается один и тот же набор. Забытый каталог он не ставит и пишет `[warn] skills/my-skill/SKILL.md is not tracked by git, …`.
+- Линт ловит до коммита то, что иначе всплыло бы в работе: расплывчатый `description`, по которому модель не поймёт, когда звать, битые ссылки, дубли имён. Свежая заготовка его не проходит, пока в `description` остаются `<заготовки>`: так и задумано.
+- После `install.sh` перезапусти харнесс: список скиллов и агентов он читает на старте.
+
+Подробности — в [skills/README.md](skills/README.md) и [agents/README.md](agents/README.md).
 
 ## Обновление
 
 ```bash
-cd ~/ai-settings
-git pull
-./scripts/install.sh
+cd ~/.ai-settings && git pull && ./scripts/install.sh
 ```
 
-Симлинки не пересоздаются — новое содержимое подхватывается автоматически.
-
-## Risk-based Superpowers
-
-Репозиторий содержит собственную версию Superpowers в
-[`skills/superpowers/`](skills/superpowers/). В ней тесты, ревью и субагенты
-масштабируются по риску изменения, а не запускаются полным набором для каждой
-задачи. Если Codex уже использует plugin Superpowers, `install.sh` не создаёт
-вторую персональную копию этих skills. Для Claude Code upstream plugin нужно
-отключить: fork уже доступен через `~/.claude/skills`.
-
-## Скиллы в Claude Desktop
-
-Claude Desktop не читает `~/.claude/skills/` (это канал Claude Code CLI). Нативного watched-folder у него тоже нет — скиллы добавляются только через Upload в Settings. Но после первой загрузки Desktop разворачивает скилл в открытую папку в `Library/Application Support/Claude/...`, куда можно класть обновления напрямую. На этом построена схема `deploy-skills.sh`:
-
-```bash
-./scripts/deploy-skills.sh
-```
-
-Скрипт:
-- прогоняет `install.sh` (Claude Code + Codex + OpenCode + Gemini + Cursor);
-- пакует каждый скилл в zip в `dist/claude-desktop-skills/` — для **первой** загрузки через UI;
-- для скиллов, которые **уже** загружены, делает rsync из репы прямо в папку Desktop (щадящий режим, без `--delete` — ничего чужого не удаляется).
-
-Порядок работы:
-
-1. Первый раз — Settings → Capabilities → Skills → Upload, перетащи zip'ы из открывшейся папки, включи тумблеры.
-2. Дальше — просто `./scripts/deploy-skills.sh` после правок в репе, перезапусти Desktop, обновления подхватываются.
-
-Если в репе появляется новый скилл, которого ещё нет в Desktop, — скрипт подсветит его в списке «требует первой загрузки».
+Ссылки видят правки сразу, плоские копии правил и рендеры агентов обновляет `install.sh`. Харнесс после обновления я перезапускаю: правила и список скиллов он читает на старте.
 
 ## Документация
 
-- [Кастомизация под себя](docs/setup/customization.md) ← **начни отсюда**
-- [Подключение Claude Code](docs/setup/claude-code.md)
-- [Подключение Codex CLI](docs/setup/codex.md)
-- [Подключение Cursor](docs/setup/cursor.md)
-- [Подключение Gemini CLI](docs/setup/gemini.md)
-- [Подключение OpenCode](docs/setup/opencode.md)
+- [Кастомизация под себя](docs/setup/customization.md) — начни отсюда
+- [Архитектура](ARCHITECTURE.md) и [ADR](docs/adr/)
+- Харнессы: [Claude Code](docs/setup/claude-code.md), [OpenCode](docs/setup/opencode.md)
+- Без поддержки: [Codex CLI](docs/setup/codex.md), [Gemini CLI](docs/setup/gemini.md), [Cursor](docs/setup/cursor.md), [Claude Desktop](docs/setup/claude-desktop.md)
 - [Новый проект](docs/setup/new-project.md)
+- Свои [скиллы](skills/README.md) и [агенты](agents/README.md)
+- [Ссылки по AI-кодингу](docs/links.md)
 
 ## Лицензия
 

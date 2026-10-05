@@ -1,62 +1,44 @@
-# Cursor — подключение `ai-settings`
+# Cursor
 
-У Cursor нет стабильного user-global механизма правил (зависит от версии). Используем гибрид: глобальная попытка + per-project как надёжный fallback.
+> **Без поддержки.** Я не пользуюсь Cursor и не проверяю его. Раскладка сделана по документации, работает ли она — не знаю. Гайд оставлен для мейнтейнера, если такой появится, см. [ARCHITECTURE.md](../../ARCHITECTURE.md#поддержка).
 
-## Глобальная попытка
+Что ставит `install.sh`:
 
-`scripts/install.sh` вызывает `sync-cursor.sh --global` — пишет в `~/.cursor/rules/ai-settings.mdc`. Если твоя версия Cursor это подхватывает, правила применяются везде.
+| Что | Куда |
+|---|---|
+| Скиллы | ссылка `~/.agents/skills/<name>` на каждый скилл репы |
+| Агенты | рендер `~/.cursor/agents/<name>.md` |
+| Правила | плоский `~/.cursor/rules/ai-settings.mdc`, который Cursor не читает, см. ниже |
 
-## Per-project (надёжнее)
+## Правила
 
-В корне проекта:
+Пользовательские правила Cursor берёт только из своего UI: Customize → Rules. Из файлов он читает правила проекта: `AGENTS.md` в корне и подкаталогах и `.mdc` в `.cursor/rules/`. Так написано в [документации](https://cursor.com/docs/rules). Поэтому `~/.cursor/rules/ai-settings.mdc`, который пишет `install.sh`, Cursor не видит. Убрать эту запись из установщика — задача для мейнтейнера Cursor, она записана в [TODO.md](../../TODO.md).
 
-```bash
-~/ai-settings/scripts/init-project.sh
-```
-
-Скрипт положит `.cursor/rules/ai-settings.mdc` прямо в проект. Cursor подхватит при следующем открытии.
-
-## Что внутри `.mdc`
-
-Это **плоская** версия `AGENTS.md` со всеми резолвнутыми `@imports` + Cursor-frontmatter:
-
-```
----
-alwaysApply: true
----
-
-# AGENTS.md
-<резолвнутое содержимое всех модулей>
-```
-
-Размер — около 18–20 КБ (стартовый набор правил).
-
-## Обновление
-
-После `git pull` в `~/ai-settings` вручную прогони:
+Мои правила попадают в Cursor через проект:
 
 ```bash
-# глобально:
-~/ai-settings/scripts/sync-cursor.sh --global
-
-# для конкретного проекта:
-~/ai-settings/scripts/sync-cursor.sh --project /path/to/project
+cd my-project
+~/.ai-settings/scripts/init-project.sh --cursor
 ```
 
-Cursor подхватит новые правила при следующем открытии окна.
+Скрипт кладёт `.cursor/rules/ai-settings.mdc` — плоскую копию глобальных правил с frontmatter `alwaysApply: true` — и прячет её от git через `.git/info/exclude`. Это копия моих личных правил, в истории проекта ей не место. Если файл уже закоммичен, скрипт предупредит, и его надо вынуть из индекса: `git rm --cached .cursor/rules/ai-settings.mdc`.
 
-## Валидация без записи
+Сама копия не обновляется. После правок в репе перезапусти в проекте `init-project.sh --cursor`, Cursor подхватит новые правила при следующем открытии окна.
+
+## Скиллы
+
+Cursor читает скиллы из `~/.agents/skills` и из `~/.claude/skills`. Скилл репы лежит в обоих под одним именем. Схлопывает ли Cursor такие дубли, как OpenCode, я не проверял.
+
+## Агенты
+
+Каждый `agents/<name>/AGENT.md` становится `~/.cursor/agents/<name>.md`: `name`, `description`, `model: inherit`. Агентам без Edit и Write (`code-reviewer`, `pr-writer`) добавляется `readonly: true`. Каталог `~/.cursor/agents` приоритетнее совместимого `~/.claude/agents`, так что Cursor берёт эти файлы, а не ссылки Claude Code.
+
+Файл с меткой `# managed-by: ai-settings` под frontmatter установщик считает своим: перезаписывает, а рендер удалённого агента удаляет. Чужой файл под именем агента репы уезжает в `backups/<ts>/`, остальные не трогаются.
+
+## Проверка импортов
 
 ```bash
-~/ai-settings/scripts/sync-cursor.sh --check
+~/.ai-settings/scripts/sync.py rules --check
 ```
 
-Проверяет, что все `@imports` резолвятся; ничего не пишет. Удобно прогонять локально перед коммитом.
-
-## Windows
-
-`sync-cursor.sh` требует bash (macOS/Linux или WSL).
-
-**WSL (рекомендуется):** запустить `./scripts/install.sh` или `./scripts/sync-cursor.sh --global` из WSL-терминала.
-
-**Без WSL (вручную):** скопировать `.cursor/rules/ai-settings.mdc` в директорию правил Cursor вручную.
+Разворачивает все `@imports`, падает на битом и ничего не пишет. Удобно прогнать перед коммитом.

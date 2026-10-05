@@ -1,13 +1,15 @@
 [project]
 name = "ai-settings"
-version = "0.2.5"
+version = "1.0.0"
 description = "Centralized AI settings library (Claude Code, Codex, OpenCode, Cursor, Gemini)"
 requires-python = ">=3.12"
 
 [project.optional-dependencies]
 dev = [
+    "mypy>=2.4.0",
     "pytest>=8.0",
     "pyyaml>=6.0",
+    "ruff>=0.16.10",
 ]
 
 [tool.setuptools]
@@ -16,3 +18,19 @@ packages = []
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
+pythonpath = ["scripts"]
+
+[tool.ruff]
+src = [".", "scripts"]
+# scripts/ runs under the system python3 (3.9 on a clean Mac), the rest under .venv.
+per-file-target-version = { "scripts/**/*.py" = "py39" }
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.mypy]
+# mypy can't target 3.9; the install tests run scripts/ on the system python3.
+files = ["scripts"]
+mypy_path = "scripts"
+python_version = "3.10"
+strict = true

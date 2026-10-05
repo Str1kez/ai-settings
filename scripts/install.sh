@@ -39,218 +39,19 @@ fi
 
 [[ $DRY_RUN -eq 1 ]] && log_warn "DRY RUN — no changes will be made"
 
-# --- Claude Code ---
-log_info "Setting up Claude Code..."
+# --- Skills, rules, agents and Claude Code settings, for every harness ---
+# sync.py links every skill flat into ~/.claude/skills and ~/.agents/skills,
+# links CLAUDE.md and GEMINI.md, writes the flat AGENTS.md that Codex,
+# OpenCode and Cursor need (they don't follow @imports), links every agent
+# into ~/.claude/agents and renders it for the other harnesses. It merges
+# settings/claude-settings.json into ~/.claude/settings.json and links the
+# hook scripts it runs into ~/.claude/hooks. It handles --dry-run itself.
+log_info "Syncing skills, rules, agents and Claude Code settings..."
 if [[ $DRY_RUN -eq 0 ]]; then
-  ensure_dir "$HOME/.claude"
-  ensure_symlink "$AI_SETTINGS_ROOT/CLAUDE.md"         "$HOME/.claude/CLAUDE.md"
-  ensure_symlink "$AI_SETTINGS_ROOT/agents"            "$HOME/.claude/agents"
-  ensure_symlink "$AI_SETTINGS_ROOT/skills"            "$HOME/.claude/skills"
-  ensure_symlink "$AI_SETTINGS_ROOT/settings/hooks"    "$HOME/.claude/hooks"
+  python3 "$SCRIPT_DIR/sync.py" all
 else
-  echo "[dry-run] ensure_dir $HOME/.claude"
-  echo "[dry-run] ensure_symlink $AI_SETTINGS_ROOT/CLAUDE.md -> $HOME/.claude/CLAUDE.md"
-  echo "[dry-run] ensure_symlink $AI_SETTINGS_ROOT/agents -> $HOME/.claude/agents"
-  echo "[dry-run] ensure_symlink $AI_SETTINGS_ROOT/skills -> $HOME/.claude/skills"
-  echo "[dry-run] ensure_symlink $AI_SETTINGS_ROOT/settings/hooks -> $HOME/.claude/hooks"
+  python3 "$SCRIPT_DIR/sync.py" all --dry-run
 fi
-
-if [[ -f "$HOME/.claude/settings.json" ]] &&
-   grep -Eq '"superpowers@superpowers-marketplace"[[:space:]]*:[[:space:]]*true' "$HOME/.claude/settings.json"; then
-  log_warn "Claude Code upstream Superpowers plugin is enabled; disable it to avoid duplicate skills"
-fi
-
-# settings.json — merge managed keys (permissions, hooks, $schema) into existing file.
-# User-owned keys (enabledPlugins, extraKnownMarketplaces, etc.) are preserved.
-settings_target="$HOME/.claude/settings.json"
-settings_source="$AI_SETTINGS_ROOT/settings/claude-settings.json"
-if [[ ! -f "$settings_target" ]]; then
-  log_info "No existing ~/.claude/settings.json — installing from template"
-  if [[ $DRY_RUN -eq 0 ]]; then
-    cp "$settings_source" "$settings_target"
-  else
-    echo "[dry-run] cp $settings_source $settings_target"
-  fi
-else
-  log_info "Merging managed keys into ~/.claude/settings.json..."
-  if [[ $DRY_RUN -eq 0 ]]; then
-    if command -v jq &>/dev/null; then
-      tmp=$(mktemp)
-      jq --argjson tpl "$(cat "$settings_source")" \
-        '. * {"$schema": $tpl["$schema"], permissions: $tpl.permissions, hooks: $tpl.hooks}' \
-        "$settings_target" > "$tmp" && mv "$tmp" "$settings_target"
-      log_ok "settings.json updated (permissions + hooks merged)"
-    else
-      log_warn "jq not found — skipping merge. Install jq or manually copy: diff $settings_source $settings_target"
-    fi
-  else
-    echo "[dry-run] jq-merge permissions + hooks from $settings_source -> $settings_target"
-  fi
-fi
-
-# --- Shared personal skills (~/.agents/skills/) ---
-# Codex and OpenCode discover skills from ~/.agents/skills/<skill-name>/SKILL.md.
-# Symlink each skill from the repo so the repo stays source of truth.
-# Namespace prefix is dropped: strikez:write-meridian-article → write-meridian-article.
-log_info "Setting up shared personal skills (~/.agents/skills/)..."
-shopt -s nullglob
-codex_superpowers_manifests=(
-  "$HOME"/.codex/plugins/cache/*/superpowers/*/.codex-plugin/plugin.json
-)
-shopt -u nullglob
-codex_has_superpowers_plugin=0
-if [[ ${#codex_superpowers_manifests[@]} -gt 0 ]]; then
-  codex_has_superpowers_plugin=1
-fi
-
-if [[ $DRY_RUN -eq 0 ]]; then
-  ensure_dir "$HOME/.agents/skills"
-  for ns_dir in "$AI_SETTINGS_ROOT/skills"/*/; do
-    [[ -d "$ns_dir" ]] || continue
-    namespace="$(basename "$ns_dir")"
-    if [[ "$namespace" == "superpowers" && $codex_has_superpowers_plugin -eq 1 ]]; then
-      log_info "Skipping duplicate Codex personal Superpowers skills: plugin is installed"
-      continue
-    fi
-    for skill_dir in "$ns_dir"*/; do
-      [[ -f "$skill_dir/SKILL.md" ]] || continue
-      skill_name="$(basename "$skill_dir")"
-      target="$HOME/.agents/skills/$skill_name"
-      ensure_symlink "$skill_dir" "$target"
-    done
-  done
-else
-  for ns_dir in "$AI_SETTINGS_ROOT/skills"/*/; do
-    [[ -d "$ns_dir" ]] || continue
-    namespace="$(basename "$ns_dir")"
-    if [[ "$namespace" == "superpowers" && $codex_has_superpowers_plugin -eq 1 ]]; then
-      echo "[dry-run] skip Codex personal Superpowers skills: plugin is installed"
-      continue
-    fi
-    for skill_dir in "$ns_dir"*/; do
-      [[ -f "$skill_dir/SKILL.md" ]] || continue
-      skill_name="$(basename "$skill_dir")"
-      echo "[dry-run] ensure_symlink $skill_dir -> $HOME/.agents/skills/$skill_name"
-    done
-  done
-fi
-
-# --- Codex CLI ---
-# Codex не резолвит @imports в AGENTS.md, поэтому кладём плоскую версию с
-# развёрнутыми импортами. Не симлинк, а обычный файл — иначе Codex будет
-# видеть только верхний уровень, не модули из docs/ai/.
-log_info "Setting up Codex CLI..."
-if [[ $DRY_RUN -eq 0 ]]; then
-  ensure_dir "$HOME/.codex"
-  "$SCRIPT_DIR/sync-cursor.sh" --codex
-else
-  echo "[dry-run] ensure_dir $HOME/.codex"
-  echo "[dry-run] $SCRIPT_DIR/sync-cursor.sh --codex"
-fi
-
-# --- OpenCode ---
-# OpenCode reads ~/.config/opencode/AGENTS.md but does not resolve @imports.
-# Skills are discovered from the shared ~/.agents/skills configured above.
-# Agents are converted from agents/*/AGENT.md (Claude Code format) into
-# ~/.config/opencode/agents/<name>.md (OpenCode markdown format).
-log_info "Setting up OpenCode..."
-if [[ $DRY_RUN -eq 0 ]]; then
-  ensure_dir "$HOME/.config/opencode"
-  "$SCRIPT_DIR/sync-cursor.sh" --opencode
-  "$SCRIPT_DIR/sync-cursor.sh" --opencode-agents
-else
-  echo "[dry-run] ensure_dir $HOME/.config/opencode"
-  echo "[dry-run] $SCRIPT_DIR/sync-cursor.sh --opencode"
-  echo "[dry-run] $SCRIPT_DIR/sync-cursor.sh --opencode-agents"
-fi
-
-# --- Gemini CLI ---
-log_info "Setting up Gemini CLI..."
-if [[ $DRY_RUN -eq 0 ]]; then
-  ensure_dir "$HOME/.gemini"
-  ensure_symlink "$AI_SETTINGS_ROOT/GEMINI.md" "$HOME/.gemini/GEMINI.md"
-  ensure_symlink "$AI_SETTINGS_ROOT/AGENTS.md" "$HOME/.gemini/AGENTS.md"
-  ensure_symlink "$AI_SETTINGS_ROOT/skills/superpowers" "$HOME/.gemini/skills"
-else
-  echo "[dry-run] ensure_dir $HOME/.gemini"
-  echo "[dry-run] ensure_symlink $AI_SETTINGS_ROOT/GEMINI.md -> $HOME/.gemini/GEMINI.md"
-  echo "[dry-run] ensure_symlink $AI_SETTINGS_ROOT/AGENTS.md -> $HOME/.gemini/AGENTS.md"
-  echo "[dry-run] ensure_symlink $AI_SETTINGS_ROOT/skills/superpowers -> $HOME/.gemini/skills"
-fi
-
-# --- Cursor (generate flat rules file) ---
-log_info "Setting up Cursor (via sync-cursor.sh)..."
-if [[ -x "$SCRIPT_DIR/sync-cursor.sh" ]]; then
-  if [[ $DRY_RUN -eq 0 ]]; then
-    "$SCRIPT_DIR/sync-cursor.sh" --global
-  else
-    echo "[dry-run] $SCRIPT_DIR/sync-cursor.sh --global"
-  fi
-else
-  log_warn "sync-cursor.sh not found or not executable; skipping"
-fi
-
-# --- Claude Code: slash commands for personal skills ---
-# For each skills/<namespace>/<skill>/ found in the repo, generates
-# ~/.claude/commands/<namespace>/<skill>.md so skills appear in / autocomplete.
-# Rename skills/strikez/ to skills/<your-handle>/ — the namespace follows automatically.
-log_info "Generating personal skill slash commands for Claude Code..."
-
-_generate_skill_commands() {
-  local skills_root="$AI_SETTINGS_ROOT/skills"
-  local total=0
-
-  for ns_dir in "$skills_root"/*/; do
-    [[ -d "$ns_dir" ]] || continue
-    local ns
-    ns="$(basename "$ns_dir")"
-    local commands_dir="$HOME/.claude/commands/$ns"
-    local count=0
-
-    for skill_dir in "$ns_dir"*/; do
-      [[ -f "$skill_dir/SKILL.md" ]] || continue
-      local skill_name
-      skill_name="$(basename "$skill_dir")"
-
-      if [[ $DRY_RUN -eq 1 ]]; then
-        echo "[dry-run] write $commands_dir/$skill_name.md  ($ns:$skill_name)"
-        count=$((count + 1))
-        continue
-      fi
-
-      ensure_dir "$commands_dir"
-
-      local desc
-      desc=$(SKILL_MD="$skill_dir/SKILL.md" SKILL_NAME="$skill_name" python3 <<'PYEOF'
-import os, re
-txt = open(os.environ['SKILL_MD']).read()
-m = re.search(r'description:\s*\|?\n\s*(.+)', txt)
-if m:
-    d = m.group(1).strip()
-else:
-    m2 = re.search(r'description:\s*(.+)', txt, re.MULTILINE)
-    d = m2.group(1).strip() if m2 else os.environ.get('SKILL_NAME', 'skill')
-print(d.replace('"', "'"))
-PYEOF
-      )
-
-      cat > "$commands_dir/$skill_name.md" <<EOF
----
-description: "$desc"
----
-Invoke the \`$ns:$skill_name\` skill.
-EOF
-      log_info "  command: $ns:$skill_name"
-      count=$((count + 1))
-    done
-
-    if [[ $DRY_RUN -eq 0 && $count -gt 0 ]]; then
-      log_ok "Generated $count command(s) for namespace '$ns'"
-    fi
-  done
-}
-
-_generate_skill_commands
 
 # --- RTK (Rust Token Killer) ---
 log_info "Setting up RTK (Rust Token Killer)..."
@@ -269,7 +70,7 @@ else
   fi
 fi
 
-# Claude Code hook is wired via the claude-settings.json merge above
+# Claude Code hook is wired via the settings.json merge in sync.py
 # (PreToolUse -> "rtk hook claude", native binary command, no extra setup).
 # OpenCode has no equivalent settings.json merge, so wire its plugin explicitly.
 log_info "Setting up RTK OpenCode plugin..."

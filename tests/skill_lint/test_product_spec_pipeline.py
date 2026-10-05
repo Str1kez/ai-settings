@@ -1,29 +1,37 @@
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-PIPELINE_SKILL = REPO_ROOT / "skills/strikez/product-spec-pipeline/SKILL.md"
-BRAINSTORMING_SKILL = REPO_ROOT / "skills/superpowers/brainstorming/SKILL.md"
-SPEC_ALIAS_SKILL = REPO_ROOT / "skills/strikez/spec/SKILL.md"
+PIPELINE_SKILL = REPO_ROOT / "skills/product-spec-pipeline/SKILL.md"
+SPEC_ALIAS_SKILL = REPO_ROOT / "skills/spec/SKILL.md"
+
+BRAINSTORM_PHASE = "## Phase 2: Brainstorm the idea"
+GRILLING_PHASE = "## Phase 5: Grill the selected direction"
 
 
-def test_pipeline_runs_brainstorming_before_grilling():
+def _brainstorm_phase(content: str) -> str:
+    start = content.index(BRAINSTORM_PHASE)
+    end = content.index("\n## ", start + len(BRAINSTORM_PHASE))
+    return content[start:end]
+
+
+def test_pipeline_brainstorms_on_its_own_before_grilling() -> None:
     content = PIPELINE_SKILL.read_text(encoding="utf-8")
+    phase = _brainstorm_phase(content)
 
-    brainstorming_phase = content.index("## Phase 2: Brainstorm the idea")
-    grilling_phase = content.index("## Phase 5: Grill the selected direction")
+    assert content.index(BRAINSTORM_PHASE) < content.index(GRILLING_PHASE)
+    assert "2-3 materially different product directions" in phase
+    assert "select or approve 1 direction" in phase
+    assert "<run-dir>/brainstorm.md" in phase
+    assert "Do not commit" in phase
 
-    assert brainstorming_phase < grilling_phase
-    assert "embedded-mode=product-spec-pipeline" in content
-    assert "<run-dir>/brainstorm.md" in content
 
+def test_pipeline_does_not_depend_on_brainstorming_skill() -> None:
+    content = PIPELINE_SKILL.read_text(encoding="utf-8")
+    phase = _brainstorm_phase(content)
 
-def test_brainstorming_has_product_spec_pipeline_embedded_mode():
-    content = BRAINSTORMING_SKILL.read_text(encoding="utf-8")
-
-    assert "## Embedded mode: product-spec-pipeline" in content
-    assert "Do not commit" in content
-    assert "Do not invoke `writing-plans`" in content
-    assert "Return control to the parent pipeline" in content
+    assert "embedded-mode" not in content
+    assert "`brainstorming`" not in content
+    assert "brainstorming" not in phase.lower()
 
 
 def test_spec_alias_invokes_product_spec_pipeline():

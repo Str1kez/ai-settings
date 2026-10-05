@@ -2,7 +2,7 @@
 
 > **Windows:** все bash-команды в этом руководстве требуют macOS/Linux или WSL. Без WSL используйте эквиваленты PowerShell вручную.
 
-Репо — это мой личный пресет. Когда его клонируешь, ты получаешь мою персону (Афину), мой стиль общения (русский, «ты», без лести), мой стек (Python/FastAPI/LiteStar/Vue, локально в Docker) и мои личные скиллы (русские коммиты, PR-описания). Почти всё это надо поправить под себя.
+Репо — это мой личный пресет. Когда его клонируешь, ты получаешь мою персону (Афину), мой стиль общения (русский, «ты», без лести), мой стек (Python/FastAPI/LiteStar/Vue, локально в Docker) и мои скиллы (коммиты, PR-описания, записи в CHANGELOG). Почти всё это надо поправить под себя.
 
 Ниже — чеклист того, что трогать. По приоритету: сначала обязательное, потом опциональное, потом что **не** трогать.
 
@@ -13,19 +13,6 @@
 ---
 
 ## Обязательно (иначе получишь не себя, а меня)
-
-### 0. Переименовать неймспейс скиллов
-
-Все кастомные скиллы живут в `skills/strikez/` — это **мой** личный неймспейс. В Claude Code они будут отображаться с префиксом `strikez:` и доступны как `/strikez:skill-name`. Переименуй папку под себя — обычно GitHub-хендл или имя:
-
-```bash
-git mv skills/strikez skills/<your-handle>
-git commit -m "chore(skills): переименовать неймспейс strikez → <your-handle>"
-```
-
-После этого `install.sh` автоматически подхватит новый неймспейс — хардкода нет, скрипт сканирует все поддиректории `skills/`.
-
----
 
 ### 1. `docs/ai/persona.md`
 
@@ -95,7 +82,7 @@ Uncertainty) — но не копируй содержание.
 
 ### 3. `docs/ai/writing-voice.md`
 
-Голос **генерируемого контента** — коммиты, PR, CHANGELOG, доки, посты, статьи. Применяется везде, кроме UI-строк и ошибок для конечных пользователей. У меня там правила моего канала «··• Серёжа печатает»: нет канцелярита и инфобиза, кавычки только для прямых цитат, гипербола как приём, автор всегда в тексте через маркеры «на мой взгляд / я считаю», смешанный ритм предложений.
+Голос **генерируемого контента** — коммиты, PR, CHANGELOG, доки, посты, статьи. Применяется везде, кроме UI-строк и ошибок для конечных пользователей. У меня там: прямой голос от первого лица, факт отдельно от мнения, стоп-лист канцелярита и инфобиза, кавычки только для прямых цитат, гипербола только в постах, а в доках и коммитах — сухо и по делу.
 
 Это полностью персональный модуль — забирать мой голос нельзя, надо описать свой.
 
@@ -104,8 +91,8 @@ Uncertainty) — но не копируй содержание.
 ```
 Я переписываю docs/ai/writing-voice.md под свой стиль. Открой текущий файл
 для структуры (секции Scope / Core voice / Fact vs opinion / Lexicon /
-Quotation marks / Numbers and AI terminology / Emoji / Commit and PR tone /
-Reference) — содержимое не копируй, там мой голос.
+Quotation marks / Numbers, names, and AI terminology / Emoji / Hyperbole and
+register / Commit and PR tone) — содержимое не копируй, там мой голос.
 
 Задай мне 6 вопросов по одному:
 1. Опиши в трёх предложениях свой писательский голос. Представь, что
@@ -183,13 +170,13 @@ Reference) — содержимое не копируй, там мой голо�
 
 ### 5. `docs/ai/commands.md`
 
-Канонические команды для твоих инструментов. У меня pytest, uv, npm, git, gh, yc. Если используешь poetry/pnpm/yarn/aws — замени.
+Канонические команды для твоих инструментов. У меня pytest и uv, npm, cargo, go и git. Если используешь poetry/pnpm/yarn — замени.
 
 **Промпт:**
 
 ```
 Я переписываю docs/ai/commands.md — там мой набор команд (pytest, uv, npm,
-git, gh, yc). Открой файл для структуры (секции по инструментам с буллетами
+cargo, go, git). Открой файл для структуры (секции по инструментам с буллетами
 команда → описание).
 
 Задай мне 4 вопроса по одному:
@@ -238,22 +225,22 @@ git, gh, yc). Открой файл для структуры (секции по
 Я не пишу на <LANG>. Удали docs/ai/<LANG>.md и убери строку
 `- <Lang>: @docs/ai/<lang>.md` из секции 6 в AGENTS.md (или удали
 всю подсекцию language-specific, если там больше ничего не осталось).
-Проверь, что imports остались валидными: ./scripts/sync-cursor.sh --check
+Проверь, что imports остались валидными: ./scripts/sync.py rules --check
 ```
 
 ---
 
 ### 7. `docs/ai/git-workflow.md`
 
-Мой формат: Conventional Commits, **description на русском**, PR title+description на русском.
-- Если команда коммитит на английском — поменяй примеры и явно скажи «description — English, imperative».
+Мой формат: Conventional Commits целиком **на английском**, PR — заголовок и описание на русском. Ветки `task-<KEY>-<номер>-<описание>`, squash-merge.
+- Если коммитишь на другом языке — поменяй правило и примеры.
 - Если не Conventional Commits — опиши свой формат.
 
 **Промпт:**
 
 ```
 Я адаптирую docs/ai/git-workflow.md под свою команду. Открой файл — там
-мой формат (Conventional Commits, description на русском, PR на русском).
+мой формат (Conventional Commits на английском, PR на русском).
 
 Задай мне 4 вопроса по одному:
 1. Формат коммитов: Conventional Commits / свой / свободный? Примеры.
@@ -269,37 +256,36 @@ Pre-commit discipline, Merge strategy, Never). Верни в кодблоке.
 
 ---
 
-### 8. `skills/strikez/en-commit-message`, `ru-pr-description`, `changelog-entry`
+### 8. `skills/en-commit-message`, `ru-pr-description`, `en-pr-description`, `changelog-entry`
 
-- Если коммитишь не на английском: удали `en-commit-message` или переделай в `ru-commit-message`.
-- `changelog-entry` — тоже пишет по-русски в формате Keep a Changelog. Адаптируй язык.
+- `en-commit-message` пишет коммит на английском. Коммитишь на другом языке — сделай из него `<lang>-commit-message`.
+- `ru-pr-description` и `en-pr-description` — PR на русском и на английском. Оставь нужный.
+- `changelog-entry` пишет запись на русском, а в `CHANGELOG.md`, который ведётся на другом языке, — на нём. Если твой язык по умолчанию другой, поменяй его в `SKILL.md`.
+- Свой скилл с нуля заводи через `scripts/new.py skill <name>`: заготовка, `git add`, линт, `install.sh`. Порядок и зачем каждый шаг — в [skills/README.md](../../skills/README.md#новый-скилл).
 
-**Промпт (форк в английский аналог):**
+**Промпт (свой язык коммитов):**
 
 ```
-Скопируй папку skills/strikez/en-commit-message/ в skills/strikez/ru-commit-message/
-и переделай скилл под русский язык коммит-описаний:
-- В SKILL.md: поменяй name, description (триггеры типа «write a commit» вместо
-  «напиши коммит»), tags.
-- В references/examples.md: перепиши все примеры на английские описания
-  (imperative, lowercase first, no trailing period).
-- В CHANGELOG.md скилла и README.md: переведи.
-- После: удали исходную skills/strikez/en-commit-message/, если она не нужна.
-- Прогони `pytest tests/` — все проверки skill-lint должны пройти.
-
-Для changelog-entry — в нём шаблоны на русском, но формат (Keep a Changelog)
-языково-независимый. Просто переведи шаблоны и примеры на английский внутри
-SKILL.md и references/.
+Скопируй skills/en-commit-message/ в skills/<lang>-commit-message/ и переделай
+скилл под коммиты на <язык>:
+- в SKILL.md поменяй name, description (триггеры на моём языке) и tags;
+- в references/examples.md перепиши примеры;
+- переведи README.md скилла, в его CHANGELOG.md добавь запись о форке.
+Удали skills/en-commit-message/, если он не нужен. Для нового скилла с нуля есть
+scripts/new.py skill <name>. Новый скилл добавь в git
+(деплоятся только отслеживаемые, про остальные sync.py предупредит), прогони
+.venv/bin/python -m pytest tests/skill_lint и ./scripts/install.sh.
 ```
 
 ---
 
 ### 9. `agents/`
 
-5 субагентов: `code-reviewer`, `debugger`, `fastapi-backend`, `ml-helper`, `pr-writer`.
-- `fastapi-backend`, `ml-helper` — узко-стековые. Если не работаешь с FastAPI/LiteStar или ML — удали соответствующие папки, чтобы они не всплывали ложными триггерами.
+4 субагента: `code-reviewer`, `debugger`, `fastapi-backend`, `pr-writer`.
+- `fastapi-backend` — узко-стековый. Если не работаешь с FastAPI/LiteStar — удали папку, чтобы агент не всплывал ложным триггером.
 - `code-reviewer`, `debugger`, `pr-writer` — общие, оставляй.
-- Фронтенд (Vue) отдельного субагента пока не имеет — заведи по аналогии, если Vue-проекты регулярные.
+- Фронтенд (Vue) отдельного субагента пока не имеет. Если Vue-проекты регулярные, заведи его через `scripts/new.py agent <name>`. Порядок и поля `AGENT.md` — в [agents/README.md](../../agents/README.md#новый-агент).
+- Удаляй агента через `git rm -r agents/<name>`, потом запусти `./scripts/install.sh`: он уберёт ссылку и рендеры удалённого агента во всех харнессах.
 
 **Промпт (аудит под стек):**
 
@@ -342,21 +328,22 @@ docs/ai/hard-gates.md.
 ## Не трогай (сломаешь — будет больно)
 
 - **`CLAUDE.md`, `GEMINI.md`** — тонкие обёртки с единственной строкой `@./AGENTS.md`. Нужны для того, чтобы Claude Code и Gemini CLI подхватывали правила через свои конвенции именования.
-- **Симлинки в `~/.claude/`, `~/.codex/`, `~/.config/opencode/`, `~/.gemini/`, `~/.cursor/rules/`** — создаются `install.sh`. Руками не трогай, управляй через скрипт.
-- **`.cursor/rules/ai-settings.mdc`** (проектный), **`~/.codex/AGENTS.md`** и **`~/.config/opencode/AGENTS.md`** — **генерируемые** файлы (плоская версия AGENTS.md с развёрнутыми `@imports`). Правь исходный `AGENTS.md` / `docs/ai/*.md`, потом прогоняй `./scripts/install.sh` или `scripts/sync-cursor.sh --codex` / `--opencode` / `--global`.
+- **Ссылки и сгенерированные файлы в `~/.claude/`, `~/.agents/skills/`, `~/.codex/`, `~/.config/opencode/`, `~/.gemini/`, `~/.cursor/`** — их ставит `install.sh`, правки в них затрёт следующий прогон. Что откуда берётся — в [ARCHITECTURE.md](../../ARCHITECTURE.md).
+- **`.cursor/rules/ai-settings.mdc`** (проектный), **`~/.codex/AGENTS.md`** и **`~/.config/opencode/AGENTS.md`** — **генерируемые** файлы (плоская версия AGENTS.md с развёрнутыми `@imports`). Правь исходный `AGENTS.md` / `docs/ai/*.md`, потом прогоняй `./scripts/install.sh` или `./scripts/sync.py rules`.
 - **`scripts/`** — работают как есть. Менять только если понимаешь, что делаешь.
-- **`tests/`** — skill-lint. Если меняешь формат `SKILL.md` — обновляй проверки вместе, не удаляй тесты.
+- **`tests/`** — тесты установщика, skill-lint в `tests/skill_lint/` и agent-lint в `tests/agent_lint/`. Если меняешь формат `SKILL.md` — обновляй проверки вместе, не удаляй тесты.
 
 ## После правок
 
-1. **Прогони тесты**, чтобы убедиться, что не сломал формат скиллов:
+1. **Прогони тесты**, чтобы убедиться, что не сломал формат скиллов и агентов: skill-lint и agent-lint входят в общий прогон (нет `.venv` — сначала `uv sync --frozen`):
    ```bash
-   source .venv/bin/activate && pytest tests/ -v
+   .venv/bin/python -m pytest -q
    ```
 2. **Перегенерируй плоские файлы** для Codex, OpenCode и Cursor:
    ```bash
    ./scripts/install.sh
    ```
+   Строка `[warn] … is not tracked by git` значит, что новый скилл или агент не добавлен в git и не задеплоен: сделай `git add` и прогони ещё раз.
 3. **Перезапусти** Claude Code / Codex / OpenCode / Gemini / Cursor — сессии кэшируют AGENTS.md на старте, новые правила подхватятся при новом запуске.
 4. **Smoke-test**: задай вопрос «напиши коммит» или «привет, расскажи о себе». Если ассистент в своей (а не в моей) персоне — значит правки применились.
 
@@ -364,7 +351,7 @@ docs/ai/hard-gates.md.
 
 Не пытайся переписать всё за один заход. Работающий минимум:
 1. `persona.md` + `style.md` под себя — 80% эффекта.
-2. Удали `skills/strikez/ru-*`, если не твой язык.
+2. Убери скиллы не на твоём языке: `ru-pr-description` или `en-pr-description`.
 3. Живи неделю, смотри где ассистент ломается или звучит чужо — правь точечно.
 
 Всё остальное — опциональная тонкая настройка.

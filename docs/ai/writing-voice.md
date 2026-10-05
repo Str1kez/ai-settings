@@ -10,7 +10,7 @@ This module governs **voice and tone of content you generate on my behalf**. It 
 - Pull Request titles and descriptions.
 - CHANGELOG entries.
 - TODO.md entries.
-- Docs under `docs/setup/`, `docs/adr/`, `docs/superpowers/`, README-like files.
+- Docs under `docs/setup/`, `docs/adr/`, specs and tickets, README-like files.
 - Blog posts, Telegram posts, articles, newsletters.
 - Any long-form text that goes out under my name.
 

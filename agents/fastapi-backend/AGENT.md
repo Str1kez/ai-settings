@@ -4,7 +4,7 @@ description: |
   Use for Python backend API work — FastAPI or LiteStar. TRIGGER when: a file imports
   `fastapi`, `litestar`, `sqlalchemy`, `pydantic`, `pydantic_ai`, or `alembic`; user asks
   about endpoints, schemas, DB migrations, async patterns, or dependency injection in Python.
-  SKIP: frontend-only tasks, non-API Python scripts, ML pipelines (use ml-helper instead).
+  SKIP: frontend-only tasks, non-API Python scripts, ML pipelines.
 model: sonnet
 tools: [Read, Grep, Glob, Bash, Edit, Write]
 ---

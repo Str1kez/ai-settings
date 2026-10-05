@@ -1,4 +1,5 @@
 """Meta-test: verify lint rules actually catch problems on a known-bad fixture."""
+
 from __future__ import annotations
 
 import re
@@ -7,7 +8,6 @@ from pathlib import Path
 import yaml
 
 from tests.skill_lint.test_skills import REQUIRED_FIELDS
-
 
 FIXTURE_BAD_SKILL = Path(__file__).parent / "fixtures" / "bad-skill" / "SKILL.md"
 
