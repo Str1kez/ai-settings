@@ -1,4 +1,5 @@
 """Meta-test: verify lint rules actually catch problems on a known-bad fixture."""
+
 from __future__ import annotations
 
 import re

@@ -1,4 +1,5 @@
 """skill-lint checks only SKILL.md files that git tracks."""
+
 from __future__ import annotations
 
 import subprocess
