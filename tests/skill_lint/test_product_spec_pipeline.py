@@ -34,14 +34,14 @@ def test_pipeline_does_not_depend_on_brainstorming_skill() -> None:
     assert "brainstorming" not in phase.lower()
 
 
-def test_spec_alias_invokes_product_spec_pipeline():
+def test_spec_alias_invokes_product_spec_pipeline() -> None:
     content = SPEC_ALIAS_SKILL.read_text(encoding="utf-8")
 
     assert "`product-spec-pipeline`" in content
     assert "Pass the user's complete prompt" in content
 
 
-def test_pipeline_analyzes_existing_or_empty_project_before_brainstorming():
+def test_pipeline_analyzes_existing_or_empty_project_before_brainstorming() -> None:
     content = PIPELINE_SKILL.read_text(encoding="utf-8")
 
     project_analysis = content.index("### Analyze the project first")
@@ -53,7 +53,7 @@ def test_pipeline_analyzes_existing_or_empty_project_before_brainstorming():
     assert "non-empty" in content
 
 
-def test_pipeline_offers_research_and_dispatches_one_fresh_worker_per_selection():
+def test_pipeline_offers_research_and_dispatches_one_fresh_worker_per_selection() -> None:
     content = PIPELINE_SKILL.read_text(encoding="utf-8")
 
     research_selection = content.index("## Phase 3: Select deep research")

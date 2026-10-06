@@ -10,6 +10,7 @@ import re
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 from urllib.parse import unquote
 
 import yaml
@@ -34,7 +35,7 @@ class Declaration:
     path: Path
 
 
-def parse_frontmatter(text: str) -> dict:
+def parse_frontmatter(text: str) -> dict[str, Any]:
     match = FRONTMATTER_RE.match(text)
     if not match:
         return {}
@@ -82,15 +83,9 @@ def find_broken_links(md_file: Path, skill_dir: Path, repo_root: Path) -> list[s
     """
     text = md_file.read_text(encoding="utf-8")
     problems = [
-        problem
-        for target in _link_targets(text)
-        if (problem := _link_problem(target, md_file.parent, repo_root))
+        problem for target in _link_targets(text) if (problem := _link_problem(target, md_file.parent, repo_root))
     ]
-    problems += [
-        problem
-        for target in _bundled_paths(text)
-        if (problem := _link_problem(target, skill_dir, repo_root))
-    ]
+    problems += [problem for target in _bundled_paths(text) if (problem := _link_problem(target, skill_dir, repo_root))]
     return problems
 
 
@@ -118,10 +113,7 @@ def find_duplicates(skills: list[Declaration], agents: list[Declaration]) -> lis
     agent_names = {agent.name: agent.path for agent in agents}
     for skill in skills:
         if skill.name in agent_names:
-            problems.append(
-                f"skill '{skill.name}' ({skill.path}) collides with agent "
-                f"{agent_names[skill.name]}"
-            )
+            problems.append(f"skill '{skill.name}' ({skill.path}) collides with agent {agent_names[skill.name]}")
 
     by_description: dict[str, list[str]] = defaultdict(list)
     for skill in skills:

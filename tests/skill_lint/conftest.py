@@ -5,6 +5,7 @@ from __future__ import annotations
 import re
 import subprocess
 from pathlib import Path
+from typing import Any
 
 import pytest
 import yaml
@@ -30,11 +31,10 @@ def discover_skill_paths(repo_root: Path = REPO_ROOT) -> list[Path]:
     return sorted(repo_root / rel for rel in result.stdout.split("\0") if rel)
 
 
-@pytest.fixture(
-    params=discover_skill_paths(), ids=lambda p: str(p.relative_to(REPO_ROOT))
-)
+@pytest.fixture(params=discover_skill_paths(), ids=lambda p: str(p.relative_to(REPO_ROOT)))
 def skill_path(request: pytest.FixtureRequest) -> Path:
-    return request.param
+    path: Path = request.param
+    return path
 
 
 @pytest.fixture
@@ -43,9 +43,10 @@ def skill_text(skill_path: Path) -> str:
 
 
 @pytest.fixture
-def skill_frontmatter(skill_text: str) -> dict:
+def skill_frontmatter(skill_text: str) -> dict[str, Any]:
     """Parse YAML frontmatter from SKILL.md."""
     match = re.match(r"^---\n(.*?)\n---\n", skill_text, re.DOTALL)
     if not match:
         pytest.fail("No YAML frontmatter found")
-    return yaml.safe_load(match.group(1))
+    frontmatter: dict[str, Any] = yaml.safe_load(match.group(1))
+    return frontmatter

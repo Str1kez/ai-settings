@@ -24,10 +24,7 @@ FOREIGN_OPENCODE_AGENT = "---\ndescription: mine\nmode: subagent\n---\nMy prompt
 
 
 def _repo_agents() -> dict[str, Path]:
-    return {
-        path.parent.name: path
-        for path in sorted((REPO_ROOT / "agents").glob("*/AGENT.md"))
-    }
+    return {path.parent.name: path for path in sorted((REPO_ROOT / "agents").glob("*/AGENT.md"))}
 
 
 def _split(path: Path) -> tuple[dict[str, Any], str]:
@@ -74,9 +71,7 @@ def test_every_repo_agent_is_an_opencode_subagent_with_its_prompt(
         pytest.param("debugger", "allow", id="debugger"),
     ],
 )
-def test_only_agents_with_edit_or_write_can_edit_in_opencode(
-    installed_home: Path, name: str, edit: str
-) -> None:
+def test_only_agents_with_edit_or_write_can_edit_in_opencode(installed_home: Path, name: str, edit: str) -> None:
     rendered, _ = _split(_opencode_agent(installed_home, name))
 
     assert rendered["permission"]["edit"] == edit
@@ -126,17 +121,13 @@ def test_agent_gone_from_the_repo_leaves_both_harnesses_and_foreign_ones_stay(
     assert mine == FOREIGN_OPENCODE_AGENT
 
 
-def test_foreign_opencode_agent_under_a_repo_agent_name_moves_to_backups(
-    repo: Path, home: Path
-) -> None:
+def test_foreign_opencode_agent_under_a_repo_agent_name_moves_to_backups(repo: Path, home: Path) -> None:
     write(_opencode_agent(home, "keeper"), FOREIGN_OPENCODE_AGENT)
 
     run_sync(repo, home, "agents")
 
     backups = sorted((repo / "backups").rglob("keeper.md"))
-    assert [path.read_text(encoding="utf-8") for path in backups] == [
-        FOREIGN_OPENCODE_AGENT
-    ]
+    assert [path.read_text(encoding="utf-8") for path in backups] == [FOREIGN_OPENCODE_AGENT]
     rendered, prompt = _split(_opencode_agent(home, "keeper"))
     assert rendered["description"] == "Use for keeper work."
     assert prompt.strip() == "# keeper"
@@ -144,7 +135,7 @@ def test_foreign_opencode_agent_under_a_repo_agent_name_moves_to_backups(
 
 def _toml_agent(home: Path, name: str) -> dict[str, Any]:
     path = home / ".codex/agents" / f"{name}.toml"
-    return tomllib.loads(path.read_text(encoding="utf-8"))
+    return dict(tomllib.loads(path.read_text(encoding="utf-8")))
 
 
 def test_every_repo_agent_is_a_codex_toml_with_its_prompt(
@@ -175,9 +166,7 @@ def test_every_repo_agent_is_a_gemini_and_a_cursor_agent_with_its_prompt(
 
 
 @pytest.mark.parametrize("name", ["code-reviewer", "pr-writer"])
-def test_read_only_agents_cannot_write_in_codex_cursor_and_gemini(
-    installed_home: Path, name: str
-) -> None:
+def test_read_only_agents_cannot_write_in_codex_cursor_and_gemini(installed_home: Path, name: str) -> None:
     gemini, _ = _split(installed_home / ".gemini/agents" / f"{name}.md")
     cursor, _ = _split(installed_home / ".cursor/agents" / f"{name}.md")
 
@@ -220,9 +209,7 @@ def test_render_of_an_agent_gone_from_the_repo_goes_and_foreign_file_stays(
     assert (home / foreign_path.format("mine")).read_text(encoding="utf-8") == "mine\n"
 
 
-def test_foreign_codex_agent_under_a_repo_agent_name_moves_to_backups(
-    repo: Path, home: Path
-) -> None:
+def test_foreign_codex_agent_under_a_repo_agent_name_moves_to_backups(repo: Path, home: Path) -> None:
     write(home / ".codex/agents/keeper.toml", 'name = "mine"\n')
 
     run_sync(repo, home, "agents")
@@ -232,9 +219,7 @@ def test_foreign_codex_agent_under_a_repo_agent_name_moves_to_backups(
     assert _toml_agent(home, "keeper")["name"] == "keeper"
 
 
-def test_agent_whose_frontmatter_name_differs_from_its_dir_fails_the_sync(
-    repo: Path, home: Path
-) -> None:
+def test_agent_whose_frontmatter_name_differs_from_its_dir_fails_the_sync(repo: Path, home: Path) -> None:
     write(
         repo / "agents/keeper/AGENT.md",
         "---\nname: keeper-v2\ndescription: Keeps.\ntools: [Read]\n---\n\nKeeps.\n",
@@ -247,9 +232,7 @@ def test_agent_whose_frontmatter_name_differs_from_its_dir_fails_the_sync(
     assert not (home / ".claude/agents").exists()
 
 
-def test_agent_prompt_with_toml_literal_quotes_fails_the_codex_sync(
-    repo: Path, home: Path
-) -> None:
+def test_agent_prompt_with_toml_literal_quotes_fails_the_codex_sync(repo: Path, home: Path) -> None:
     write(
         repo / "agents/keeper/AGENT.md",
         "---\nname: keeper\ndescription: Keeps.\ntools: [Read]\n---\n\nUse ''' here.\n",

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+from typing import Any
 
 NAME_RE = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")  # Agent Skills spec
 MAX_DESCRIPTION_LENGTH = 1024  # OpenCode limit
@@ -20,60 +21,54 @@ SECRET_PATTERNS = [
 ]
 
 
-def test_frontmatter_exists(skill_frontmatter):
+def test_frontmatter_exists(skill_frontmatter: dict[str, Any]) -> None:
     assert isinstance(skill_frontmatter, dict), "Frontmatter must be a YAML mapping"
 
 
-def test_required_fields(skill_frontmatter):
+def test_required_fields(skill_frontmatter: dict[str, Any]) -> None:
     missing = [f for f in REQUIRED_FIELDS if not skill_frontmatter.get(f)]
     assert not missing, f"Missing required fields: {missing}"
 
 
-def test_description_has_trigger(skill_frontmatter):
+def test_description_has_trigger(skill_frontmatter: dict[str, Any]) -> None:
     desc = str(skill_frontmatter.get("description", ""))
-    assert re.search(r"\b(Use when|Trigger)\b", desc), (
-        "description must contain 'Use when' or 'Trigger'"
-    )
+    assert re.search(r"\b(Use when|Trigger)\b", desc), "description must contain 'Use when' or 'Trigger'"
 
 
-def test_description_has_skip(skill_frontmatter):
+def test_description_has_skip(skill_frontmatter: dict[str, Any]) -> None:
     desc = str(skill_frontmatter.get("description", ""))
-    assert re.search(r"\b(SKIP|Do NOT use)\b", desc), (
-        "description must contain 'SKIP' or 'Do NOT use'"
-    )
+    assert re.search(r"\b(SKIP|Do NOT use)\b", desc), "description must contain 'SKIP' or 'Do NOT use'"
 
 
-def test_description_length(skill_frontmatter):
+def test_description_length(skill_frontmatter: dict[str, Any]) -> None:
     desc = str(skill_frontmatter.get("description", ""))
     assert len(desc) >= 100, f"description too short ({len(desc)} chars, need >=100)"
 
 
-def test_description_fits_opencode_limit(skill_frontmatter):
+def test_description_fits_opencode_limit(skill_frontmatter: dict[str, Any]) -> None:
     desc = str(skill_frontmatter.get("description", ""))
     assert len(desc) <= MAX_DESCRIPTION_LENGTH, (
         f"description too long ({len(desc)} chars, max {MAX_DESCRIPTION_LENGTH})"
     )
 
 
-def test_description_has_no_scaffold_placeholders(skill_frontmatter):
+def test_description_has_no_scaffold_placeholders(skill_frontmatter: dict[str, Any]) -> None:
     desc = str(skill_frontmatter.get("description", ""))
     leftovers = PLACEHOLDER_RE.findall(desc)
-    assert not leftovers, (
-        f"description still holds placeholders from scripts/new.py: {leftovers}"
-    )
+    assert not leftovers, f"description still holds placeholders from scripts/new.py: {leftovers}"
 
 
-def test_name_matches_agent_skills_regex(skill_frontmatter):
+def test_name_matches_agent_skills_regex(skill_frontmatter: dict[str, Any]) -> None:
     name = str(skill_frontmatter.get("name", ""))
     assert NAME_RE.match(name), f"name '{name}' doesn't match {NAME_RE.pattern}"
 
 
-def test_version_semver(skill_frontmatter):
+def test_version_semver(skill_frontmatter: dict[str, Any]) -> None:
     version = str(skill_frontmatter.get("version", ""))
     assert SEMVER_RE.match(version), f"version '{version}' is not semver X.Y.Z"
 
 
-def test_changelog_exists(skill_path: Path, skill_frontmatter):
+def test_changelog_exists(skill_path: Path, skill_frontmatter: dict[str, Any]) -> None:
     changelog = skill_path.parent / "CHANGELOG.md"
     assert changelog.is_file(), f"{changelog} missing"
     content = changelog.read_text(encoding="utf-8")
@@ -81,15 +76,13 @@ def test_changelog_exists(skill_path: Path, skill_frontmatter):
     assert f"[{version}]" in content, f"CHANGELOG.md has no entry for version {version}"
 
 
-def test_name_matches_folder(skill_path: Path, skill_frontmatter):
+def test_name_matches_folder(skill_path: Path, skill_frontmatter: dict[str, Any]) -> None:
     folder_name = skill_path.parent.name
     declared = skill_frontmatter.get("name", "")
-    assert declared == folder_name, (
-        f"frontmatter name '{declared}' != folder '{folder_name}'"
-    )
+    assert declared == folder_name, f"frontmatter name '{declared}' != folder '{folder_name}'"
 
 
-def test_no_obvious_secrets(skill_text: str):
+def test_no_obvious_secrets(skill_text: str) -> None:
     for pattern in SECRET_PATTERNS:
         match = pattern.search(skill_text)
         assert not match, f"Possible secret matched: {pattern.pattern}"
