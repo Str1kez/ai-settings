@@ -3,6 +3,8 @@
 - Root `CLAUDE.md`, `AGENTS.md`, `GEMINI.md` and `docs/ai/` are the user's global instructions: install symlinks or renders them into every harness home, so they load in every project. Guidance about working on this repo goes in this file.
 - Python in `scripts/` runs under the system `python3` (3.9 on macOS): stdlib only, 3.9-compatible syntax. For `scripts/` this overrides the 3.14+ rule in `docs/ai/python.md`.
 - `scripts/install.sh` writes into the real harness homes (`~/.claude`, `~/.agents`, `~/.codex`, ...). Run it with `--dry-run`, show the output, and do the real run only after the user approves.
+- Releasing: follow `docs/agents/release.md`.
+- The auto mode classifier blocks edits to `permissions` in `settings/claude-settings.json` as self-modification. Don't try to apply them: show the diff right away and the user applies it.
 
 ## Agent skills
 
