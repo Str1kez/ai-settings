@@ -5,6 +5,20 @@
 
 ## [Unreleased]
 
+## [1.0.1] — 2026-10-06
+
+Чищу противоречия в глобальных правилах и выкидываю TypeScript: я на нём не пишу, а модуль жрал контекст в каждой сессии.
+
+### Исправлено
+- `AGENTS.md` требовал Python 3.12+, а `docs/ai/python.md` — 3.14+. Теперь везде 3.14+.
+- `docs/ai/commands.md` предлагал `black` как запасной форматтер, `python.md` его запрещает. Остался только `ruff format .`.
+
+### Добавлено
+- `docs/ai/rtk-awareness.md`: `rtk ls` и `rtk find` прячут dotfiles и фильтруют записи («… (N filtered)»). Dot-каталоги и секретные файлы проверяю через `rtk proxy ls -A` и `rtk proxy find`.
+
+### Удалено
+- TypeScript и JavaScript целиком: `docs/ai/typescript.md`, его `@import` в `AGENTS.md`, раздел npm в `docs/ai/commands.md`, три TS/React-строки в `docs/ai/red-flags.md`. Ссылки на модуль убраны из `code-reviewer`, `docs/ai/coding-standards.md` и `docs/setup/customization.md`. Vue 3 в стеке остался: он к TS не привязан.
+
 ## [1.0.0] — 2026-10-05
 
 Раскладка переписана по [ADR 0001](docs/adr/0001-harness-agnostic-deploy.md) и не совместима со старой. Машину, где `~/.claude/skills`, `~/.claude/agents` или `~/.claude/hooks` — симлинк в репу, установщик не мигрирует, а останавливает: что делать, написано в «Изменено».
