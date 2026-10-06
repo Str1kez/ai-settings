@@ -89,10 +89,7 @@ def _collect(repo: Path) -> list[Agent]:
     agents_dir = repo / "agents"
     if not agents_dir.is_dir():
         raise SyncError(f"agents dir not found: {agents_dir}")
-    return [
-        load(agent_dir / "AGENT.md")
-        for agent_dir in tracked.tracked_dirs(repo, "agents", "AGENT.md")
-    ]
+    return [load(agent_dir / "AGENT.md") for agent_dir in tracked.tracked_dirs(repo, "agents", "AGENT.md")]
 
 
 def _sync_claude(fs: Fs, repo: Path, claude_agents: Path, agents: list[Agent]) -> None:
@@ -110,9 +107,7 @@ def _sync_claude(fs: Fs, repo: Path, claude_agents: Path, agents: list[Agent]) -
             fs.unlink(entry)
 
 
-def _sync_renders(
-    fs: Fs, agents_home: Path, renders: dict[str, str], header: str
-) -> None:
+def _sync_renders(fs: Fs, agents_home: Path, renders: dict[str, str], header: str) -> None:
     """Write renders by file name. A file without the marked header isn't
     ours: under a render's name it moves to backups, under another name it
     stays. A render left from an agent that is gone goes."""
@@ -136,9 +131,7 @@ def _is_render(path: Path, header: str) -> bool:
 
 def _markdown_agent(frontmatter: list[str], agent: Agent) -> str:
     """The marked header, frontmatter lines and the agent's body as prompt."""
-    return _MARKDOWN_HEADER + "\n".join(
-        [*frontmatter, "---", "", agent.body.strip(), ""]
-    )
+    return _MARKDOWN_HEADER + "\n".join([*frontmatter, "---", "", agent.body.strip(), ""])
 
 
 def _is_read_only(agent: Agent) -> bool:
@@ -152,10 +145,7 @@ def _render_opencode(agent: Agent) -> str:
         f"description: {_yaml_string(agent.description)}",
         "mode: subagent",
         "permission:",
-        *(
-            f"  {key}: {value}"
-            for key, value in _opencode_permission(agent.tools).items()
-        ),
+        *(f"  {key}: {value}" for key, value in _opencode_permission(agent.tools).items()),
     ]
     return _markdown_agent(frontmatter, agent)
 
@@ -163,11 +153,7 @@ def _render_opencode(agent: Agent) -> str:
 def _render_gemini(agent: Agent) -> str:
     """A markdown agent, its body is the prompt. No model: it inherits the
     parent's. Tools are what the agent is allowed to call."""
-    tools = [
-        gemini_tool
-        for tool in agent.tools
-        for gemini_tool in _TOOL_TO_GEMINI.get(tool, [])
-    ]
+    tools = [gemini_tool for tool in agent.tools for gemini_tool in _TOOL_TO_GEMINI.get(tool, [])]
     frontmatter = [
         f"name: {_yaml_string(agent.name)}",
         f"description: {_yaml_string(agent.description)}",
@@ -228,10 +214,7 @@ def load(path: Path) -> Agent:
     # Links and renders are named after the dir, but Claude Code shows the
     # frontmatter name: a mismatch would split one agent into two names.
     if fields.get("name") != name:
-        raise SyncError(
-            f"{path}: frontmatter name {fields.get('name')!r} must equal the "
-            f"directory name {name!r}"
-        )
+        raise SyncError(f"{path}: frontmatter name {fields.get('name')!r} must equal the directory name {name!r}")
 
     tools = fields.get("tools", [])
     if isinstance(tools, str):

@@ -38,9 +38,7 @@ def run_sync(repo: Path, home: Path, *args: str) -> str:
     return run(command, home, PYTHONDONTWRITEBYTECODE="1").stderr
 
 
-def run_unchecked(
-    command: list[str | Path], home: Path, **env: str
-) -> subprocess.CompletedProcess[str]:
+def run_unchecked(command: list[str | Path], home: Path, **env: str) -> subprocess.CompletedProcess[str]:
     """Run command from the repo root with HOME=home; return the result as is."""
     return subprocess.run(
         command,
@@ -52,9 +50,7 @@ def run_unchecked(
     )
 
 
-def run(
-    command: list[str | Path], home: Path, **env: str
-) -> subprocess.CompletedProcess[str]:
+def run(command: list[str | Path], home: Path, **env: str) -> subprocess.CompletedProcess[str]:
     """Run command from the repo root with HOME=home; fail with its stderr."""
     result = run_unchecked(command, home, **env)
     assert result.returncode == 0, result.stderr

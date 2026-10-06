@@ -26,11 +26,10 @@ Sample agent.
 """
 
 
-@pytest.fixture(
-    params=discover_agent_dirs(), ids=lambda p: str(p.relative_to(REPO_ROOT))
-)
+@pytest.fixture(params=discover_agent_dirs(), ids=lambda p: str(p.relative_to(REPO_ROOT)))
 def agent_dir(request: pytest.FixtureRequest) -> Path:
-    return request.param
+    path: Path = request.param
+    return path
 
 
 def test_repo_agent_passes_the_lint(agent_dir: Path) -> None:
@@ -50,9 +49,7 @@ def test_a_well_formed_agent_passes(tmp_path: Path) -> None:
 @pytest.mark.parametrize(
     ("broken", "expected"),
     [
-        pytest.param(
-            GOOD.replace("name: sample", "name: other"), "must equal", id="name"
-        ),
+        pytest.param(GOOD.replace("name: sample", "name: other"), "must equal", id="name"),
         pytest.param(GOOD.replace("Use when", "When"), "when to use", id="trigger"),
         pytest.param(GOOD.replace("SKIP", "NOPE"), "SKIP", id="skip"),
         pytest.param(
@@ -60,9 +57,7 @@ def test_a_well_formed_agent_passes(tmp_path: Path) -> None:
             "placeholder",
             id="placeholder",
         ),
-        pytest.param(
-            GOOD.replace("[Read, Grep]", "[Read, Bsh]"), "unknown tools", id="tools"
-        ),
+        pytest.param(GOOD.replace("[Read, Grep]", "[Read, Bsh]"), "unknown tools", id="tools"),
         pytest.param(
             GOOD.replace("description: |", "description: >-"),
             "differently from YAML",
@@ -72,9 +67,7 @@ def test_a_well_formed_agent_passes(tmp_path: Path) -> None:
         pytest.param(GOOD.replace("Sample agent.", "Use ''' here."), "'''", id="toml"),
     ],
 )
-def test_lint_catches_a_broken_agent(
-    tmp_path: Path, broken: str, expected: str
-) -> None:
+def test_lint_catches_a_broken_agent(tmp_path: Path, broken: str, expected: str) -> None:
     found = problems(_sample(tmp_path, broken))
 
     assert any(expected in problem for problem in found), found

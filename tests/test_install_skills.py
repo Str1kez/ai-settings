@@ -21,9 +21,7 @@ def _repo_snapshot() -> tuple[str, list[str]]:
         text=True,
         check=True,
     ).stdout
-    return status, sorted(os.listdir(REPO_ROOT / "backups")) if (
-        REPO_ROOT / "backups"
-    ).is_dir() else []
+    return status, sorted(os.listdir(REPO_ROOT / "backups")) if (REPO_ROOT / "backups").is_dir() else []
 
 
 def test_every_repo_skill_is_linked_flat_into_claude_and_agents(
@@ -60,9 +58,7 @@ def test_second_install_changes_nothing(tmp_path: Path) -> None:
 
     run([INSTALL], tmp_path)
 
-    assert first == [
-        tree(tmp_path / rel) for rel in (".claude/skills", ".agents/skills")
-    ]
+    assert first == [tree(tmp_path / rel) for rel in (".claude/skills", ".agents/skills")]
 
 
 def test_stale_link_into_repo_skills_is_removed_and_foreign_links_stay(
@@ -73,9 +69,7 @@ def test_stale_link_into_repo_skills_is_removed_and_foreign_links_stay(
     for skills_home in (".claude/skills", ".agents/skills"):
         home_dir = tmp_path / skills_home
         home_dir.mkdir(parents=True)
-        (home_dir / "ru-commit-message").symlink_to(
-            REPO_ROOT / "skills/ru-commit-message"
-        )
+        (home_dir / "ru-commit-message").symlink_to(REPO_ROOT / "skills/ru-commit-message")
         (home_dir / "matt-skill").symlink_to(foreign_target)
 
     run([INSTALL], tmp_path)

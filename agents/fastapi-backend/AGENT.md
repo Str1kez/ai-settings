@@ -16,7 +16,7 @@ Output is in **Russian**.
 
 # Defaults
 
-- Python 3.12+; `uv` as package manager.
+- `uv` as package manager.
 - Pydantic v2 for all request / response schemas.
 - Dependency injection via `Depends` — **no globals**.
 - Async correctly: no blocking `requests`, `time.sleep`, sync DB calls inside async handlers.

@@ -12,7 +12,7 @@ from tests.skill_lint.test_skills import REQUIRED_FIELDS
 FIXTURE_BAD_SKILL = Path(__file__).parent / "fixtures" / "bad-skill" / "SKILL.md"
 
 
-def test_bad_fixture_has_frontmatter_but_missing_fields():
+def test_bad_fixture_has_frontmatter_but_missing_fields() -> None:
     """Apply our rule directly to the bad fixture — must report missing fields."""
     text = FIXTURE_BAD_SKILL.read_text(encoding="utf-8")
     match = re.match(r"^---\n(.*?)\n---\n", text, re.DOTALL)

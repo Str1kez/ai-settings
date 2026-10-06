@@ -32,10 +32,7 @@ def warn_untracked(repo: Path, kind: str, marker: str) -> None:
     most likely a forgotten `git add`. Symlinks and nested dirs never match."""
     for untracked in _dirs(repo, kind, marker, ["--others", "--exclude-standard"]):
         rel = untracked.relative_to(repo)
-        log.warn(
-            f"{rel}/{marker} is not tracked by git, so {rel} isn't deployed: "
-            f"git add {rel}"
-        )
+        log.warn(f"{rel}/{marker} is not tracked by git, so {rel} isn't deployed: git add {rel}")
 
 
 def _dirs(repo: Path, kind: str, marker: str, flags: list[str]) -> list[Path]:

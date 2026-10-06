@@ -31,7 +31,7 @@ def _command(command: str) -> dict[str, str]:
     return {"type": "command", "command": command}
 
 
-TEMPLATE = {
+TEMPLATE: dict[str, Any] = {
     "$schema": SCHEMA,
     "permissions": {
         "allow": ["Read(**)", "Bash(.venv/bin/pytest:*)"],
@@ -45,9 +45,7 @@ TEMPLATE = {
 }
 # What agterm adds to settings.json, the installer leaves it alone.
 AGTERM_HOOKS = {
-    "Notification": [
-        {"matcher": "permission_prompt", "hooks": [_command(f"{AGTERM} blocked")]}
-    ],
+    "Notification": [{"matcher": "permission_prompt", "hooks": [_command(f"{AGTERM} blocked")]}],
     "PostToolUse": [{"hooks": [_command(f"{AGTERM} active --blink")]}],
     "Stop": [{"hooks": [_command(f"{AGTERM} completed --auto-reset")]}],
 }
@@ -102,9 +100,7 @@ def _settings(home: Path) -> Any:
     return json.loads((home / ".claude/settings.json").read_text(encoding="utf-8"))
 
 
-def test_merge_takes_permissions_from_the_template_and_keeps_the_rest(
-    repo: Path, home: Path
-) -> None:
+def test_merge_takes_permissions_from_the_template_and_keeps_the_rest(repo: Path, home: Path) -> None:
     _write_settings(home, LIVE)
 
     run_sync(repo, home, "claude")
@@ -131,9 +127,7 @@ def test_merge_takes_permissions_from_the_template_and_keeps_the_rest(
     }
 
 
-def test_hook_of_a_script_the_template_dropped_goes_and_the_users_scripts_stay(
-    repo: Path, home: Path
-) -> None:
+def test_hook_of_a_script_the_template_dropped_goes_and_the_users_scripts_stay(repo: Path, home: Path) -> None:
     hooks = home / ".claude/hooks"
     hooks.mkdir(parents=True)
     # Linked by an earlier run, when the template still ran gone.sh.
@@ -161,9 +155,7 @@ def test_hook_of_a_script_the_template_dropped_goes_and_the_users_scripts_stay(
     assert (hooks / "banner.sh").resolve() == repo / "settings/hooks/banner.sh"
 
 
-def test_template_hook_that_runs_no_command_stays_single(
-    repo: Path, home: Path
-) -> None:
+def test_template_hook_that_runs_no_command_stays_single(repo: Path, home: Path) -> None:
     prompt_hook = {"type": "prompt", "prompt": "Check the plan before stopping."}
     template = {**TEMPLATE, "hooks": {"Stop": [{"hooks": [prompt_hook]}]}}
     write(repo / "settings/claude-settings.json", json.dumps(template))
@@ -184,9 +176,7 @@ def test_second_run_changes_nothing(repo: Path, home: Path) -> None:
     assert (tree(home), settings.read_bytes()) == first
 
 
-def test_dry_run_shows_only_what_the_merge_changes_and_changes_nothing(
-    repo: Path, home: Path
-) -> None:
+def test_dry_run_shows_only_what_the_merge_changes_and_changes_nothing(repo: Path, home: Path) -> None:
     token = "ghp_not-a-real-token"
     settings = home / ".claude/settings.json"
     # Formatted unlike the installer writes it: a diff of the raw text would
@@ -199,9 +189,7 @@ def test_dry_run_shows_only_what_the_merge_changes_and_changes_nothing(
     assert (tree(home), settings.read_bytes()) == before
     lines = log.splitlines()
     assert any(line.startswith("-") and "Bash(uv run:*)" in line for line in lines)
-    assert any(
-        line.startswith("+") and "Bash(.venv/bin/pytest:*)" in line for line in lines
-    )
+    assert any(line.startswith("+") and "Bash(.venv/bin/pytest:*)" in line for line in lines)
     assert token not in log
 
 
@@ -214,9 +202,7 @@ def test_dry_run_shows_only_what_the_merge_changes_and_changes_nothing(
         pytest.param('{"hooks": {"Stop": {"hooks": []}}}\n', id="event-not-a-list"),
     ],
 )
-def test_unreadable_settings_stop_the_run_before_anything_changes(
-    repo: Path, home: Path, text: str
-) -> None:
+def test_unreadable_settings_stop_the_run_before_anything_changes(repo: Path, home: Path, text: str) -> None:
     settings = home / ".claude/settings.json"
     write(settings, text)
     before = tree(home)

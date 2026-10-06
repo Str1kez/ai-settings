@@ -10,6 +10,7 @@ Version `X.Y.Z`, date `YYYY-MM-DD`. Past releases: `git show c94d971` (1.0.0), `
    - `.venv/bin/ruff check .`
    - `.venv/bin/ruff format --check .`
    - `.venv/bin/mypy`
+   - `.venv/bin/mypy --python-version 3.10 scripts`
    - `.venv/bin/python -m pytest -q`
    - `python3 scripts/sync.py rules --check`
 6. PR in Russian from the template in `docs/ai/git-workflow.md`. Title: `Релиз X.Y.Z: …`.

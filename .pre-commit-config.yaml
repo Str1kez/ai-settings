@@ -1,0 +1,27 @@
+# Local hooks: tools come from .venv, so versions match pyproject.toml and uv.lock.
+# A git worktree needs its own .venv, or a symlink to the main one: the paths are relative.
+repos:
+  - repo: local
+    hooks:
+      - id: ruff-check
+        name: ruff check
+        entry: .venv/bin/ruff check
+        language: system
+        types: [python]
+      - id: ruff-format
+        name: ruff format
+        entry: .venv/bin/ruff format --check
+        language: system
+        types: [python]
+      - id: mypy-tests
+        name: mypy tests
+        entry: .venv/bin/mypy
+        language: system
+        files: ^(scripts/|tests/|pyproject\.toml$)
+        pass_filenames: false
+      - id: mypy-scripts
+        name: mypy scripts (3.10 floor)
+        entry: .venv/bin/mypy --python-version 3.10 scripts
+        language: system
+        files: ^(scripts/|pyproject\.toml$)
+        pass_filenames: false

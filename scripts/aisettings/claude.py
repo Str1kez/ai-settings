@@ -69,10 +69,7 @@ def _warn_uv_run(hooks: _Json) -> None:
     """`uv run` fails where the uv cache is read-only; such hooks stay as they are."""
     for command in sorted(_commands(hooks)):
         if _UV_RUN_RE.search(command):
-            log.warn(
-                "a hook runs `uv run`, which fails where the uv cache is "
-                f"read-only: {command}"
-            )
+            log.warn(f"a hook runs `uv run`, which fails where the uv cache is read-only: {command}")
 
 
 def _read(path: Path) -> _Json:
@@ -173,12 +170,8 @@ def _merge(settings: _Json, template: _Json, is_installers: _HookTest) -> _Json:
     if "$schema" in template:
         merged["$schema"] = template["$schema"]
     merged.update((key, value) for key, value in settings.items() if key != "$schema")
-    merged["permissions"] = _merge_permissions(
-        settings.get("permissions", {}), template.get("permissions", {})
-    )
-    merged["hooks"] = _merge_hooks(
-        settings.get("hooks", {}), template.get("hooks", {}), is_installers
-    )
+    merged["permissions"] = _merge_permissions(settings.get("permissions", {}), template.get("permissions", {}))
+    merged["hooks"] = _merge_hooks(settings.get("hooks", {}), template.get("hooks", {}), is_installers)
     return merged
 
 
@@ -202,11 +195,7 @@ def _merge_hooks(hooks: _Json, template: _Json, is_installers: _HookTest) -> _Js
         merged[event] = [group for group in stripped if group is not None]
     for event, groups in template.items():
         merged.setdefault(event, []).extend(groups)
-    return {
-        event: groups
-        for event, groups in merged.items()
-        if groups or not hooks.get(event)
-    }
+    return {event: groups for event, groups in merged.items() if groups or not hooks.get(event)}
 
 
 def _strip(group: _Json, is_installers: _HookTest) -> _Json | None:
@@ -224,12 +213,7 @@ def _groups(hooks: _Json) -> list[list[Any]]:
 
 
 def _commands(hooks: _Json) -> set[str]:
-    return {
-        command
-        for group in _groups(hooks)
-        for hook in group
-        if (command := _command(hook)) is not None
-    }
+    return {command for group in _groups(hooks) for hook in group if (command := _command(hook)) is not None}
 
 
 def _command(hook: Any) -> str | None:

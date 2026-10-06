@@ -10,9 +10,7 @@ from aisettings.fs import Fs, GuardError
 def repo(tmp_path: Path) -> Path:
     repo = tmp_path / "repo"
     (repo / "skills/ns/foo").mkdir(parents=True)
-    (repo / "skills/ns/foo/SKILL.md").write_text(
-        "---\nname: foo\n---\n", encoding="utf-8"
-    )
+    (repo / "skills/ns/foo/SKILL.md").write_text("---\nname: foo\n---\n", encoding="utf-8")
     return repo
 
 
@@ -48,9 +46,7 @@ def test_refuses_to_create_in_dir_that_resolves_into_repo(
     assert tree(repo) == before
 
 
-def test_write_replaces_symlink_instead_of_writing_through_it(
-    repo: Path, home: Path
-) -> None:
+def test_write_replaces_symlink_instead_of_writing_through_it(repo: Path, home: Path) -> None:
     source = repo / "AGENTS.md"
     source.write_text("source\n", encoding="utf-8")
     dst = home / ".codex/AGENTS.md"
@@ -75,6 +71,4 @@ def test_link_moves_existing_file_to_backups(repo: Path, home: Path) -> None:
 
     assert dst.resolve() == source.resolve()
     backups = [path for path in (repo / "backups").rglob("*") if path.is_file()]
-    assert [(path.name, path.read_text(encoding="utf-8")) for path in backups] == [
-        ("GEMINI.md", "mine\n")
-    ]
+    assert [(path.name, path.read_text(encoding="utf-8")) for path in backups] == [("GEMINI.md", "mine\n")]

@@ -25,16 +25,11 @@ def test_broken_links_fixture_reports_only_the_bad_references() -> None:
 
 def test_duplicates_fixture_reports_name_agent_and_description_clashes() -> None:
     skill_files = sorted((FIXTURES / "duplicate-skills").rglob("SKILL.md"))
-    agent = Declaration(
-        name="gamma", description="", path=Path("agents/gamma/AGENT.md")
-    )
+    agent = Declaration(name="gamma", description="", path=Path("agents/gamma/AGENT.md"))
 
     problems = find_duplicates(_skill_declarations(skill_files), [agent])
 
     assert len(problems) == 3
     assert any("skill name 'alpha' declared in" in p for p in problems)
     assert any("collides with agent agents/gamma/AGENT.md" in p for p in problems)
-    assert any(
-        "identical description in skills ['alpha', 'alpha', 'beta']" in p
-        for p in problems
-    )
+    assert any("identical description in skills ['alpha', 'alpha', 'beta']" in p for p in problems)

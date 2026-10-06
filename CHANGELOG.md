@@ -5,6 +5,26 @@
 
 ## [Unreleased]
 
+## [1.1.0] — 2026-10-07
+
+Подтягиваю тулинг самого репозитория (pre-commit, ruff, mypy) и убираю из глобальных правил зашитую версию Python.
+
+### Добавлено
+- `.pre-commit-config.yaml`: перед коммитом гоняю `ruff check`, `ruff format --check` и два прогона `mypy`. Хуки локальные, тулы берутся из `.venv`, поэтому версии те же, что в `uv.lock`. `pre-commit` в dev-зависимостях, хук ставлю через `.venv/bin/pre-commit install`. Mypy-хуки срабатывают и на правки `pyproject.toml`. Установка хука и симлинк `.venv` для worktree описаны в `ARCHITECTURE.md`.
+- `types-pyyaml` в dev-зависимостях: без него mypy ругался на `import yaml` в тестах.
+- Секция `[tool.pyright]` с `extraPaths = ["scripts"]`: Pyright не находил `aisettings`. Для `scripts/` он целится в Python 3.9, для остального в 3.14.
+
+### Изменено
+- В глобальных правилах больше нет зашитой версии Python. Порог 3.12+, а точную версию агент берёт из репы: нижняя граница `requires-python`, потом `.python-version`, потом `FROM python:X.Y` в Dockerfile. Если источники расходятся, агент говорит об этом одной строкой. Репа ниже 3.12: он пишет под её версию и отмечает это один раз. Версии нет нигде: новый проект стартует на текущем стабильном релизе с явной фиксацией, одиночный скрипт пишется под 3.12.
+- В `docs/ai/python.md` абзац про PEP 649 стал условным: на 3.14+ `from __future__ import annotations` не нужен, ниже — нужен там, где есть forward references. В baseline-конфиге убран `target-version` у ruff, он берёт версию из `requires-python`. `python_version` у mypy равен нижней границе `requires-python`, потому что mypy это поле не читает.
+- В `AGENTS.md` и `docs/setup/customization.md` осталась только планка 3.12+ со ссылкой на `docs/ai/python.md`. Из `.claude/CLAUDE.md` и `agents/fastapi-backend/AGENT.md` число убрал совсем: правило выбора версии живёт в `docs/ai/python.md`.
+- Dev-зависимости переехали из `[project.optional-dependencies]` в `[dependency-groups]`: голый `uv sync --frozen`, который прописан в доках, extras не ставил и мог снести уже установленные тулы.
+- Ruff: максимальная длина строки 120, `target-version = "py314"`. `scripts/` по-прежнему проверяется как код под 3.9.
+- `mypy` теперь проверяет `tests/` на Python 3.14. Клиентская зона проверяется отдельным прогоном `mypy --python-version 3.10 scripts`: mypy не умеет целиться в 3.9, а 3.10 самый низкий порог. Обе команды прописаны в `ARCHITECTURE.md` и `docs/agents/release.md`.
+- `requires-python` самой репы поднят до `>=3.14`: он расходился с `.venv`.
+- Тесты получили аннотации типов, чтобы пройти `mypy --strict`. Логику тестов я не менял.
+- Весь код отформатирован `ruff format` под 120 символов.
+
 ## [1.0.2] — 2026-10-07
 
 Разбираю ретро рефакторинга: всё, на чём агенты спотыкались по нескольку раз, записываю в доки, а дубли и мёртвые строки из глобальных правил выкидываю.

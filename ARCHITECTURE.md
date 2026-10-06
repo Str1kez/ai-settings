@@ -136,9 +136,13 @@ Claude Desktop — отдельный канал, эти каталоги он �
 
 ```bash
 .venv/bin/python -m pytest -q        # установщик, skill-lint, agent-lint
-.venv/bin/ruff check scripts tests
-.venv/bin/mypy
+.venv/bin/ruff check .
+.venv/bin/ruff format --check .
+.venv/bin/mypy                                    # tests/, Python 3.14
+.venv/bin/mypy --python-version 3.10 scripts      # клиентская зона, ниже mypy не целится
 ```
+
+Те же проверки перед каждым коммитом гоняет pre-commit. Хук ставлю один раз в клоне: `uv sync --frozen && .venv/bin/pre-commit install`. Пути в хуках относительные (`.venv/bin/...`), поэтому в worktree, созданном руками, нужен свой `.venv` или симлинк на основной: `ln -s <основной клон>/.venv .venv`. Без этого коммит падает на `Executable .venv/bin/ruff not found`, а обходить его через `--no-verify` нельзя.
 
 ## Известные ограничения
 
