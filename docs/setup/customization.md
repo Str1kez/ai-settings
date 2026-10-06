@@ -135,7 +135,7 @@ register / Commit and PR tone) — содержимое не копируй, т�
 
 Там у меня:
 ```
-- Python 3.14+ (prefer `uv` over `pip`); occasionally Go and Rust for side projects
+- Python `3.12+`, exact version from the repo (see `docs/ai/python.md`); prefer `uv` over `pip`; occasionally Go and Rust for side projects
 - Frameworks: FastAPI 0.100+, LiteStar 2.24+ (backend); Vue 3 (frontend, side projects only)
 - Data: SQLAlchemy 2.0+, Pydantic v2, Alembic, Pydantic AI
 - Testing: pytest (Python, pytest-xdist for parallel runs), standard testing package (Go), cargo test (Rust)

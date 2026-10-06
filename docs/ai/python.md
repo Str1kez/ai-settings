@@ -4,14 +4,29 @@ Applies to all Python code. Builds on top of `coding-standards.md`.
 
 ## Language version
 
-- **Python 3.14+** required. Use modern syntax (`match/case`, `|` unions, PEP 695 generics).
+My projects target **Python 3.12+**. The exact version comes from the repo,
+never from this file.
+
+- **Which version to write for** — the lowest version the project supports.
+  Look it up in this order and stop at the first hit:
+  1. `requires-python` in `pyproject.toml` (its lower bound);
+  2. `.python-version`;
+  3. `FROM python:X.Y` in the `Dockerfile`.
+- If the sources disagree (`>=3.12` in `pyproject.toml`, `FROM python:3.11` in
+  the `Dockerfile`), don't pick one silently — point out the conflict in one line.
+- **Repo below 3.12** — write code for the repo's version and mention once that
+  it is below the floor. Don't propose an upgrade unless asked.
+- **No version anywhere** — a new project starts on the current stable Python
+  release, pinned explicitly in `requires-python` and `.python-version`. A
+  standalone script outside any project targets 3.12.
+- Use modern syntax the target allows: `match/case`, `|` unions, PEP 695 generics.
 - **Prefer `match/case` over `if/elif` chains** whenever branching on the shape,
   type, or value of a single subject — enum/type dispatch, parsing tagged
   unions, handling command variants. Don't force it onto simple boolean
   conditions where `if/else` is clearer.
-- Python 3.14 evaluates annotations lazily by default (PEP 649). Explicit
-  `from __future__ import annotations` is no longer required for new code, but
-  leaving it in existing modules is harmless.
+- On 3.14+ annotations are evaluated lazily (PEP 649), so new code doesn't need
+  `from __future__ import annotations`; leaving it in existing modules is
+  harmless. Below 3.14, keep the import in modules that use forward references.
 
 ## Package management
 
@@ -69,14 +84,12 @@ LiteStar specifics:
 
   ```toml
   [tool.mypy]
-  python_version = "3.14"
+  python_version = "3.12"  # = lower bound of requires-python; mypy doesn't read it
   strict = true
   warn_unused_ignores = true
   disallow_any_generics = true
 
-  [tool.ruff]
-  target-version = "py314"
-
+  # no target-version: ruff infers it from requires-python
   [tool.ruff.lint]
   select = ["E", "F", "I", "UP", "B"]
   ```
