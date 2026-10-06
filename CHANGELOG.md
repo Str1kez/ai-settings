@@ -5,6 +5,10 @@
 
 ## [Unreleased]
 
+## [1.1.0] — 2026-10-07
+
+Подтягиваю тулинг самого репозитория (pre-commit, ruff, mypy) и убираю из глобальных правил зашитую версию Python.
+
 ### Добавлено
 - `.pre-commit-config.yaml`: перед коммитом гоняю `ruff check`, `ruff format --check` и два прогона `mypy`. Хуки локальные, тулы берутся из `.venv`, поэтому версии те же, что в `uv.lock`. `pre-commit` в dev-зависимостях, хук ставлю через `.venv/bin/pre-commit install`. Mypy-хуки срабатывают и на правки `pyproject.toml`. Установка хука и симлинк `.venv` для worktree описаны в `ARCHITECTURE.md`.
 - `types-pyyaml` в dev-зависимостях: без него mypy ругался на `import yaml` в тестах.
