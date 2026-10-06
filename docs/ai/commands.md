@@ -31,18 +31,6 @@ the cache. uv stays the installer, run once outside the sandbox.
 If `.venv/bin/python` is missing, create the environment (`uv sync --frozen` or
 `uv venv`) — do not fall back to `uv run`, and do not ask to disable the sandbox.
 
-## JavaScript / TypeScript (npm)
-
-- Run tests: `npm test`
-- Run one test (by path pattern): `npm test -- --testPathPattern=<pattern>`
-- Dev server: `npm run dev`
-- Build: `npm run build`
-- Lint: `npm run lint`
-- Format: `npm run format` (Prettier)
-- Type-check (if separate script): `npm run type-check`
-- Install deps: `npm install`
-- Install single dep: `npm install <pkg>` (add `-D` for dev dep)
-
 ## Rust (cargo)
 
 - Run all tests: `cargo test`

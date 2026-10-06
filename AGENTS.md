@@ -34,7 +34,6 @@ Governs the voice of content you produce on my behalf — commits, PRs, CHANGELO
 
 Language-specific:
 - Python: @docs/ai/python.md
-- TypeScript / JavaScript: @docs/ai/typescript.md
 
 ## 7. Git Workflow
 @docs/ai/git-workflow.md

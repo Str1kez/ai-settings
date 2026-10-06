@@ -23,7 +23,7 @@ Output is in **Russian**.
    - Dead code, commented-out code, unused imports.
    - Secrets (API keys, tokens, `.env` content leaking).
    - OWASP top-10 risks on any user-input path (SQLi, XSS, SSRF, path traversal, etc.).
-   - Violations of `docs/ai/coding-standards.md`, `docs/ai/python.md`, `docs/ai/typescript.md`.
+   - Violations of `docs/ai/coding-standards.md`, `docs/ai/python.md`.
 3. Cross-reference against `docs/ai/red-flags.md` — flag any pattern that appears.
 4. Return a punch-list grouped by severity with exact `path:line` references.
 
