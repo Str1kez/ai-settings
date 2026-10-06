@@ -137,7 +137,8 @@ Claude Desktop — отдельный канал, эти каталоги он �
 ```bash
 .venv/bin/python -m pytest -q        # установщик, skill-lint, agent-lint
 .venv/bin/ruff check scripts tests
-.venv/bin/mypy
+.venv/bin/mypy                                    # tests/, Python 3.14
+.venv/bin/mypy --python-version 3.10 scripts      # клиентская зона, ниже mypy не целится
 ```
 
 ## Известные ограничения

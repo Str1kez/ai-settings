@@ -2,14 +2,16 @@
 name = "ai-settings"
 version = "1.0.2"
 description = "Centralized AI settings library (Claude Code, Codex, OpenCode, Cursor, Gemini)"
-requires-python = ">=3.12"
+requires-python = ">=3.14"
 
 [project.optional-dependencies]
 dev = [
     "mypy>=2.4.0",
+    "pre-commit>=4.6.2",
     "pytest>=8.0",
     "pyyaml>=6.0",
     "ruff>=0.16.10",
+    "types-pyyaml>=6.0.12.20260906",
 ]
 
 [tool.setuptools]
@@ -21,7 +23,9 @@ python_files = ["test_*.py"]
 pythonpath = ["scripts"]
 
 [tool.ruff]
+line-length = 120
 src = [".", "scripts"]
+target-version = "py314"
 # scripts/ runs under the system python3 (3.9 on a clean Mac), the rest under .venv.
 per-file-target-version = { "scripts/**/*.py" = "py39" }
 
@@ -29,8 +33,21 @@ per-file-target-version = { "scripts/**/*.py" = "py39" }
 select = ["E", "F", "I", "UP", "B"]
 
 [tool.mypy]
-# mypy can't target 3.9; the install tests run scripts/ on the system python3.
-files = ["scripts"]
+# The default run covers the dev zone (tests/ under .venv). scripts/ runs under the
+# system python3 and mypy can't target 3.9, so it gets its own run at the 3.10 floor:
+#   .venv/bin/mypy --python-version 3.10 scripts
+files = ["tests"]
 mypy_path = "scripts"
-python_version = "3.10"
+python_version = "3.14"
 strict = true
+
+[tool.pyright]
+venvPath = "."
+venv = ".venv"
+pythonVersion = "3.14"
+extraPaths = ["scripts"]
+# scripts/ runs under the system python3 (3.9 on a clean Mac).
+executionEnvironments = [
+    { root = "scripts", pythonVersion = "3.9" },
+    { root = ".", extraPaths = ["scripts"] },
+]
