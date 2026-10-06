@@ -19,7 +19,7 @@ READ THIS FIRST. These are the canonical commands for common tasks. Prefer these
 - Run a script in venv: `.venv/bin/python script.py`
 - Run a CLI in venv: `.venv/bin/<cli-command>`
 - Lint: `ruff check .`
-- Format: `ruff format .` (or `black .`)
+- Format: `ruff format .`
 
 **Do not run project code through `uv run`.** uv initializes its cache on every
 invocation — including `--frozen` — and dies with `Permission denied` wherever
