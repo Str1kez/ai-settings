@@ -4,7 +4,7 @@ version = "1.0.2"
 description = "Centralized AI settings library (Claude Code, Codex, OpenCode, Cursor, Gemini)"
 requires-python = ">=3.14"
 
-[project.optional-dependencies]
+[dependency-groups]
 dev = [
     "mypy>=2.4.0",
     "pre-commit>=4.6.2",
@@ -49,5 +49,4 @@ extraPaths = ["scripts"]
 # scripts/ runs under the system python3 (3.9 on a clean Mac).
 executionEnvironments = [
     { root = "scripts", pythonVersion = "3.9" },
-    { root = ".", extraPaths = ["scripts"] },
 ]

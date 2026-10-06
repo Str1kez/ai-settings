@@ -1,4 +1,5 @@
 # Local hooks: tools come from .venv, so versions match pyproject.toml and uv.lock.
+# A git worktree needs its own .venv, or a symlink to the main one: the paths are relative.
 repos:
   - repo: local
     hooks:
@@ -16,11 +17,11 @@ repos:
         name: mypy tests
         entry: .venv/bin/mypy
         language: system
-        types: [python]
+        files: ^(scripts/|tests/|pyproject\.toml$)
         pass_filenames: false
       - id: mypy-scripts
         name: mypy scripts (3.10 floor)
         entry: .venv/bin/mypy --python-version 3.10 scripts
         language: system
-        types: [python]
+        files: ^(scripts/|pyproject\.toml$)
         pass_filenames: false

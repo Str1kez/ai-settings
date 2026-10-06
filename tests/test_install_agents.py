@@ -135,7 +135,7 @@ def test_foreign_opencode_agent_under_a_repo_agent_name_moves_to_backups(repo: P
 
 def _toml_agent(home: Path, name: str) -> dict[str, Any]:
     path = home / ".codex/agents" / f"{name}.toml"
-    return dict(tomllib.loads(path.read_text(encoding="utf-8")))
+    return tomllib.loads(path.read_text(encoding="utf-8"))
 
 
 def test_every_repo_agent_is_a_codex_toml_with_its_prompt(
