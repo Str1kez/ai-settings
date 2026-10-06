@@ -31,25 +31,9 @@ the cache. uv stays the installer, run once outside the sandbox.
 If `.venv/bin/python` is missing, create the environment (`uv sync --frozen` or
 `uv venv`) — do not fall back to `uv run`, and do not ask to disable the sandbox.
 
-## Rust (cargo)
+## macOS
 
-- Run all tests: `cargo test`
-- Run one test: `cargo test <test_name>`
-- Run with output: `cargo test -- --nocapture`
-- Lint: `cargo clippy --all-targets --all-features -- -D warnings`
-- Format: `cargo fmt`
-- Build (debug): `cargo build`
-- Build (release): `cargo build --release`
-
-## Go (go test)
-
-- Run all tests: `go test ./...`
-- Run one test: `go test ./path/to/pkg -run TestName`
-- Verbose: `go test -v ./...`
-- With coverage: `go test -cover ./...`
-- Lint: `golangci-lint run` (falls back to `go vet ./...` if not installed)
-- Format: `gofmt -l -w .` (or `goimports -l -w .` if imports need sorting)
-- Build: `go build ./...`
+`sed` here is BSD: `sed -i` requires an argument (`sed -i '' ...`), and GNU-style scripts like `{p}` without a trailing `;` fail. Edit files with the Edit tool, not `sed`.
 
 ## Git
 

@@ -14,6 +14,8 @@ Issues and specs for this repo live as markdown files in `.scratch/`.
 
 Create a new file under `.scratch/<feature-slug>/` (creating the directory if needed).
 
+Every ticket file has a `**Model:** <model>, effort <level>` line next to `Status:`. Whoever slices the tickets sets it from the risk class in `docs/ai/coding-standards.md` and the model mapping in `AGENTS.md` ("Model and effort hints"). The agent that closes a ticket names the model for the next ticket from that line, not from its own guess.
+
 ## When a skill says "fetch the relevant ticket"
 
 Read the file at the referenced path. The user will normally pass the path or the issue number directly.

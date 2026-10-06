@@ -135,7 +135,7 @@ register / Commit and PR tone) — содержимое не копируй, т�
 
 Там у меня:
 ```
-- Python 3.12+ (prefer `uv` over `pip`); occasionally Go and Rust for side projects
+- Python 3.14+ (prefer `uv` over `pip`); occasionally Go and Rust for side projects
 - Frameworks: FastAPI 0.100+, LiteStar 2.24+ (backend); Vue 3 (frontend, side projects only)
 - Data: SQLAlchemy 2.0+, Pydantic v2, Alembic, Pydantic AI
 - Testing: pytest (Python, pytest-xdist for parallel runs), standard testing package (Go), cargo test (Rust)
@@ -170,13 +170,13 @@ register / Commit and PR tone) — содержимое не копируй, т�
 
 ### 5. `docs/ai/commands.md`
 
-Канонические команды для твоих инструментов. У меня pytest и uv, npm, cargo, go и git. Если используешь poetry/pnpm/yarn — замени.
+Канонические команды для твоих инструментов. У меня pytest, uv и git. Если используешь poetry/pnpm/yarn — замени.
 
 **Промпт:**
 
 ```
-Я переписываю docs/ai/commands.md — там мой набор команд (pytest, uv, npm,
-cargo, go, git). Открой файл для структуры (секции по инструментам с буллетами
+Я переписываю docs/ai/commands.md — там мой набор команд (pytest, uv,
+git). Открой файл для структуры (секции по инструментам с буллетами
 команда → описание).
 
 Задай мне 4 вопроса по одному:
@@ -251,7 +251,7 @@ cargo, go, git). Открой файл для структуры (секции �
 
 На выходе — обновлённый git-workflow.md на английском (структура как
 в оригинале: разделы Commit messages, Branch naming, Pull Requests,
-Pre-commit discipline, Merge strategy, Never). Верни в кодблоке.
+Pre-commit discipline, Merge strategy). Верни в кодблоке.
 ```
 
 ---
