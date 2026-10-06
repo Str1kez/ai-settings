@@ -19,7 +19,7 @@ READ THIS FIRST. These are the canonical commands for common tasks. Prefer these
 - Run a script in venv: `.venv/bin/python script.py`
 - Run a CLI in venv: `.venv/bin/<cli-command>`
 - Lint: `ruff check .`
-- Format: `ruff format .` (or `black .`)
+- Format: `ruff format .`
 
 **Do not run project code through `uv run`.** uv initializes its cache on every
 invocation — including `--frozen` — and dies with `Permission denied` wherever
@@ -30,18 +30,6 @@ the cache. uv stays the installer, run once outside the sandbox.
 
 If `.venv/bin/python` is missing, create the environment (`uv sync --frozen` or
 `uv venv`) — do not fall back to `uv run`, and do not ask to disable the sandbox.
-
-## JavaScript / TypeScript (npm)
-
-- Run tests: `npm test`
-- Run one test (by path pattern): `npm test -- --testPathPattern=<pattern>`
-- Dev server: `npm run dev`
-- Build: `npm run build`
-- Lint: `npm run lint`
-- Format: `npm run format` (Prettier)
-- Type-check (if separate script): `npm run type-check`
-- Install deps: `npm install`
-- Install single dep: `npm install <pkg>` (add `-D` for dev dep)
 
 ## Rust (cargo)
 

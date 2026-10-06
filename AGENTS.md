@@ -22,7 +22,7 @@ Governs the voice of content you produce on my behalf — commits, PRs, CHANGELO
 
 ## 5. Tech Stack (with versions)
 
-- Python `3.12+` (prefer `uv` over `pip`); occasionally Go and Rust for side projects
+- Python `3.14+` (prefer `uv` over `pip`); occasionally Go and Rust for side projects
 - Frameworks: FastAPI `0.100+`, LiteStar `2.24+` (backend); Vue `3` (frontend, side projects only)
 - Data: SQLAlchemy `2.0+`, Pydantic `v2`, Alembic, Pydantic AI
 - Testing: pytest (Python, `pytest-xdist` for parallel runs), standard `testing` package (Go), `cargo test` (Rust)
@@ -34,7 +34,6 @@ Governs the voice of content you produce on my behalf — commits, PRs, CHANGELO
 
 Language-specific:
 - Python: @docs/ai/python.md
-- TypeScript / JavaScript: @docs/ai/typescript.md
 
 ## 7. Git Workflow
 @docs/ai/git-workflow.md
