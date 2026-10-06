@@ -5,6 +5,28 @@
 
 ## [Unreleased]
 
+## [1.0.2] — 2026-10-07
+
+Разбираю ретро рефакторинга: всё, на чём агенты спотыкались по нескольку раз, записываю в доки, а дубли и мёртвые строки из глобальных правил выкидываю.
+
+### Добавлено
+- `docs/agents/release.md` — чеклист релиза по шагам 1.0.0 и 1.0.1: ветка, `CHANGELOG.md`, версия в `pyproject.toml` и `uv.lock`, `TODO.md`, проверки, PR, тег после мёрджа. Указатель на него лежит в `.claude/CLAUDE.md`.
+- `docs/agents/issue-tracker.md`: в каждом файле тикета рядом со `Status:` стоит строка `**Model:** <модель>, effort <уровень>`. Её выставляет тот, кто режет тикеты, а агент, закрывший тикет, называет модель следующего по ней, а не по догадке.
+- `.claude/CLAUDE.md`: правки `permissions` в `settings/claude-settings.json` классификатор auto mode блокирует как самомодификацию, поэтому агент сразу показывает diff, а применяю его я.
+- `docs/ai/commands.md`: раздел про macOS. `sed` там из BSD: `sed -i` требует `''`, а GNU-синтаксис вроде `{p}` без `;` падает. Файлы правлю через Edit, не через `sed`.
+- `docs/ai/red-flags.md`: для экспериментов и проверок агент заводит свежий каталог через `mktemp -d` в scratchpad и старые не чистит.
+
+### Изменено
+- Запреты `git push --force`, `git reset --hard`, `--no-verify`, `--dangerously-skip-permissions` и коммита секретных файлов живут только в `docs/ai/hard-gates.md`. Дубли убраны из таблицы Never в `three-tiers.md`, из `red-flags.md` и из раздела «Never» в `git-workflow.md`. В `three-tiers.md` остались `rm -rf` вне cwd и смена git identity.
+
+### Исправлено
+- Хвосты 1.0.1: в `docs/ai/three-tiers.md` оставались `npm test` и `npm install`, а в `docs/setup/customization.md` — Python 3.12+.
+
+### Удалено
+- Разделы Rust (cargo) и Go (go test) из `docs/ai/commands.md`: эти команды модель знает и без них. В `docs/setup/customization.md` убрал упоминания npm, cargo и go в описании `commands.md`.
+- Строка «Write or edit any file» из Ask First в `docs/ai/three-tiers.md`: что агент правит без вопроса, решает режим разрешений харнесса.
+- Раздел «Never» из `docs/ai/git-workflow.md`: он целиком дублировал `hard-gates.md`.
+
 ## [1.0.1] — 2026-10-06
 
 Чищу противоречия в глобальных правилах и выкидываю TypeScript: я на нём не пишу, а модуль жрал контекст в каждой сессии.
