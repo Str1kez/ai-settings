@@ -124,8 +124,7 @@ class Fs:
     def _guard(self, target: Path) -> None:
         if self.inside_repo(target.parent):
             raise GuardError(
-                f"refusing to write {target}: {target.parent} resolves into the repo "
-                f"({target.parent.resolve()})"
+                f"refusing to write {target}: {target.parent} resolves into the repo ({target.parent.resolve()})"
             )
 
 

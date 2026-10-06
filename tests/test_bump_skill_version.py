@@ -28,12 +28,8 @@ def _bump(skill: Path) -> subprocess.CompletedProcess[str]:
     )
 
 
-@pytest.mark.parametrize(
-    "header", ["# CHANGELOG — demo", "# Changelog"], ids=["upper", "title-case"]
-)
-def test_bump_adds_the_entry_whatever_the_header_case(
-    tmp_path: Path, header: str
-) -> None:
+@pytest.mark.parametrize("header", ["# CHANGELOG — demo", "# Changelog"], ids=["upper", "title-case"])
+def test_bump_adds_the_entry_whatever_the_header_case(tmp_path: Path, header: str) -> None:
     skill = _skill(tmp_path, f"{header}\n\n## [1.0.0] — 2026-10-04\n\n- first\n")
 
     result = _bump(skill)

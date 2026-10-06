@@ -49,9 +49,7 @@ def main() -> int:
 
 def _parser() -> argparse.ArgumentParser:
     common = argparse.ArgumentParser(add_help=False)
-    common.add_argument(
-        "--dry-run", action="store_true", help="print the changes, make none"
-    )
+    common.add_argument("--dry-run", action="store_true", help="print the changes, make none")
 
     parser = argparse.ArgumentParser(description=__doc__)
     artifacts = parser.add_subparsers(dest="artifact", required=True)
@@ -59,8 +57,7 @@ def _parser() -> argparse.ArgumentParser:
     rules_parser = artifacts.add_parser(
         "rules",
         parents=[common],
-        help="links to CLAUDE.md and GEMINI.md, flat AGENTS.md for Codex, "
-        "OpenCode and Cursor",
+        help="links to CLAUDE.md and GEMINI.md, flat AGENTS.md for Codex, OpenCode and Cursor",
     )
     mode = rules_parser.add_mutually_exclusive_group()
     mode.add_argument(
@@ -82,8 +79,7 @@ def _parser() -> argparse.ArgumentParser:
     artifacts.add_parser(
         "agents",
         parents=[common],
-        help="agents/<name>/AGENT.md linked into ~/.claude/agents, rendered "
-        "into ~/.config/opencode/agents",
+        help="agents/<name>/AGENT.md linked into ~/.claude/agents, rendered into ~/.config/opencode/agents",
     )
     artifacts.add_parser(
         "claude",

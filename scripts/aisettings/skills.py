@@ -43,14 +43,11 @@ def _refuse_repo_link(fs: Fs, skills_home: Path) -> None:
     write to the repo."""
     if skills_home.is_symlink() and fs.inside_repo(skills_home):
         raise SyncError(
-            f"{skills_home} is a symlink into the repo: replace it with a real "
-            "directory, nothing was changed"
+            f"{skills_home} is a symlink into the repo: replace it with a real directory, nothing was changed"
         )
 
 
-def _remove_stale_links(
-    fs: Fs, repo: Path, skills_home: Path, skills: dict[str, Path]
-) -> None:
+def _remove_stale_links(fs: Fs, repo: Path, skills_home: Path, skills: dict[str, Path]) -> None:
     """Drop links that point into repo/skills/ but belong to no current skill,
     e.g. a skill that was renamed or deleted. Links elsewhere aren't ours."""
     if not skills_home.is_dir():

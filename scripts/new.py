@@ -123,8 +123,7 @@ def _new_agent(name: str) -> None:
 def _check_name(name: str) -> None:
     if not NAME_RE.match(name):
         raise SyncError(
-            f"bad name {name!r}: lowercase letters and digits in words "
-            f"joined by single hyphens, {NAME_RE.pattern}"
+            f"bad name {name!r}: lowercase letters and digits in words joined by single hyphens, {NAME_RE.pattern}"
         )
 
 

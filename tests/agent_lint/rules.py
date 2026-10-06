@@ -61,9 +61,7 @@ def problems(agent_dir: Path) -> list[str]:
     if not match.group(2).strip():
         found.append("body is empty: it is the agent's prompt")
     if TOML_LITERAL_QUOTES in match.group(2):
-        found.append(
-            f"body holds {TOML_LITERAL_QUOTES}: the Codex render can't carry it"
-        )
+        found.append(f"body holds {TOML_LITERAL_QUOTES}: the Codex render can't carry it")
     return found or _renderer_problems(path, frontmatter, tools)
 
 
@@ -85,10 +83,7 @@ def _description_problems(description: Any) -> list[str]:
         return ["description must be a non-empty string"]
     found = []
     if len(description) < MIN_DESCRIPTION_LENGTH:
-        found.append(
-            f"description too short ({len(description)} chars, "
-            f"need >={MIN_DESCRIPTION_LENGTH})"
-        )
+        found.append(f"description too short ({len(description)} chars, need >={MIN_DESCRIPTION_LENGTH})")
     if not TRIGGER_RE.search(description):
         found.append("description must say when to use the agent: 'Use ...'")
     if not SKIP_RE.search(description):
@@ -112,16 +107,11 @@ def _tools_problems(tools: list[str] | None) -> list[str]:
         return ["tools must be a non-empty list of tool names"]
     unknown = sorted(set(tools) - agents.KNOWN_TOOLS)
     if unknown:
-        return [
-            f"unknown tools {unknown}: the renders would drop them silently; "
-            f"known: {sorted(agents.KNOWN_TOOLS)}"
-        ]
+        return [f"unknown tools {unknown}: the renders would drop them silently; known: {sorted(agents.KNOWN_TOOLS)}"]
     return []
 
 
-def _renderer_problems(
-    path: Path, frontmatter: dict[str, Any], tools: list[str] | None
-) -> list[str]:
+def _renderer_problems(path: Path, frontmatter: dict[str, Any], tools: list[str] | None) -> list[str]:
     """sync.py parses frontmatter with its own small YAML subset. The agent must
     come out of it as YAML reads it."""
     try:
@@ -130,10 +120,7 @@ def _renderer_problems(
         return [str(exc)]
     found = []
     if agent.description != frontmatter["description"].strip():
-        found.append(
-            "sync.py reads description differently from YAML: "
-            "use `description: |` or a one-line value"
-        )
+        found.append("sync.py reads description differently from YAML: use `description: |` or a one-line value")
     if agent.tools != tools:
         found.append("sync.py reads tools differently from YAML: use `[A, B]`")
     return found

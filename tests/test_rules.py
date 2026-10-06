@@ -8,9 +8,7 @@ from tests.helpers import run
 
 
 def test_check_fails_on_missing_import(tmp_path: Path) -> None:
-    (tmp_path / "AGENTS.md").write_text(
-        "# Rules\n\n@docs/ai/gone.md\n", encoding="utf-8"
-    )
+    (tmp_path / "AGENTS.md").write_text("# Rules\n\n@docs/ai/gone.md\n", encoding="utf-8")
 
     with pytest.raises(SyncError, match="docs/ai/gone.md"):
         rules.check(tmp_path)

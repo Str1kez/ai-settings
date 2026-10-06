@@ -24,9 +24,7 @@ def _new(repo: Path, tmp_path: Path, *args: str) -> tuple[int, str]:
     return result.returncode, result.stderr
 
 
-def test_new_skill_gets_the_three_files_with_a_frontmatter_that_names_it(
-    repo: Path, tmp_path: Path
-) -> None:
+def test_new_skill_gets_the_three_files_with_a_frontmatter_that_names_it(repo: Path, tmp_path: Path) -> None:
     code, log = _new(repo, tmp_path, "skill", "my-skill")
 
     skill_dir = repo / "skills/my-skill"
@@ -39,15 +37,11 @@ def test_new_skill_gets_the_three_files_with_a_frontmatter_that_names_it(
     text = (skill_dir / "SKILL.md").read_text(encoding="utf-8")
     frontmatter = yaml.safe_load(text.split("---\n")[1])
     assert frontmatter["name"] == "my-skill"
-    assert f"[{frontmatter['version']}]" in (skill_dir / "CHANGELOG.md").read_text(
-        encoding="utf-8"
-    )
+    assert f"[{frontmatter['version']}]" in (skill_dir / "CHANGELOG.md").read_text(encoding="utf-8")
     assert "git add skills/my-skill" in log
 
 
-def test_new_skill_is_a_draft_that_the_lint_rejects_until_it_is_filled_in(
-    repo: Path, tmp_path: Path
-) -> None:
+def test_new_skill_is_a_draft_that_the_lint_rejects_until_it_is_filled_in(repo: Path, tmp_path: Path) -> None:
     code, log = _new(repo, tmp_path, "skill", "my-skill")
 
     assert code == 0, log
@@ -56,9 +50,7 @@ def test_new_skill_is_a_draft_that_the_lint_rejects_until_it_is_filled_in(
     assert PLACEHOLDER_RE.search(description)
 
 
-def test_new_agent_is_a_draft_that_the_lint_rejects_until_it_is_filled_in(
-    repo: Path, tmp_path: Path
-) -> None:
+def test_new_agent_is_a_draft_that_the_lint_rejects_until_it_is_filled_in(repo: Path, tmp_path: Path) -> None:
     code, log = _new(repo, tmp_path, "agent", "my-agent")
 
     assert code == 0, log
@@ -68,9 +60,7 @@ def test_new_agent_is_a_draft_that_the_lint_rejects_until_it_is_filled_in(
 
 
 @pytest.mark.parametrize("kind", ["skill", "agent"])
-def test_existing_dir_is_never_overwritten(
-    repo: Path, tmp_path: Path, kind: str
-) -> None:
+def test_existing_dir_is_never_overwritten(repo: Path, tmp_path: Path, kind: str) -> None:
     _new(repo, tmp_path, kind, "mine")
     marker = next((repo / f"{kind}s/mine").iterdir())
     marker.write_text("my work\n", encoding="utf-8")
@@ -82,9 +72,7 @@ def test_existing_dir_is_never_overwritten(
     assert marker.read_text(encoding="utf-8") == "my work\n"
 
 
-@pytest.mark.parametrize(
-    "name", ["Bad_Name", "trail-", "double--hyphen", "../escape", "a b"]
-)
+@pytest.mark.parametrize("name", ["Bad_Name", "trail-", "double--hyphen", "../escape", "a b"])
 def test_name_outside_the_agent_skills_regex_is_refused_and_nothing_is_written(
     repo: Path, tmp_path: Path, name: str
 ) -> None:

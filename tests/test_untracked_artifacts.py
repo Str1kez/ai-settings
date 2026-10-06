@@ -31,9 +31,7 @@ def home(tmp_path: Path) -> Path:
     return home
 
 
-def test_untracked_skill_and_agent_are_warned_about_and_not_deployed(
-    repo: Path, home: Path
-) -> None:
+def test_untracked_skill_and_agent_are_warned_about_and_not_deployed(repo: Path, home: Path) -> None:
     write(repo / "skills/forgotten/SKILL.md", SKILL.format(name="forgotten"))
     write(repo / "agents/forgotten/AGENT.md", AGENT.format(name="forgotten"))
 
@@ -57,9 +55,7 @@ def test_staged_skill_is_deployed_without_a_warning(repo: Path, home: Path) -> N
     assert sorted(os.listdir(home / ".claude/skills")) == ["fresh", "tracked"]
 
 
-def test_leftovers_of_the_old_layout_in_skills_dir_raise_no_warning(
-    tmp_path: Path, repo: Path, home: Path
-) -> None:
+def test_leftovers_of_the_old_layout_in_skills_dir_raise_no_warning(tmp_path: Path, repo: Path, home: Path) -> None:
     elsewhere = tmp_path / "elsewhere"
     write(elsewhere / "SKILL.md", SKILL.format(name="npx"))
     (repo / "skills/npx").symlink_to(elsewhere)
