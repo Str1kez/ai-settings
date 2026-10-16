@@ -63,18 +63,51 @@ def test_every_repo_agent_is_an_opencode_subagent_with_its_prompt(
         assert prompt.strip() == body.strip()
 
 
-@pytest.mark.parametrize(
-    ("name", "edit"),
-    [
-        pytest.param("code-reviewer", "deny", id="code-reviewer"),
-        pytest.param("pr-writer", "deny", id="pr-writer"),
-        pytest.param("debugger", "allow", id="debugger"),
+# The v2 `permissions` rules per repo agent, in render order: the source's
+# tools mapped to actions, read-only roles with the explicit edit deny. Bash
+# never yields a shell allow: the global ask/deny rules must stay the last
+# word on the shell.
+OPENCODE_PERMISSIONS = {
+    "code-reviewer": [
+        ("read", "*", "allow"),
+        ("grep", "*", "allow"),
+        ("glob", "*", "allow"),
+        ("edit", "*", "deny"),
     ],
-)
-def test_only_agents_with_edit_or_write_can_edit_in_opencode(installed_home: Path, name: str, edit: str) -> None:
-    rendered, _ = _split(_opencode_agent(installed_home, name))
+    "pr-writer": [
+        ("read", "*", "allow"),
+        ("edit", "*", "deny"),
+    ],
+    "debugger": [
+        ("read", "*", "allow"),
+        ("grep", "*", "allow"),
+        ("glob", "*", "allow"),
+        ("edit", "*", "allow"),
+    ],
+    "fastapi-backend": [
+        ("read", "*", "allow"),
+        ("grep", "*", "allow"),
+        ("glob", "*", "allow"),
+        ("edit", "*", "allow"),
+    ],
+}
 
-    assert rendered["permission"]["edit"] == edit
+
+def _opencode_rules(path: Path) -> list[tuple[str, str, str]]:
+    """The (action, resource, effect) rules of a rendered opencode agent."""
+    rendered, _ = _split(path)
+    return [(rule["action"], rule["resource"], rule["effect"]) for rule in rendered["permissions"]]
+
+
+@pytest.mark.parametrize("name", sorted(OPENCODE_PERMISSIONS))
+def test_opencode_agents_render_v2_permission_rules_per_role(installed_home: Path, name: str) -> None:
+    assert _opencode_rules(_opencode_agent(installed_home, name)) == OPENCODE_PERMISSIONS[name]
+
+
+def test_no_opencode_agent_gets_a_shell_allow(installed_home: Path) -> None:
+    for name in _repo_agents():
+        for action, _, effect in _opencode_rules(_opencode_agent(installed_home, name)):
+            assert (action, effect) != ("shell", "allow")
 
 
 @pytest.fixture
@@ -131,6 +164,23 @@ def test_foreign_opencode_agent_under_a_repo_agent_name_moves_to_backups(repo: P
     rendered, prompt = _split(_opencode_agent(home, "keeper"))
     assert rendered["description"] == "Use for keeper work."
     assert prompt.strip() == "# keeper"
+
+
+def test_opencode_render_drops_the_legacy_list_tool(repo: Path, home: Path) -> None:
+    # OpenCode v2 has no `list` action: the legacy List tool maps to nothing,
+    # the rules for the remaining tools stay.
+    write(
+        repo / "agents/keeper/AGENT.md",
+        "---\nname: keeper\ndescription: Use for keeper work.\nmodel: sonnet\ntools: [Read, List]\n---\n\n# keeper\n",
+    )
+
+    run_sync(repo, home, "agents")
+
+    assert _opencode_rules(_opencode_agent(home, "keeper")) == [
+        ("read", "*", "allow"),
+        ("edit", "*", "deny"),
+        ("shell", "*", "deny"),
+    ]
 
 
 def _toml_agent(home: Path, name: str) -> dict[str, Any]:
