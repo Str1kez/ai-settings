@@ -55,7 +55,7 @@ ai-settings/
 ├── agents/<name>/AGENT.md     # субагенты в формате Claude Code
 ├── settings/                  # шаблон ~/.claude/settings.json и скрипты хуков
 ├── scripts/
-│   ├── install.sh             # точка входа: sync.py all и RTK
+│   ├── install.sh             # точка входа: sync.py all
 │   ├── sync.py                # раскладка по харнессам, за ним пакет aisettings/
 │   ├── init-project.sh        # проектный слой: AGENTS.md, CHANGELOG.md, TODO.md
 │   ├── deploy-skills.sh       # скиллы в Claude Desktop
@@ -107,10 +107,6 @@ Claude Desktop — отдельный канал, эти каталоги он �
 
 Скрипты хуков линкуются поштучно: `~/.claude/hooks/<script>` → `settings/hooks/<script>`.
 
-### RTK
-
-`install.sh` ставит бинарник `rtk`, если его нет. Claude Code получает PreToolUse-хук `rtk hook claude` из шаблона настроек, OpenCode — плагин `~/.config/opencode/plugins/rtk.ts` через `rtk init -g --opencode --hook-only --no-patch`.
-
 ## Матрица харнессов
 
 | Харнесс | Поддержка | Правила | Скиллы | Агенты | Читает в проекте |
@@ -130,7 +126,7 @@ Claude Desktop — отдельный канал, эти каталоги он �
 
 ## Код установщика
 
-`install.sh` — тонкая обёртка: проверка на Windows, `sync.py all` и RTK. Раскладку целиком делает `scripts/sync.py` с подкомандами `all`, `rules`, `skills`, `agents` и `claude`. За ним пакет `scripts/aisettings/`, по модулю на тип артефакта: `rules.py`, `skills.py`, `agents.py`, `claude.py`. Общий для скиллов и агентов список отслеживаемых каталогов — в `tracked.py`. Каждое изменение в хоуме идёт через `Fs` из `fs.py`. На нём держатся `--dry-run`, бэкапы и гард, который не даёт писать в каталог, на деле лежащий внутри репы. Устройство модулей описано в [scripts/aisettings/README.md](scripts/aisettings/README.md).
+`install.sh` — тонкая обёртка: проверка на Windows и `sync.py all`. Раскладку целиком делает `scripts/sync.py` с подкомандами `all`, `rules`, `skills`, `agents` и `claude`. За ним пакет `scripts/aisettings/`, по модулю на тип артефакта: `rules.py`, `skills.py`, `agents.py`, `claude.py`. Общий для скиллов и агентов список отслеживаемых каталогов — в `tracked.py`. Каждое изменение в хоуме идёт через `Fs` из `fs.py`. На нём держатся `--dry-run`, бэкапы и гард, который не даёт писать в каталог, на деле лежащий внутри репы. Устройство модулей описано в [scripts/aisettings/README.md](scripts/aisettings/README.md).
 
 Проверки:
 
