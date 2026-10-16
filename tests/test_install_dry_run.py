@@ -12,7 +12,13 @@ def test_install_dry_run_leaves_home_untouched(tmp_path: Path) -> None:
     )
 
     assert list(tmp_path.iterdir()) == []
-    # rtk is gone from the installer; the plan must not bring its steps back.
+    # rtk is gone from the installer; the plan must not bring it back. Any
+    # mention counts: a renamed step would slip past an "rtk hook" marker.
+    # The checkout and home paths go first, so a worktree under a path like
+    # .../ai-settings-worktrees/rtk-teardown can neither fake a step nor mask
+    # one.
     plan = (result.stdout + result.stderr).lower()
-    for marker in ("rtk hook", "rtk init", "rust token killer"):
-        assert marker not in plan, marker
+    for path in (REPO_ROOT, tmp_path):
+        plan = plan.replace(str(path).lower(), "<path>")
+        plan = plan.replace(str(path.resolve()).lower(), "<path>")
+    assert "rtk" not in plan
