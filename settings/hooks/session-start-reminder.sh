@@ -24,12 +24,7 @@ count_files() {
 skill_count=$(count_files "$HOME"/.claude/skills/*/SKILL.md)
 agent_count=$(count_files "$HOME"/.claude/agents/*.md)
 
-RTK_WARNING=""
-if ! command -v rtk &>/dev/null; then
-  RTK_WARNING=$'\nrtk hook is wired (rtk hook claude) but rtk binary not found. Install: brew install rtk'
-fi
-
-user_message="[ai-settings] Loaded: ${skill_count} skill(s), ${agent_count} subagent(s). Silence: AI_SETTINGS_QUIET=1${RTK_WARNING}"
+user_message="[ai-settings] Loaded: ${skill_count} skill(s), ${agent_count} subagent(s). Silence: AI_SETTINGS_QUIET=1"
 model_context="Reminder: check for relevant skill/subagent BEFORE non-trivial tasks."
 
 # Plain stdout of SessionStart goes to the model only. systemMessage is what the user sees.

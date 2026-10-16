@@ -23,7 +23,6 @@ from tests.skill_lint.conftest import discover_skill_paths
 
 SCHEMA = "https://json.schemastore.org/claude-code-settings"
 BANNER = "~/.claude/hooks/banner.sh"
-RTK = "rtk hook claude"
 AGTERM = "'/Users/me/.config/agterm/agent-status/agterm-agent-status.sh'"
 
 
@@ -40,7 +39,6 @@ TEMPLATE: dict[str, Any] = {
     },
     "hooks": {
         "SessionStart": [{"hooks": [_command(BANNER)]}],
-        "PreToolUse": [{"matcher": "Bash", "hooks": [_command(RTK)]}],
     },
 }
 # What agterm adds to settings.json, the installer leaves it alone.
@@ -53,7 +51,7 @@ LIVE = {
     "$schema": SCHEMA,
     "env": {"DISABLE_TELEMETRY": "1"},
     "permissions": {
-        "allow": ["Read(**)", "Bash(rtk gain:*)", "Bash(uv run:*)"],
+        "allow": ["Read(**)", "Bash(uv run:*)"],
         "deny": ["Bash(rm -rf*)"],
         "ask": ["Bash(git commit:*)", "Write(**)", "Edit(**)"],
         "defaultMode": "acceptEdits",
@@ -62,9 +60,8 @@ LIVE = {
     "hooks": {
         **AGTERM_HOOKS,
         "PreToolUse": [
-            # The user's own Bash hook shares a group with the installer's.
-            {"matcher": "Bash", "hooks": [_command(RTK), _command("my-audit.sh")]},
-            {"matcher": "Bash", "hooks": [_command(RTK)]},
+            # The user's own Bash hook; the template runs no Bash hook of its own.
+            {"matcher": "Bash", "hooks": [_command("my-audit.sh")]},
         ],
         "SessionStart": [{"hooks": [_command(BANNER)]}],
     },
@@ -117,14 +114,19 @@ def test_merge_takes_permissions_from_the_template_and_keeps_the_rest(repo: Path
         "model": "sonnet",
         "hooks": {
             **AGTERM_HOOKS,
-            "PreToolUse": [
-                {"matcher": "Bash", "hooks": [_command("my-audit.sh")]},
-                {"matcher": "Bash", "hooks": [_command(RTK)]},
-            ],
+            "PreToolUse": [{"matcher": "Bash", "hooks": [_command("my-audit.sh")]}],
             "SessionStart": [{"hooks": [_command(BANNER)]}],
         },
         "enabledPlugins": {"pyright-lsp@claude-plugins-official": True},
     }
+
+
+def test_the_real_template_and_session_start_hook_mention_no_rtk() -> None:
+    template = (REPO_ROOT / "settings/claude-settings.json").read_text(encoding="utf-8")
+    hook = (REPO_ROOT / "settings/hooks/session-start-reminder.sh").read_text(encoding="utf-8")
+
+    assert "rtk" not in template.lower()
+    assert "rtk" not in hook.lower()
 
 
 def test_hook_of_a_script_the_template_dropped_goes_and_the_users_scripts_stay(repo: Path, home: Path) -> None:

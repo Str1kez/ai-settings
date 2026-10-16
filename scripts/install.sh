@@ -53,37 +53,4 @@ else
   python3 "$SCRIPT_DIR/sync.py" all --dry-run
 fi
 
-# --- RTK (Rust Token Killer) ---
-log_info "Setting up RTK (Rust Token Killer)..."
-if command -v rtk &>/dev/null; then
-  log_ok "rtk already installed: $(rtk --version 2>/dev/null || echo 'unknown version')"
-else
-  log_info "rtk not found. Installing..."
-  if [[ $DRY_RUN -eq 1 ]]; then
-    echo "[dry-run] install rtk binary"
-  elif command -v brew &>/dev/null; then
-    brew install rtk
-    log_ok "rtk installed via Homebrew"
-  else
-    curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/refs/heads/master/install.sh | sh
-    log_ok "rtk installed via install script"
-  fi
-fi
-
-# Claude Code hook is wired via the settings.json merge in sync.py
-# (PreToolUse -> "rtk hook claude", native binary command, no extra setup).
-# OpenCode has no equivalent settings.json merge, so wire its plugin explicitly.
-log_info "Setting up RTK OpenCode plugin..."
-if [[ $DRY_RUN -eq 1 ]]; then
-  echo "[dry-run] rtk init -g --opencode --hook-only --no-patch"
-elif command -v rtk &>/dev/null; then
-  if rtk init -g --opencode --hook-only --no-patch &>/dev/null; then
-    log_ok "RTK OpenCode plugin installed (~/.config/opencode/plugins/rtk.ts)"
-  else
-    log_warn "RTK OpenCode plugin install failed — run manually: rtk init -g --opencode"
-  fi
-else
-  log_warn "rtk binary not found — skipping OpenCode plugin (run 'rtk init -g --opencode' after installing rtk)"
-fi
-
 log_ok "ai-settings installation complete."

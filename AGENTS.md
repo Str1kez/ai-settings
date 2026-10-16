@@ -118,9 +118,6 @@ Do not call MCP servers, connectors, browser automation for external targets, or
 > Load on demand — only in ML/data projects. Reference: `docs/ai/ml.md`.
 > Read it manually when working on ML tasks: `@./docs/ai/ml.md`
 
-## 16. RTK (token-optimized bash output)
-@./docs/ai/rtk-awareness.md
-
 ## Skills
 
 Every skill has the same name in every harness. Claude Code reads `~/.claude/skills/<name>/SKILL.md`; Codex, OpenCode, Gemini CLI and Cursor read `~/.agents/skills/<name>/SKILL.md`.

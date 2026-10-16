@@ -7,7 +7,6 @@
 | Правила | плоский `~/.config/opencode/AGENTS.md` |
 | Скиллы | ссылка `~/.agents/skills/<name>` на каждый скилл репы |
 | Агенты | markdown-агент `~/.config/opencode/agents/<name>.md` |
-| RTK | плагин `~/.config/opencode/plugins/rtk.ts` |
 
 Агенты живут в markdown-файлах, а `opencode.jsonc` установщик не трогает: провайдеры, модели, MCP и плагины в нём твои. Проверено на OpenCode 1.18.34.
 
@@ -48,18 +47,6 @@ OpenCode читает скиллы и из `~/.agents/skills`, и из `~/.claud
 ```
 
 Список моделей — `opencode models`. Так можно задать `model`. То, что задаёт рендер, из JSON не переопределить: `description`, `mode`, правила `permissions` и промпт. OpenCode читает JSON-конфиги раньше markdown-агентов, и markdown ложится сверху. Так устроено в исходниках OpenCode, документация порядок не описывает.
-
-## RTK
-
-`install.sh` ставит плагин сам, если бинарник `rtk` уже есть в PATH:
-
-```bash
-rtk init -g --opencode --hook-only --no-patch
-```
-
-Флаги `--hook-only --no-patch` ограничивают команду OpenCode: она не пишет `CLAUDE.md` и `RTK.md` и не патчит `~/.claude/settings.json`, Claude Code настроен отдельно. Плагин `~/.config/opencode/plugins/rtk.ts` своей логики не содержит и отдаёт каждую команду бинарнику (`rtk rewrite <cmd>`). Проверка: `rtk init --show`.
-
-Если `rtk` поставлен после `install.sh`, прогони его ещё раз или выполни команду выше руками.
 
 ## Проверка
 

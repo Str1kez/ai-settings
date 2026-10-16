@@ -51,9 +51,7 @@
             "Bash(python --version)",
             "Bash(python3 --version)",
             "Bash(uv --version)",
-            "Bash(jq:*)",
-            "Bash(rtk gain:*)",
-            "Bash(rtk discover:*)"
+            "Bash(jq:*)"
         ],
         "ask": [
             "Bash(git commit:*)",
@@ -82,9 +80,6 @@
         ]
     },
     "hooks": {
-        "SessionStart": [{ "hooks": [{ "type": "command", "command": "~/.claude/hooks/session-start-reminder.sh" }] }],
-        "PreToolUse": [
-            { "matcher": "Bash", "hooks": [{ "type": "command", "command": "rtk hook claude" }] }
-        ]
+        "SessionStart": [{ "hooks": [{ "type": "command", "command": "~/.claude/hooks/session-start-reminder.sh" }] }]
     }
 }

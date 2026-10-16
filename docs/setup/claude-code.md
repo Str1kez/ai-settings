@@ -49,9 +49,7 @@ claude -p --model haiku "List the subagent types available to you"
 
 ## Поиск и permissions
 
-`rtk hook claude` переписывает `find`, `grep`, `rg`, `cat`, `git …`, `pytest` и другие команды в `rtk …` и решает по правилам исходной команды. Если она в allow и не попадает под ask, хук одобряет переписанную сам. Под ask он её переписывает, но не одобряет, а команду под deny не трогает. Поэтому в allow лежат сами тулы (`find`, `grep`, `rg`, `git log` …), а rtk-форм там нет, кроме мета-команд `rtk gain` и `rtk discover`: их Claude зовёт напрямую. Прямой вызов вроде `rtk find …` спросит подтверждение. `fd` и `.venv/bin/*` rtk не переписывает, их решает сам Claude Code.
-
-Флаги, которые запускают команды, перехватывают ask-правила. По ним rtk не одобряет, а Claude Code спрашивает даже поверх allow и поверх одобрения хука. Порядок deny → ask → allow, `*` в любом месте правила и то, что решение PreToolUse-хука не обходит ask и deny, описаны в [документации Claude Code](https://code.claude.com/docs/en/permissions).
+В allow лежат сами тулы: `find`, `grep`, `rg`, `cat`, `git log` и остальные read-only команды. Флаги, которые запускают команды, перехватывают ask-правила: Claude Code спрашивает даже поверх allow. Порядок deny → ask → allow, `*` в любом месте правила и то, как решение принимается по тексту команды, описаны в [документации Claude Code](https://code.claude.com/docs/en/permissions).
 
 | Правило в `ask` | Что ловит |
 |---|---|
@@ -66,17 +64,6 @@ claude -p --model haiku "List the subagent types available to you"
 `git branch` и `git remote` в allow только read-only формами, а не префиксом `:*`: префикс пропускал `git branch -D`, `git remote set-url` и создание ветки. Ask-гарды на флаги тут не спасают: `git branch -v <name>` молча создаёт ветку, а `git branch -r -D <ref>` удаляет remote-tracking ветку. Поэтому `-a`, `-r`, `-v` и `-vv` разрешены только точной формой. Префиксом разрешены `--show-current`, `--list`, `--contains`, `--no-contains`, `--merged` и `--no-merged`: после них git не принимает ни удаление, ни переименование, ни новую ветку. У `git remote` разрешены голый вызов, `-v`, `get-url` и `show`. Остальные формы спросят подтверждение.
 
 `Read` и `Grep` в шаблоне нет: в рабочем каталоге они идут без вопроса и так, а правило `Read(**)` с относительным путём дальше него не действует.
-
-## RTK
-
-RTK — CLI-прокси, который сжимает вывод bash-команд до того, как он попадёт в контекст. На `git`, `pytest`, `grep` и похожих командах экономит 60–90% токенов. `install.sh` ставит бинарник через Homebrew или установочный скрипт, если его нет, а хук `rtk hook claude` приходит из шаблона настроек.
-
-```bash
-rtk --version
-rtk gain                 # статистика экономии за сессию
-```
-
-Руками: `brew install rtk` или `curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/refs/heads/master/install.sh | sh`. На crates.io есть два разных проекта с именем `rtk`, нужный — [rtk-ai/rtk](https://github.com/rtk-ai/rtk). Если `rtk gain` не работает, стоит не тот.
 
 ## Проект
 

@@ -10,12 +10,6 @@
 
 ## Идеи / бэклог
 
-- [ ] Убрать `Bash(echo:*)` и `Bash(echo *>*)` из `settings/claude-settings.json`,
-  когда rtk закроет [rtk-ai/rtk#1347](https://github.com/rtk-ai/rtk/issues/1347):
-  хук переводит составную команду в запрос подтверждения, если у одного
-  сегмента нет своего allow-правила. Связанный баг:
-  [#1232](https://github.com/rtk-ai/rtk/issues/1232) — read-only команды
-  получают exit 3 вместо 0.
 - [ ] Выборочная установка с интерактивным выбором, как в `npx skills`:
   харнесс, агенты и скиллы выбираются списком, установка идемпотентна.
   Сначала слой без интерфейса: файл выбора, флаги `sync.py`
@@ -66,6 +60,6 @@
   дублируется в Codex поверх plugin (2026-07-31).
 - [x] Глобальная установка оригинального `brainstorming` из Superpowers v6.1.1 (2026-07-20).
 - [x] Глобальный `$spec`: анализ проекта, brainstorming, выбранные исследования отдельными агентами, grilling, межмодельная проверка и 2 независимых ревью (2026-07-20).
-- [x] Token-savings план (2026-04-19) — RTK-интеграция, Compression в style.md, Compact Instructions в AGENTS.md, Windows-инструкции в setup-доках, сокращение writing-voice.md.
+- [x] Token-savings план (2026-04-19) — Compression в style.md, Compact Instructions в AGENTS.md, Windows-инструкции в setup-доках, сокращение writing-voice.md.
 - [x] Скилл `strikez:boilerplate` и публичный репо шаблонов `tsergeytovarov/strikez-boilerplate` (2026-04-19).
 - [x] Имплементация по плану `docs/superpowers/plans/2026-04-18-ai-settings-implementation.md`, план остался в истории git — релиз v0.1.0 (2026-04-18).
