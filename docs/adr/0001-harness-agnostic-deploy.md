@@ -29,7 +29,7 @@
 |---|---|---|---|
 | Claude Code | симлинк `~/.claude/CLAUDE.md` | `~/.claude/skills/<name>` → репа | `~/.claude/agents/<name>.md` → `agents/<name>/AGENT.md` |
 | Codex CLI | плоский `~/.codex/AGENTS.md` | `~/.agents/skills/<name>` | `~/.codex/agents/<name>.toml`: `developer_instructions`, без Edit/Write → `sandbox_mode = "read-only"` |
-| OpenCode | плоский `~/.config/opencode/AGENTS.md` | `~/.agents/skills` (видит и `~/.claude/skills`) | `~/.config/opencode/agents/<name>.md`: `mode: subagent`, `permission` |
+| OpenCode | плоский `~/.config/opencode/AGENTS.md` | `~/.agents/skills` (видит и `~/.claude/skills`) | `~/.config/opencode/agents/<name>.md`: `mode: subagent`, `permissions` |
 | Gemini CLI | симлинки `~/.gemini/{GEMINI,AGENTS}.md` | `~/.agents/skills` (алиас `~/.gemini/skills`) | `~/.gemini/agents/<name>.md`: `tools` → `read_file`, `read_many_files`, `grep_search`, `glob`, `list_directory`, `run_shell_command`, `replace`, `write_file`, `web_fetch`, `google_web_search` |
 | Cursor | `~/.cursor/rules/ai-settings.mdc` | `~/.agents/skills` (видит и `~/.claude/skills`) | `~/.cursor/agents/<name>.md`: `model: inherit`, `readonly`; приоритетнее совместимого `~/.claude/agents` |
 | Claude Desktop | — | `deploy-skills.sh` (zip + rsync), без изменений | — |
