@@ -145,10 +145,11 @@ def _render_opencode(agent: Agent) -> str:
         "mode: subagent",
         "permissions:",
     ]
-    for action, effect in _opencode_permissions(agent.tools):
-        frontmatter.append(f"  - action: {action}")
-        frontmatter.append('    resource: "*"')
-        frontmatter.append(f"    effect: {effect}")
+    for rule in _opencode_permissions(agent.tools):
+        frontmatter.append(f"  - action: {rule.action}")
+        # A bare * reads as a YAML alias, the resource is always quoted.
+        frontmatter.append(f'    resource: "{rule.resource}"')
+        frontmatter.append(f"    effect: {rule.effect}")
     return _markdown_agent(frontmatter, agent)
 
 
@@ -263,17 +264,25 @@ def _split_list(text: str) -> list[str]:
     return [item.strip() for item in text.split(",") if item.strip()]
 
 
-def _opencode_permissions(tools: list[str]) -> list[tuple[str, str]]:
-    """The agent's `permissions` rules as (action, effect) pairs, each on the
-    "*" resource. Listed tools are allowed, except the shell: an allow there
-    would outrank the global ask/deny rules, which must stay the last word on
-    the shell. Without an editing tool editing is denied, without Bash the
-    shell."""
+class Permission(NamedTuple):
+    """One OpenCode v2 `permissions` rule: the action on a resource gets the
+    effect."""
+
+    action: str
+    resource: str
+    effect: str
+
+
+def _opencode_permissions(tools: list[str]) -> list[Permission]:
+    """The agent's `permissions` rules, each on the "*" resource. Listed tools
+    are allowed, except the shell: an allow there would outrank the global
+    ask/deny rules, which must stay the last word on the shell. Without an
+    editing tool editing is denied, without Bash the shell."""
     actions = []
     for tool in tools:
         action = _TOOL_TO_PERMISSION.get(tool)
         if action and action not in actions:
             actions.append(action)
-    rules = [(action, "allow") for action in actions if action != "shell"]
-    rules.extend((action, "deny") for action in ("edit", "shell") if action not in actions)
+    rules = [Permission(action, "*", "allow") for action in actions if action != "shell"]
+    rules.extend(Permission(action, "*", "deny") for action in ("edit", "shell") if action not in actions)
     return rules
