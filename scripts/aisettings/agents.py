@@ -15,17 +15,16 @@ from typing import NamedTuple, Union
 from aisettings import tracked
 from aisettings.fs import Fs, SyncError, link_target
 
-# Claude Code tool -> OpenCode permission key. In OpenCode, edit covers write,
-# edit and apply_patch.
+# Claude Code tool -> OpenCode v2 permission action. In OpenCode, edit covers
+# write, edit and apply_patch; the legacy List tool has no v2 action.
 _TOOL_TO_PERMISSION = {
     "Read": "read",
     "Grep": "grep",
     "Glob": "glob",
-    "List": "list",
-    "Bash": "bash",
     "Edit": "edit",
     "Write": "edit",
-    "Task": "task",
+    "Bash": "shell",
+    "Task": "subagent",
     "WebFetch": "webfetch",
     "WebSearch": "websearch",
 }
@@ -144,9 +143,13 @@ def _render_opencode(agent: Agent) -> str:
     frontmatter = [
         f"description: {_yaml_string(agent.description)}",
         "mode: subagent",
-        "permission:",
-        *(f"  {key}: {value}" for key, value in _opencode_permission(agent.tools).items()),
+        "permissions:",
     ]
+    for rule in _opencode_permissions(agent.tools):
+        frontmatter.append(f"  - action: {rule.action}")
+        # A bare * reads as a YAML alias, the resource is always quoted.
+        frontmatter.append(f'    resource: "{rule.resource}"')
+        frontmatter.append(f"    effect: {rule.effect}")
     return _markdown_agent(frontmatter, agent)
 
 
@@ -261,11 +264,25 @@ def _split_list(text: str) -> list[str]:
     return [item.strip() for item in text.split(",") if item.strip()]
 
 
-def _opencode_permission(tools: list[str]) -> dict[str, str]:
-    """Listed tools are allowed. Without Edit/Write editing is denied, without
-    Bash the shell; other keys keep OpenCode defaults."""
-    keys = [_TOOL_TO_PERMISSION[tool] for tool in tools if tool in _TOOL_TO_PERMISSION]
-    permission = dict.fromkeys(keys, "allow")
-    permission.setdefault("edit", "deny")
-    permission.setdefault("bash", "deny")
-    return permission
+class Permission(NamedTuple):
+    """One OpenCode v2 `permissions` rule: the action on a resource gets the
+    effect."""
+
+    action: str
+    resource: str
+    effect: str
+
+
+def _opencode_permissions(tools: list[str]) -> list[Permission]:
+    """The agent's `permissions` rules, each on the "*" resource. Listed tools
+    are allowed, except the shell: an allow there would outrank the global
+    ask/deny rules, which must stay the last word on the shell. Without an
+    editing tool editing is denied, without Bash the shell."""
+    actions = []
+    for tool in tools:
+        action = _TOOL_TO_PERMISSION.get(tool)
+        if action and action not in actions:
+            actions.append(action)
+    rules = [Permission(action, "*", "allow") for action in actions if action != "shell"]
+    rules.extend(Permission(action, "*", "deny") for action in ("edit", "shell") if action not in actions)
+    return rules
