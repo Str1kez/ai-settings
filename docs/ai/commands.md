@@ -2,7 +2,7 @@
 
 READ THIS FIRST. These are the canonical commands for common tasks. Prefer these over ad-hoc invocations — they include the flags that matter.
 
-**Project-specific overrides:** before touching an unfamiliar project, check for a `.ai/` directory in its root. If present, it documents project-specific test/lint/build commands and custom tooling that take precedence over the defaults below.
+**Project-specific overrides:** before touching an unfamiliar project, read its `AGENTS.md` at the repo root (`CLAUDE.md` when there is no `AGENTS.md`). That file is the entry point: project-specific test/lint/build commands and tooling notes belong there, and it should reference any deeper docs (`docs/`, `.agents/`, ADRs). Whatever it documents takes precedence over the defaults below.
 
 ## Python (pytest + uv)
 
