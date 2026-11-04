@@ -7,7 +7,6 @@
 | Что | Куда |
 |---|---|
 | Скиллы | ссылка `~/.agents/skills/<name>` на каждый скилл репы |
-| Агенты | рендер `~/.cursor/agents/<name>.md` |
 | Правила | плоский `~/.cursor/rules/ai-settings.mdc`, который Cursor не читает, см. ниже |
 
 ## Правила
@@ -31,9 +30,7 @@ Cursor читает скиллы из `~/.agents/skills` и из `~/.claude/skil
 
 ## Агенты
 
-Каждый `agents/<name>/AGENT.md` становится `~/.cursor/agents/<name>.md`: `name`, `description`, `model: inherit`. Агентам без Edit и Write (`code-reviewer`, `pr-writer`) добавляется `readonly: true`. Каталог `~/.cursor/agents` приоритетнее совместимого `~/.claude/agents`, так что Cursor берёт эти файлы, а не ссылки Claude Code.
-
-Файл с меткой `# managed-by: ai-settings` под frontmatter установщик считает своим: перезаписывает, а рендер удалённого агента удаляет. Чужой файл под именем агента репы уезжает в `backups/<ts>/`, остальные не трогаются.
+Агентов для Cursor установщик не ставит: рендер я удалил в 2.0.0, потому что этот харнесс не проверяю. Файлы старых версий в `~/.cursor/agents` чистятся командой из [CHANGELOG.md](../../CHANGELOG.md). Cursor читает совместимый `~/.claude/agents`, так что глобальные агенты Claude Code он может подхватить сам, работает ли это, я не проверял.
 
 ## Проверка импортов
 
