@@ -64,7 +64,6 @@ def test_a_well_formed_agent_passes(tmp_path: Path) -> None:
             id="yaml-subset",
         ),
         pytest.param(GOOD.split("---\n")[0] + "no frontmatter", "frontmatter", id="fm"),
-        pytest.param(GOOD.replace("Sample agent.", "Use ''' here."), "'''", id="toml"),
     ],
 )
 def test_lint_catches_a_broken_agent(tmp_path: Path, broken: str, expected: str) -> None:

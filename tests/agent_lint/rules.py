@@ -1,5 +1,5 @@
 """Agent-lint rules: what an agents/<name>/AGENT.md must satisfy so that Claude
-Code reads it and sync.py renders it for the other harnesses."""
+Code reads it and sync.py renders it for OpenCode."""
 
 from __future__ import annotations
 
@@ -22,7 +22,6 @@ SKIP_RE = re.compile(r"\b(SKIP|Do NOT use)\b")
 # What scripts/new.py leaves in a draft: <explicit trigger: ...>.
 PLACEHOLDER_RE = re.compile(r"<[^>\n]+>")
 FRONTMATTER_RE = re.compile(r"^---\n(.*?)\n---\n(.*)\Z", re.DOTALL)
-TOML_LITERAL_QUOTES = "'''"
 
 
 def discover_agent_dirs(repo_root: Path = REPO_ROOT) -> list[Path]:
@@ -60,8 +59,6 @@ def problems(agent_dir: Path) -> list[str]:
     found += _tools_problems(tools)
     if not match.group(2).strip():
         found.append("body is empty: it is the agent's prompt")
-    if TOML_LITERAL_QUOTES in match.group(2):
-        found.append(f"body holds {TOML_LITERAL_QUOTES}: the Codex render can't carry it")
     return found or _renderer_problems(path, frontmatter, tools)
 
 

@@ -1,7 +1,7 @@
 """Agents: agents/<name>/AGENT.md in Claude Code format is the only source.
 
-Claude Code reads it as is, through a link per agent. OpenCode, Gemini and
-Cursor get a markdown agent rendered from it, Codex a TOML one.
+Claude Code reads it as is, through a link per agent. OpenCode gets a
+markdown agent rendered from it.
 """
 
 from __future__ import annotations
@@ -31,31 +31,13 @@ _TOOL_TO_PERMISSION = {
 _FRONTMATTER_RE = re.compile(r"^---\n(.*?)\n---\n(.*)\Z", re.DOTALL)
 _CLAUDE_AGENTS = Path(".claude/agents")
 _OPENCODE_AGENTS = Path(".config/opencode/agents")
-_GEMINI_AGENTS = Path(".gemini/agents")
-_CURSOR_AGENTS = Path(".cursor/agents")
-_CODEX_AGENTS = Path(".codex/agents")
 # The first lines of a render: the mark tells our files from the user's.
 _MARKER = "# managed-by: ai-settings"
 _MARKDOWN_HEADER = f"---\n{_MARKER}\n"
-_TOML_HEADER = f"{_MARKER}\n"
-_TOML_LITERAL_QUOTES = "'''"
 
-# Claude Code tool -> Gemini CLI tools. Tools with no entry have no Gemini
-# counterpart and are left out.
-_TOOL_TO_GEMINI = {
-    "Read": ["read_file", "read_many_files"],
-    "Grep": ["grep_search"],
-    "Glob": ["glob", "list_directory"],
-    "Bash": ["run_shell_command"],
-    "Edit": ["replace"],
-    "Write": ["write_file"],
-    "WebFetch": ["web_fetch"],
-    "WebSearch": ["google_web_search"],
-}
-_EDITING_TOOLS = {"Edit", "Write"}
-# A tool outside this set is dropped silently by the renders, so a typo would
+# A tool outside this set is dropped silently by the render, so a typo would
 # quietly cost an agent its permission. The agent lint holds tools to it.
-KNOWN_TOOLS = frozenset(_TOOL_TO_PERMISSION) | frozenset(_TOOL_TO_GEMINI)
+KNOWN_TOOLS = frozenset(_TOOL_TO_PERMISSION)
 
 # Runtime alias: no `X | Y` here, it must evaluate on Python 3.9.
 _Fields = dict[str, Union[str, list[str]]]
@@ -73,15 +55,8 @@ def sync(fs: Fs, repo: Path, home: Path) -> None:
     agents = _collect(repo)
     tracked.warn_untracked(repo, "agents", "AGENT.md")
     _sync_claude(fs, repo, home / _CLAUDE_AGENTS, agents)
-    for agents_home, render in (
-        (_OPENCODE_AGENTS, _render_opencode),
-        (_GEMINI_AGENTS, _render_gemini),
-        (_CURSOR_AGENTS, _render_cursor),
-    ):
-        renders = {f"{agent.name}.md": render(agent) for agent in agents}
-        _sync_renders(fs, home / agents_home, renders, _MARKDOWN_HEADER)
-    codex = {f"{agent.name}.toml": _render_codex(agent) for agent in agents}
-    _sync_renders(fs, home / _CODEX_AGENTS, codex, _TOML_HEADER)
+    renders = {f"{agent.name}.md": _render_opencode(agent) for agent in agents}
+    _sync_renders(fs, home / _OPENCODE_AGENTS, renders, _MARKDOWN_HEADER)
 
 
 def _collect(repo: Path) -> list[Agent]:
@@ -133,10 +108,6 @@ def _markdown_agent(frontmatter: list[str], agent: Agent) -> str:
     return _MARKDOWN_HEADER + "\n".join([*frontmatter, "---", "", agent.body.strip(), ""])
 
 
-def _is_read_only(agent: Agent) -> bool:
-    return not _EDITING_TOOLS.intersection(agent.tools)
-
-
 def _render_opencode(agent: Agent) -> str:
     """A markdown agent, its body is the prompt. No model: a subagent without
     one runs on the model of the agent that called it."""
@@ -151,54 +122,6 @@ def _render_opencode(agent: Agent) -> str:
         frontmatter.append(f'    resource: "{rule.resource}"')
         frontmatter.append(f"    effect: {rule.effect}")
     return _markdown_agent(frontmatter, agent)
-
-
-def _render_gemini(agent: Agent) -> str:
-    """A markdown agent, its body is the prompt. No model: it inherits the
-    parent's. Tools are what the agent is allowed to call."""
-    tools = [gemini_tool for tool in agent.tools for gemini_tool in _TOOL_TO_GEMINI.get(tool, [])]
-    frontmatter = [
-        f"name: {_yaml_string(agent.name)}",
-        f"description: {_yaml_string(agent.description)}",
-        "tools:",
-        *(f"  - {tool}" for tool in tools),
-    ]
-    return _markdown_agent(frontmatter, agent)
-
-
-def _render_cursor(agent: Agent) -> str:
-    """A markdown agent, its body is the prompt. It runs on the parent's model;
-    without Edit/Write it is read-only."""
-    frontmatter = [
-        f"name: {_yaml_string(agent.name)}",
-        f"description: {_yaml_string(agent.description)}",
-        "model: inherit",
-    ]
-    if _is_read_only(agent):
-        frontmatter.append("readonly: true")
-    return _markdown_agent(frontmatter, agent)
-
-
-def _render_codex(agent: Agent) -> str:
-    """A TOML agent. The prompt is a literal string, so it can't hold the
-    literal quotes. Without Edit/Write the sandbox is read-only."""
-    prompt = agent.body.strip()
-    if _TOML_LITERAL_QUOTES in prompt:
-        raise SyncError(f"{agent.path}: body holds {_TOML_LITERAL_QUOTES}")
-    lines = [
-        f"name = {_toml_string(agent.name)}",
-        f"description = {_toml_string(agent.description)}",
-    ]
-    if _is_read_only(agent):
-        lines.append('sandbox_mode = "read-only"')
-    quotes = _TOML_LITERAL_QUOTES
-    lines.append(f"developer_instructions = {quotes}\n{prompt}\n{quotes}")
-    return _TOML_HEADER + "\n".join(lines) + "\n"
-
-
-def _toml_string(text: str) -> str:
-    """A JSON string is a valid TOML basic string: same escapes."""
-    return json.dumps(text, ensure_ascii=False)
 
 
 def _yaml_string(text: str) -> str:
