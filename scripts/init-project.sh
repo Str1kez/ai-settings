@@ -22,6 +22,8 @@ Usage: $0 [--cursor] [--claude-models SPEC] [--opencode-models SPEC] [PATH]
   --opencode-models SPEC
                         the same into .opencode/agents, models as provider/model:
                         frontier=anthropic/opus,standard=openai/gpt
+In a terminal, a harness without a flag is asked for: whether to create its
+agents (only when it has none yet) and a model for each level still missing.
 A rerun without these flags updates the agents already there and keeps their models.
 Project agents are personal: they are kept out of git through .git/info/exclude.
 EOF
@@ -134,6 +136,77 @@ fi
 agent_args=()
 [[ $HAVE_CLAUDE_MODELS -eq 1 ]] && agent_args+=(--claude-models "$CLAUDE_MODELS")
 [[ $HAVE_OPENCODE_MODELS -eq 1 ]] && agent_args+=(--opencode-models "$OPENCODE_MODELS")
+
+# probe_missing HARNESS [bind]: the levels sync.py reports as `missing-model`
+# for HARNESS, one per line. With `bind` the probe also asks for HARNESS with
+# an empty binding, so a harness that holds no agents yet shows up too. It is a
+# dry run: nothing is written. Any other failure (a conflict between files)
+# stops init with sync.py's message.
+probe_missing() {
+  local harness="$1" bind="${2:-}" probe_args=() err code=0
+  [[ -n "$bind" ]] && probe_args=("--$harness-models" "")
+  err="$(python3 "$SCRIPT_DIR/sync.py" project-agents --dry-run "$PROJECT_ROOT" \
+    ${agent_args[@]+"${agent_args[@]}"} ${probe_args[@]+"${probe_args[@]}"} 2>&1 >/dev/null)" || code=$?
+  case "$code" in
+    0) ;;
+    3) printf '%s\n' "$err" | sed -n "s/^missing-model: $harness //p" ;;
+    *) printf '%s\n' "$err" >&2; exit "$code" ;;
+  esac
+}
+
+# ask_model HARNESS LEVEL: one model for one level, asked until it is valid.
+# Claude Code has defaults for the known levels, Enter takes them; OpenCode
+# has none and needs provider/model.
+ask_model() {
+  local harness="$1" level="$2" default="" answer
+  if [[ "$harness" == claude ]]; then
+    case "$level" in frontier) default="opus" ;; standard) default="sonnet" ;; esac
+  fi
+  while true; do
+    if [[ -n "$default" ]]; then
+      read -r -p "  $harness: model for $level [$default]: " answer
+      answer="${answer:-$default}"
+    else
+      read -r -p "  $harness: model for $level: " answer
+    fi
+    if [[ -z "$answer" || "$answer" == *[,=\ ]* ]]; then
+      log_warn "Give one model name, without spaces, commas or '='"
+    elif [[ "$harness" == opencode && "$answer" != */* ]]; then
+      log_warn "OpenCode models look like provider/model, for example anthropic/opus"
+    else
+      REPLY_MODEL="$answer"
+      return 0
+    fi
+  done
+}
+
+# ask_harness HARNESS LABEL: asks for the models of one harness when stdin is a
+# terminal and no flag covers it, then adds the answers to agent_args. "Do you
+# want it" is asked only for a harness without our agents; a harness that has
+# them is updated, and only its missing levels are asked.
+ask_harness() {
+  local harness="$1" label="$2" have_flag="$3" gaps all level answer spec=""
+  [[ $have_flag -eq 0 && -t 0 ]] || return 0
+  gaps="$(probe_missing "$harness")"
+  all="$(probe_missing "$harness" bind)"
+  [[ -n "$all" ]] || return 0
+  if [[ -n "$gaps" ]]; then
+    all="$gaps"
+  else
+    read -r -p "Project agents for $label? [y/N] " answer
+    [[ "$answer" == [yY] || "$answer" == [yY][eE][sS] ]] || return 0
+  fi
+  log_info "$label models"
+  # Levels are plain words; a here-string loop would feed them to ask_model's read.
+  for level in $all; do
+    ask_model "$harness" "$level"
+    spec+="${spec:+,}$level=$REPLY_MODEL"
+  done
+  agent_args+=("--$harness-models" "$spec")
+}
+ask_harness claude "Claude Code" "$HAVE_CLAUDE_MODELS"
+ask_harness opencode "OpenCode" "$HAVE_OPENCODE_MODELS"
+
 # Without flags sync.py reruns the harnesses that already hold our agents,
 # with the models found in those files. A failure aborts here (set -e) with
 # sync.py's code: 3 is a level without a model, named on stderr as
