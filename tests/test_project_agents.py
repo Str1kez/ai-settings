@@ -23,6 +23,7 @@ from tests.helpers import (
 
 CLAUDE_FLAG = "frontier=opus,standard=sonnet"
 OPENCODE_FLAG = "frontier=anthropic/opus,standard=openai/gpt"
+MISSING_MODEL_EXIT = 3
 FOREIGN = "---\ndescription: mine\n---\nMy own agent.\n"
 
 
@@ -231,3 +232,136 @@ def test_changed_template_reaches_the_project_on_rerun(repo: Path, home: Path, p
     assert fields["effort"] == "low"
     assert "# model-level: frontier" in raw
     assert body.strip() == "New prompt."
+
+
+def test_rerun_without_flags_keeps_the_models_and_takes_the_new_template_body(
+    repo: Path, home: Path, project: Path
+) -> None:
+    _init(repo, home, project, "--claude-models", CLAUDE_FLAG)
+    write(repo / "agents/worker/AGENT.md", _template("worker", "standard", None, body="Fresh prompt."))
+
+    code, _ = _init(repo, home, project)
+
+    fields, body, _ = _split(project / CLAUDE_DIR / "worker.md")
+    assert code == 0
+    assert fields["model"] == "sonnet"
+    assert body.strip() == "Fresh prompt."
+    assert _split(project / CLAUDE_DIR / "reviewer.md")[0]["model"] == "opus"
+    assert not (project / OPENCODE_DIR).exists()
+
+
+def test_rerun_without_flags_keeps_opencode_models(repo: Path, home: Path, project: Path) -> None:
+    _init(repo, home, project, "--opencode-models", OPENCODE_FLAG)
+
+    code, _ = _init(repo, home, project)
+
+    assert code == 0
+    assert _split(project / OPENCODE_DIR / "worker.md")[0]["model"] == "openai/gpt"
+    assert not (project / CLAUDE_DIR).exists()
+
+
+def test_flags_on_rerun_override_the_models_found_in_files(repo: Path, home: Path, project: Path) -> None:
+    _init(repo, home, project, "--claude-models", CLAUDE_FLAG)
+
+    code, _ = _init(repo, home, project, "--claude-models", "frontier=fable")
+
+    assert code == 0
+    assert _split(project / CLAUDE_DIR / "reviewer.md")[0]["model"] == "fable"
+    assert _split(project / CLAUDE_DIR / "worker.md")[0]["model"] == "sonnet"
+
+
+def test_template_that_changed_level_takes_the_model_of_its_new_level_on_rerun(
+    repo: Path, home: Path, project: Path
+) -> None:
+    _init(repo, home, project, "--claude-models", CLAUDE_FLAG)
+    write(repo / "agents/worker/AGENT.md", _template("worker", "frontier", None))
+
+    code, _ = _init(repo, home, project)
+
+    fields, _, raw = _split(project / CLAUDE_DIR / "worker.md")
+    assert code == 0
+    assert fields["model"] == "opus"
+    assert "# model-level: frontier" in raw
+
+
+def test_level_without_a_model_fails_naming_harness_and_level_and_writes_nothing(
+    repo: Path, home: Path, project: Path
+) -> None:
+    _init(repo, home, project, "--claude-models", CLAUDE_FLAG)
+    (project / CLAUDE_DIR / "reviewer.md").unlink()
+    write(repo / "agents/worker/AGENT.md", _template("worker", "standard", None, body="Fresh prompt."))
+
+    code, log = _init(repo, home, project)
+
+    assert code == MISSING_MODEL_EXIT
+    assert "missing-model: claude frontier" in log
+    assert not (project / CLAUDE_DIR / "reviewer.md").exists()
+    assert _split(project / CLAUDE_DIR / "worker.md")[1].strip() == "Do the job."
+
+
+def test_missing_levels_of_every_harness_are_reported_together(repo: Path, home: Path, project: Path) -> None:
+    _init(repo, home, project, "--claude-models", CLAUDE_FLAG, "--opencode-models", OPENCODE_FLAG)
+    for directory in (CLAUDE_DIR, OPENCODE_DIR):
+        (project / directory / "reviewer.md").unlink()
+
+    code, log = _init(repo, home, project)
+
+    assert code == MISSING_MODEL_EXIT
+    assert "missing-model: claude frontier" in log
+    assert "missing-model: opencode frontier" in log
+
+
+def test_flag_fills_the_level_the_files_cannot_name(repo: Path, home: Path, project: Path) -> None:
+    _init(repo, home, project, "--claude-models", CLAUDE_FLAG)
+    (project / CLAUDE_DIR / "reviewer.md").unlink()
+
+    code, _ = _init(repo, home, project, "--claude-models", "frontier=fable")
+
+    assert code == 0
+    assert _split(project / CLAUDE_DIR / "reviewer.md")[0]["model"] == "fable"
+
+
+def test_two_files_naming_different_models_for_one_level_fail_naming_the_files(
+    repo: Path, home: Path, project: Path
+) -> None:
+    _init(repo, home, project, "--claude-models", CLAUDE_FLAG)
+    worker = project / CLAUDE_DIR / "worker.md"
+    worker.write_text(
+        worker.read_text(encoding="utf-8").replace("# model-level: standard", "# model-level: frontier"),
+        encoding="utf-8",
+    )
+
+    code, log = _init(repo, home, project)
+
+    assert code != 0
+    assert code != MISSING_MODEL_EXIT
+    assert "reviewer.md" in log and "worker.md" in log
+    assert "frontier" in log
+
+
+def test_removed_template_loses_its_agent_but_keeps_its_exclude_line(repo: Path, home: Path, project: Path) -> None:
+    _init(repo, home, project, "--claude-models", CLAUDE_FLAG)
+    shutil.rmtree(repo / "agents/worker")
+
+    code, _ = _init(repo, home, project)
+
+    assert code == 0
+    assert not (project / CLAUDE_DIR / "worker.md").exists()
+    exclude = (project.parent.parent / ".git/info/exclude").read_text(encoding="utf-8").splitlines()
+    assert "/services/api/.claude/agents/worker.md" in exclude
+
+
+def test_file_that_lost_its_marker_is_foreign_on_rerun(repo: Path, home: Path, project: Path) -> None:
+    _init(repo, home, project, "--claude-models", CLAUDE_FLAG)
+    reviewer = project / CLAUDE_DIR / "reviewer.md"
+    unmarked = reviewer.read_text(encoding="utf-8").replace("# managed-by: ai-settings\n", "")
+    reviewer.write_text(unmarked, encoding="utf-8")
+    write(repo / "agents/reviewer/AGENT.md", _template("reviewer", "frontier", "high", body="New prompt."))
+
+    code, log = _init(repo, home, project, "--claude-models", CLAUDE_FLAG)
+    shutil.rmtree(repo / "agents/reviewer")
+    code_after_removal, _ = _init(repo, home, project, "--claude-models", CLAUDE_FLAG)
+
+    assert code == 0 and code_after_removal == 0
+    assert reviewer.read_text(encoding="utf-8") == unmarked
+    assert "reviewer.md" in log

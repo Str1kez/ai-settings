@@ -22,6 +22,7 @@ Usage: $0 [--cursor] [--claude-models SPEC] [--opencode-models SPEC] [PATH]
   --opencode-models SPEC
                         the same into .opencode/agents, models as provider/model:
                         frontier=anthropic/opus,standard=openai/gpt
+A rerun without these flags updates the agents already there and keeps their models.
 Project agents are personal: they are kept out of git through .git/info/exclude.
 EOF
 }
@@ -130,22 +131,21 @@ fi
 # Project agents: the agent templates with concrete models for each level.
 # They are personal (the models follow my subscription), so they are kept out
 # of git the same way. sync.py prints the files it wrote, one per line.
-if [[ $HAVE_CLAUDE_MODELS -eq 0 && $HAVE_OPENCODE_MODELS -eq 0 ]]; then
-  log_info "No project agents: pass --claude-models and/or --opencode-models to create them"
-else
-  agent_args=()
-  [[ $HAVE_CLAUDE_MODELS -eq 1 ]] && agent_args+=(--claude-models "$CLAUDE_MODELS")
-  [[ $HAVE_OPENCODE_MODELS -eq 1 ]] && agent_args+=(--opencode-models "$OPENCODE_MODELS")
-  # A failure aborts here (set -e): sync.py has already said why.
-  written="$(python3 "$SCRIPT_DIR/sync.py" project-agents "$PROJECT_ROOT" "${agent_args[@]}")"
-  not_git=0
-  while IFS= read -r agent_file; do
-    [[ -n "$agent_file" ]] || continue
-    git_exclude "$PROJECT_ROOT" "$agent_file" || not_git=1
-  done <<< "$written"
-  if [[ $not_git -eq 1 ]]; then
-    log_warn "Not a git repo: after git init, rerun to keep the project agents out of git"
-  fi
+agent_args=()
+[[ $HAVE_CLAUDE_MODELS -eq 1 ]] && agent_args+=(--claude-models "$CLAUDE_MODELS")
+[[ $HAVE_OPENCODE_MODELS -eq 1 ]] && agent_args+=(--opencode-models "$OPENCODE_MODELS")
+# Without flags sync.py reruns the harnesses that already hold our agents,
+# with the models found in those files. A failure aborts here (set -e) with
+# sync.py's code: 3 is a level without a model, named on stderr as
+# `missing-model: HARNESS LEVEL`.
+written="$(python3 "$SCRIPT_DIR/sync.py" project-agents "$PROJECT_ROOT" ${agent_args[@]+"${agent_args[@]}"})"
+not_git=0
+while IFS= read -r agent_file; do
+  [[ -n "$agent_file" ]] || continue
+  git_exclude "$PROJECT_ROOT" "$agent_file" || not_git=1
+done <<< "$written"
+if [[ $not_git -eq 1 ]]; then
+  log_warn "Not a git repo: after git init, rerun to keep the project agents out of git"
 fi
 
 log_ok "Project init complete: $PROJECT_ROOT"

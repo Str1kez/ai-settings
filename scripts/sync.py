@@ -13,6 +13,8 @@ from pathlib import Path
 from aisettings import agents, claude, log, rules, skills
 from aisettings.fs import Fs, SyncError
 
+# project-agents: a level has no model in the flags or the project files.
+EXIT_MISSING_MODEL = 3
 REPO = Path(__file__).resolve().parent.parent
 
 
@@ -43,6 +45,12 @@ def main() -> int:
             rules.sync(fs, REPO, home)
             agents.sync(fs, REPO, home)
             claude.sync(fs, REPO, home)
+    except agents.MissingModels as exc:
+        log.error(str(exc))
+        # One line per gap for a caller that asks the user for exactly these.
+        for harness, level in exc.missing:
+            print(f"missing-model: {harness} {level}", file=sys.stderr)
+        return EXIT_MISSING_MODEL
     except SyncError as exc:
         log.error(str(exc))
         return 1

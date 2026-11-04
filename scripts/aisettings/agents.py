@@ -95,6 +95,15 @@ def parse_models(spec: str, harness: str) -> dict[str, str]:
     return models
 
 
+class MissingModels(SyncError):
+    """Levels no flag and no project file gives a model for, as (harness,
+    level) pairs. A caller that can ask the user reads `missing`."""
+
+    def __init__(self, missing: list[tuple[str, str]]) -> None:
+        self.missing = missing
+        super().__init__("; ".join(f"{harness} models: no model for level {level}" for harness, level in missing))
+
+
 def sync_project(
     fs: Fs,
     repo: Path,
@@ -103,27 +112,69 @@ def sync_project(
     opencode: dict[str, str] | None,
 ) -> list[Path]:
     """Write the templates as agents with concrete models into the project's
-    harness dirs. A harness whose bindings are None is left alone. Returns
-    the project agents of the harnesses that were synced, relative to the
+    harness dirs. A harness is synced when its flags are given (not None) or
+    it already holds our agents; the models of its levels come from the flags,
+    then from those agents. Any other harness is left alone. Returns the
+    project agents of the harnesses that were synced, relative to the
     project, so the caller can keep them out of git."""
     agents = _collect(repo)
     needed = sorted({agent.model for agent in agents})
-    # Check both bindings before the first write: a half-synced project is
+    harnesses = (
+        ("claude", claude, _PROJECT_CLAUDE_AGENTS),
+        ("opencode", opencode, _PROJECT_OPENCODE_AGENTS),
+    )
+    bound: list[tuple[str, Path, dict[str, str]]] = []
+    missing: list[tuple[str, str]] = []
+    # Check every harness before the first write: a half-synced project is
     # worse than none.
-    for harness, bindings in (("claude", claude), ("opencode", opencode)):
-        if bindings is None:
+    for harness, flags, rel_dir in harnesses:
+        found = _bindings_from_files(project / rel_dir)
+        if flags is None and not found:
             continue
-        missing = [level for level in needed if level not in bindings]
-        if missing:
-            raise SyncError(f"{harness} models: no model for level {', '.join(missing)}")
+        models = dict(flags or {})
+        for level in needed:
+            if level in models:
+                continue
+            by_model = found.get(level, {})
+            if len(by_model) > 1:
+                files = ", ".join(sorted(name for names in by_model.values() for name in names))
+                raise SyncError(f"{harness} models: {files} name different models for level {level}")
+            if by_model:
+                models[level] = next(iter(by_model))
+            else:
+                missing.append((harness, level))
+        bound.append((harness, rel_dir, models))
+    if missing:
+        raise MissingModels(missing)
+    if not bound:
+        log.info("No project agents: pass --claude-models and/or --opencode-models to create them")
     ours: list[Path] = []
-    if claude is not None:
-        renders = {f"{a.name}.md": _render_claude(a, claude[a.model], level_comment=True) for a in agents}
-        ours += _sync_project_dir(fs, project, _PROJECT_CLAUDE_AGENTS, renders)
-    if opencode is not None:
-        renders = {f"{a.name}.md": _render_opencode(a, opencode[a.model]) for a in agents}
-        ours += _sync_project_dir(fs, project, _PROJECT_OPENCODE_AGENTS, renders)
+    for harness, rel_dir, models in bound:
+        if harness == "claude":
+            renders = {f"{a.name}.md": _render_claude(a, models[a.model], level_comment=True) for a in agents}
+        else:
+            renders = {f"{a.name}.md": _render_opencode(a, models[a.model]) for a in agents}
+        ours += _sync_project_dir(fs, project, rel_dir, renders)
     return ours
+
+
+def _bindings_from_files(agents_dir: Path) -> dict[str, dict[str, list[str]]]:
+    """level -> model -> names of our files that bind them, read from the
+    `# model-level:` line and the model field of each agent we wrote."""
+    found: dict[str, dict[str, list[str]]] = {}
+    if not agents_dir.is_dir():
+        return found
+    for entry in sorted(agents_dir.iterdir()):
+        if not _is_render(entry, _MARKDOWN_HEADER):
+            continue
+        match = _FRONTMATTER_RE.match(entry.read_text(encoding="utf-8"))
+        if not match:
+            continue
+        level_line = re.search(rf"^{re.escape(_LEVEL_KEY)}[ \t]*(\S+)[ \t]*$", match.group(1), re.MULTILINE)
+        model = _parse_fields(match.group(1)).get("model")
+        if level_line and isinstance(model, str) and model:
+            found.setdefault(level_line.group(1), {}).setdefault(model, []).append(entry.name)
+    return found
 
 
 def _sync_project_dir(fs: Fs, project: Path, rel_dir: Path, renders: dict[str, str]) -> list[Path]:
