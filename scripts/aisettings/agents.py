@@ -1,7 +1,8 @@
-"""Agents: agents/<name>/AGENT.md in Claude Code format is the only source.
+"""Agents: agents/<name>/AGENT.md is the only source, a template that names a
+model level (and an optional effort) instead of a model.
 
-Claude Code reads it as is, through a link per agent. OpenCode, Gemini and
-Cursor get a markdown agent rendered from it, Codex a TOML one.
+Each template becomes a global agent on the session's model: a marked render
+for Claude Code and a subagent without a model for OpenCode.
 """
 
 from __future__ import annotations
@@ -12,7 +13,7 @@ import re
 from pathlib import Path
 from typing import NamedTuple, Union
 
-from aisettings import tracked
+from aisettings import log, tracked
 from aisettings.fs import Fs, SyncError, link_target
 
 # Claude Code tool -> OpenCode v2 permission action. In OpenCode, edit covers
@@ -31,31 +32,25 @@ _TOOL_TO_PERMISSION = {
 _FRONTMATTER_RE = re.compile(r"^---\n(.*?)\n---\n(.*)\Z", re.DOTALL)
 _CLAUDE_AGENTS = Path(".claude/agents")
 _OPENCODE_AGENTS = Path(".config/opencode/agents")
-_GEMINI_AGENTS = Path(".gemini/agents")
-_CURSOR_AGENTS = Path(".cursor/agents")
-_CODEX_AGENTS = Path(".codex/agents")
+_PROJECT_CLAUDE_AGENTS = Path(".claude/agents")
+_PROJECT_OPENCODE_AGENTS = Path(".opencode/agents")
 # The first lines of a render: the mark tells our files from the user's.
 _MARKER = "# managed-by: ai-settings"
 _MARKDOWN_HEADER = f"---\n{_MARKER}\n"
-_TOML_HEADER = f"{_MARKER}\n"
-_TOML_LITERAL_QUOTES = "'''"
+# A project agent records the level its model was bound to, so a rerun can
+# rebuild the binding from the files.
+_LEVEL_KEY = "# model-level:"
 
-# Claude Code tool -> Gemini CLI tools. Tools with no entry have no Gemini
-# counterpart and are left out.
-_TOOL_TO_GEMINI = {
-    "Read": ["read_file", "read_many_files"],
-    "Grep": ["grep_search"],
-    "Glob": ["glob", "list_directory"],
-    "Bash": ["run_shell_command"],
-    "Edit": ["replace"],
-    "Write": ["write_file"],
-    "WebFetch": ["web_fetch"],
-    "WebSearch": ["google_web_search"],
-}
-_EDITING_TOOLS = {"Edit", "Write"}
-# A tool outside this set is dropped silently by the renders, so a typo would
+# A tool outside this set is dropped silently by the render, so a typo would
 # quietly cost an agent its permission. The agent lint holds tools to it.
-KNOWN_TOOLS = frozenset(_TOOL_TO_PERMISSION) | frozenset(_TOOL_TO_GEMINI)
+KNOWN_TOOLS = frozenset(_TOOL_TO_PERMISSION)
+
+# A template names a model level, never a model. One list: the render and the
+# agent lint both read it.
+MODEL_LEVELS = ("frontier", "standard")
+EFFORTS = ("low", "medium", "high", "xhigh", "max")
+# What a global agent runs on in Claude Code: the model of the session.
+_INHERIT = "inherit"
 
 # Runtime alias: no `X | Y` here, it must evaluate on Python 3.9.
 _Fields = dict[str, Union[str, list[str]]]
@@ -67,21 +62,138 @@ class Agent(NamedTuple):
     tools: list[str]
     body: str
     path: Path
+    level: str
+    effort: str | None
 
 
 def sync(fs: Fs, repo: Path, home: Path) -> None:
     agents = _collect(repo)
     tracked.warn_untracked(repo, "agents", "AGENT.md")
-    _sync_claude(fs, repo, home / _CLAUDE_AGENTS, agents)
-    for agents_home, render in (
-        (_OPENCODE_AGENTS, _render_opencode),
-        (_GEMINI_AGENTS, _render_gemini),
-        (_CURSOR_AGENTS, _render_cursor),
-    ):
-        renders = {f"{agent.name}.md": render(agent) for agent in agents}
-        _sync_renders(fs, home / agents_home, renders, _MARKDOWN_HEADER)
-    codex = {f"{agent.name}.toml": _render_codex(agent) for agent in agents}
-    _sync_renders(fs, home / _CODEX_AGENTS, codex, _TOML_HEADER)
+    _drop_repo_links(fs, repo, home / _CLAUDE_AGENTS)
+    claude = {f"{agent.name}.md": _render_claude(agent, _INHERIT) for agent in agents}
+    _sync_renders(fs, home / _CLAUDE_AGENTS, claude)
+    opencode = {f"{agent.name}.md": _render_opencode(agent) for agent in agents}
+    _sync_renders(fs, home / _OPENCODE_AGENTS, opencode)
+
+
+def parse_models(spec: str, harness: str) -> dict[str, str]:
+    """A flag value like `frontier=opus,standard=sonnet` as level -> model.
+    OpenCode names a model as provider/model, so a slash is required there."""
+    models: dict[str, str] = {}
+    for item in _split_list(spec):
+        level, sep, model = item.partition("=")
+        level, model = level.strip(), model.strip()
+        if not sep or not model:
+            raise SyncError(f"{harness} models: {item!r} must look like level=model")
+        if level not in MODEL_LEVELS:
+            raise SyncError(f"{harness} models: unknown level {level!r}, use one of {list(MODEL_LEVELS)}")
+        if level in models:
+            raise SyncError(f"{harness} models: level {level!r} is given twice")
+        if harness == "opencode" and "/" not in model:
+            raise SyncError(f"opencode models: {model!r} must be provider/model")
+        models[level] = model
+    return models
+
+
+class MissingModels(SyncError):
+    """Levels no flag and no project file gives a model for, as (harness,
+    level) pairs. A caller that can ask the user reads `missing`."""
+
+    def __init__(self, missing: list[tuple[str, str]]) -> None:
+        self.missing = missing
+        super().__init__("; ".join(f"{harness} models: no model for level {level}" for harness, level in missing))
+
+
+def sync_project(
+    fs: Fs,
+    repo: Path,
+    project: Path,
+    claude: dict[str, str] | None,
+    opencode: dict[str, str] | None,
+) -> list[Path]:
+    """Write the templates as agents with concrete models into the project's
+    harness dirs. A harness is synced when its flags are given (not None) or
+    it already holds our agents; the models of its levels come from the flags,
+    then from those agents. Any other harness is left alone. Returns the
+    project agents of the harnesses that were synced, relative to the
+    project, so the caller can keep them out of git."""
+    agents = _collect(repo)
+    needed = sorted({agent.level for agent in agents})
+    harnesses = (
+        ("claude", claude, _PROJECT_CLAUDE_AGENTS),
+        ("opencode", opencode, _PROJECT_OPENCODE_AGENTS),
+    )
+    bound: list[tuple[str, Path, dict[str, str]]] = []
+    missing: list[tuple[str, str]] = []
+    # Check every harness before the first write: a half-synced project is
+    # worse than none.
+    for harness, flags, rel_dir in harnesses:
+        found = _bindings_from_files(project / rel_dir)
+        if flags is None and not found:
+            continue
+        models = dict(flags or {})
+        for level in needed:
+            if level in models:
+                continue
+            by_model = found.get(level, {})
+            if len(by_model) > 1:
+                files = ", ".join(sorted(name for names in by_model.values() for name in names))
+                raise SyncError(f"{harness} models: {files} name different models for level {level}")
+            if by_model:
+                models[level] = next(iter(by_model))
+            else:
+                missing.append((harness, level))
+        bound.append((harness, rel_dir, models))
+    if missing:
+        raise MissingModels(missing)
+    if not bound:
+        log.info("No project agents: pass --claude-models and/or --opencode-models to create them")
+    ours: list[Path] = []
+    for harness, rel_dir, models in bound:
+        if harness == "claude":
+            renders = {f"{a.name}.md": _render_claude(a, models[a.level], level_comment=True) for a in agents}
+        else:
+            renders = {f"{a.name}.md": _render_opencode(a, models[a.level]) for a in agents}
+        ours += _sync_project_dir(fs, project, rel_dir, renders)
+    return ours
+
+
+def _bindings_from_files(agents_dir: Path) -> dict[str, dict[str, list[str]]]:
+    """level -> model -> names of our files that bind them, read from the
+    `# model-level:` line and the model field of each agent we wrote."""
+    found: dict[str, dict[str, list[str]]] = {}
+    if not agents_dir.is_dir():
+        return found
+    for entry in sorted(agents_dir.iterdir()):
+        if not _is_render(entry):
+            continue
+        match = _FRONTMATTER_RE.match(entry.read_text(encoding="utf-8"))
+        if not match:
+            continue
+        level_line = re.search(rf"^{re.escape(_LEVEL_KEY)}[ \t]*(\S+)[ \t]*$", match.group(1), re.MULTILINE)
+        model = _parse_fields(match.group(1)).get("model")
+        if level_line and isinstance(model, str) and model:
+            found.setdefault(level_line.group(1), {}).setdefault(model, []).append(entry.name)
+    return found
+
+
+def _sync_project_dir(fs: Fs, project: Path, rel_dir: Path, renders: dict[str, str]) -> list[Path]:
+    """Like _sync_renders, but a foreign file under our name is skipped, not
+    moved to backups: the dir belongs to the project, not to the installer."""
+    agents_dir = project / rel_dir
+    ours: list[Path] = []
+    for file_name, content in sorted(renders.items()):
+        dst = agents_dir / file_name
+        if os.path.lexists(dst) and not _is_render(dst):
+            log.warn(f"skipped {dst}: not generated by ai-settings")
+            continue
+        fs.write(dst, content)
+        ours.append(rel_dir / file_name)
+    if agents_dir.is_dir():
+        for entry in sorted(agents_dir.iterdir()):
+            if entry.name not in renders and _is_render(entry):
+                fs.remove_file(entry)
+    return ours
 
 
 def _collect(repo: Path) -> list[Agent]:
@@ -91,41 +203,36 @@ def _collect(repo: Path) -> list[Agent]:
     return [load(agent_dir / "AGENT.md") for agent_dir in tracked.tracked_dirs(repo, "agents", "AGENT.md")]
 
 
-def _sync_claude(fs: Fs, repo: Path, claude_agents: Path, agents: list[Agent]) -> None:
-    """Link every agent. A link into repo/agents/ that matches no agent goes:
-    its agent was renamed or deleted. Links elsewhere aren't ours."""
-    linked = {f"{agent.name}.md" for agent in agents}
-    for agent in agents:
-        fs.link(agent.path, claude_agents / f"{agent.name}.md")
+def _drop_repo_links(fs: Fs, repo: Path, claude_agents: Path) -> None:
+    """Earlier versions linked each agent into Claude Code. Those links into
+    repo/agents/ make way for the renders. Links elsewhere aren't ours."""
     if not claude_agents.is_dir():
         return
     for entry in sorted(claude_agents.iterdir()):
-        if not entry.is_symlink() or entry.name in linked:
-            continue
-        if link_target(entry).is_relative_to(repo / "agents"):
+        if entry.is_symlink() and link_target(entry).is_relative_to(repo / "agents"):
             fs.unlink(entry)
 
 
-def _sync_renders(fs: Fs, agents_home: Path, renders: dict[str, str], header: str) -> None:
+def _sync_renders(fs: Fs, agents_home: Path, renders: dict[str, str]) -> None:
     """Write renders by file name. A file without the marked header isn't
     ours: under a render's name it moves to backups, under another name it
     stays. A render left from an agent that is gone goes."""
     for file_name, content in sorted(renders.items()):
         dst = agents_home / file_name
-        if os.path.lexists(dst) and not _is_render(dst, header):
+        if os.path.lexists(dst) and not _is_render(dst):
             fs.backup(dst)
         fs.write(dst, content)
     if not agents_home.is_dir():
         return
     for entry in sorted(agents_home.iterdir()):
-        if entry.name not in renders and _is_render(entry, header):
+        if entry.name not in renders and _is_render(entry):
             fs.remove_file(entry)
 
 
-def _is_render(path: Path, header: str) -> bool:
+def _is_render(path: Path) -> bool:
     if path.is_symlink() or not path.is_file():
         return False
-    return path.read_bytes().startswith(header.encode("utf-8"))
+    return path.read_bytes().startswith(_MARKDOWN_HEADER.encode("utf-8"))
 
 
 def _markdown_agent(frontmatter: list[str], agent: Agent) -> str:
@@ -133,72 +240,38 @@ def _markdown_agent(frontmatter: list[str], agent: Agent) -> str:
     return _MARKDOWN_HEADER + "\n".join([*frontmatter, "---", "", agent.body.strip(), ""])
 
 
-def _is_read_only(agent: Agent) -> bool:
-    return not _EDITING_TOOLS.intersection(agent.tools)
-
-
-def _render_opencode(agent: Agent) -> str:
-    """A markdown agent, its body is the prompt. No model: a subagent without
-    one runs on the model of the agent that called it."""
-    frontmatter = [
+def _render_claude(agent: Agent, model: str, level_comment: bool = False) -> str:
+    """A Claude Code agent. The model is passed in: a global agent inherits
+    the session's, a project agent gets the model its level is bound to and
+    records the level."""
+    frontmatter = [f"{_LEVEL_KEY} {agent.level}"] if level_comment else []
+    frontmatter += [
+        f"name: {agent.name}",
         f"description: {_yaml_string(agent.description)}",
-        "mode: subagent",
-        "permissions:",
+        f"model: {model}",
     ]
+    if agent.effort:
+        frontmatter.append(f"effort: {agent.effort}")
+    frontmatter.append(f"tools: {', '.join(agent.tools)}")
+    return _markdown_agent(frontmatter, agent)
+
+
+def _render_opencode(agent: Agent, model: str | None = None) -> str:
+    """A markdown agent, its body is the prompt. Without a model a subagent
+    runs on the model of the agent that called it; a project agent gets the
+    provider/model its level is bound to and records the level."""
+    frontmatter = [f"{_LEVEL_KEY} {agent.level}"] if model else []
+    frontmatter.append(f"description: {_yaml_string(agent.description)}")
+    frontmatter.append("mode: subagent")
+    if model:
+        frontmatter.append(f"model: {model}")
+    frontmatter.append("permissions:")
     for rule in _opencode_permissions(agent.tools):
         frontmatter.append(f"  - action: {rule.action}")
         # A bare * reads as a YAML alias, the resource is always quoted.
         frontmatter.append(f'    resource: "{rule.resource}"')
         frontmatter.append(f"    effect: {rule.effect}")
     return _markdown_agent(frontmatter, agent)
-
-
-def _render_gemini(agent: Agent) -> str:
-    """A markdown agent, its body is the prompt. No model: it inherits the
-    parent's. Tools are what the agent is allowed to call."""
-    tools = [gemini_tool for tool in agent.tools for gemini_tool in _TOOL_TO_GEMINI.get(tool, [])]
-    frontmatter = [
-        f"name: {_yaml_string(agent.name)}",
-        f"description: {_yaml_string(agent.description)}",
-        "tools:",
-        *(f"  - {tool}" for tool in tools),
-    ]
-    return _markdown_agent(frontmatter, agent)
-
-
-def _render_cursor(agent: Agent) -> str:
-    """A markdown agent, its body is the prompt. It runs on the parent's model;
-    without Edit/Write it is read-only."""
-    frontmatter = [
-        f"name: {_yaml_string(agent.name)}",
-        f"description: {_yaml_string(agent.description)}",
-        "model: inherit",
-    ]
-    if _is_read_only(agent):
-        frontmatter.append("readonly: true")
-    return _markdown_agent(frontmatter, agent)
-
-
-def _render_codex(agent: Agent) -> str:
-    """A TOML agent. The prompt is a literal string, so it can't hold the
-    literal quotes. Without Edit/Write the sandbox is read-only."""
-    prompt = agent.body.strip()
-    if _TOML_LITERAL_QUOTES in prompt:
-        raise SyncError(f"{agent.path}: body holds {_TOML_LITERAL_QUOTES}")
-    lines = [
-        f"name = {_toml_string(agent.name)}",
-        f"description = {_toml_string(agent.description)}",
-    ]
-    if _is_read_only(agent):
-        lines.append('sandbox_mode = "read-only"')
-    quotes = _TOML_LITERAL_QUOTES
-    lines.append(f"developer_instructions = {quotes}\n{prompt}\n{quotes}")
-    return _TOML_HEADER + "\n".join(lines) + "\n"
-
-
-def _toml_string(text: str) -> str:
-    """A JSON string is a valid TOML basic string: same escapes."""
-    return json.dumps(text, ensure_ascii=False)
 
 
 def _yaml_string(text: str) -> str:
@@ -225,7 +298,13 @@ def load(path: Path) -> Agent:
     description = fields.get("description", name)
     if not isinstance(description, str):
         raise SyncError(f"{path}: description must be a string")
-    return Agent(name, description.strip(), tools, match.group(2), path)
+    model = fields.get("model")
+    if model not in MODEL_LEVELS:
+        raise SyncError(f"{path}: model {model!r} must be one of {list(MODEL_LEVELS)}")
+    effort = fields.get("effort")
+    if effort is not None and effort not in EFFORTS:
+        raise SyncError(f"{path}: effort {effort!r} must be one of {list(EFFORTS)}")
+    return Agent(name, description.strip(), tools, match.group(2), path, model, effort)
 
 
 def _parse_fields(frontmatter: str) -> _Fields:

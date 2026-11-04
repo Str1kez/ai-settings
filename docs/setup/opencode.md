@@ -28,20 +28,20 @@ OpenCode читает скиллы и из `~/.agents/skills`, и из `~/.claud
 - `permissions` из `tools`: список правил `{action, resource, effect}` — перечисленные тулзы дают allow (`Read→read`, `Grep→grep`, `Glob→glob`, `Edit/Write→edit`, `Task→subagent`, `WebFetch/WebSearch→webfetch/websearch`), кроме `Bash→shell`: для shell allow-правила не рендерится никогда, глобальные ask/deny правила остаются последним словом; без Edit и Write — правило `edit: deny`, без Bash — `shell: deny`;
 - тело `AGENT.md` становится промптом.
 
-Модель установщик не задаёт: субагент работает на модели агента, который его вызвал.
+Модель глобальному агенту установщик не задаёт: субагент работает на модели агента, который его вызвал. Поле `effort` из шаблона в OpenCode не попадает, оно зависит от провайдера. Агента с конкретной моделью для проекта делает `init-project.sh`, см. [гайд нового проекта](new-project.md#проектные-агенты).
 
 Первая строка frontmatter — комментарий `# managed-by: ai-settings`. Такой файл принадлежит установщику: следующий прогон его перезапишет, а рендер агента, удалённого из репы, удалит. Правки в нём пропадут. Файл без метки установщик не трогает, а если его имя совпало с агентом репы, уносит в `backups/<ts>/`.
 
 ### Своя модель для агента
 
-Поверх markdown-агента модель задаётся в JSON-конфиге. Глобально — в `~/.config/opencode/opencode.jsonc`, для одного проекта — в `opencode.json` или `opencode.jsonc` в его корне:
+Проще всего положить проектного агента через `init-project.sh --opencode-models`. Руками поверх markdown-агента модель задаётся в JSON-конфиге. Глобально — в `~/.config/opencode/opencode.jsonc`, для одного проекта — в `opencode.json` или `opencode.jsonc` в его корне:
 
 ```jsonc
 {
   "$schema": "https://opencode.ai/config.json",
   "agent": {
     "code-reviewer": { "model": "opencode/claude-opus-5-5" },
-    "pr-writer": { "model": "opencode/claude-haiku-4-5" }
+    "coder": { "model": "opencode/claude-sonnet-5-5" }
   }
 }
 ```
@@ -58,7 +58,7 @@ opencode debug skill    # скиллы
 
 ## Проект
 
-Проектный `AGENTS.md` OpenCode читает сам, его создаёт [`init-project.sh`](new-project.md). Модель агента для одного проекта — в `opencode.json` в корне проекта, пример выше. Скрипт этот файл не создаёт: пустой конфиг ничего не настраивает.
+Проектный `AGENTS.md` OpenCode читает сам, его создаёт [`init-project.sh`](new-project.md). Он же кладёт проектных агентов с моделями в `.opencode/agents/`, см. [гайд нового проекта](new-project.md#проектные-агенты). Руками модель агента для одного проекта задаётся в `opencode.json` в корне проекта, пример выше. Этот файл скрипт не создаёт: пустой конфиг ничего не настраивает.
 
 ## Обновление
 

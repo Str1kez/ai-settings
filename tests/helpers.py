@@ -67,3 +67,24 @@ def tree(root: Path) -> dict[str, str]:
         else "file"
         for path in sorted(root.rglob("*"))
     }
+
+
+def isolated_git_env(home: Path) -> dict[str, str]:
+    """Keep the user's global gitignore from hiding a file by accident."""
+    return {
+        "XDG_CONFIG_HOME": str(home / ".config"),
+        "GIT_CONFIG_NOSYSTEM": "1",
+        "PYTHONDONTWRITEBYTECODE": "1",
+    }
+
+
+def git(project: Path, home: Path, *args: str) -> str:
+    """Run git in project under an isolated HOME; return stdout."""
+    result = subprocess.run(
+        ["git", "-C", str(project), *args],
+        env={**os.environ, "HOME": str(home), **isolated_git_env(home)},
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    return result.stdout

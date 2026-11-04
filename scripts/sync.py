@@ -13,6 +13,8 @@ from pathlib import Path
 from aisettings import agents, claude, log, rules, skills
 from aisettings.fs import Fs, SyncError
 
+# project-agents: a level has no model in the flags or the project files.
+EXIT_MISSING_MODEL = 3
 REPO = Path(__file__).resolve().parent.parent
 
 
@@ -34,6 +36,8 @@ def main() -> int:
             agents.sync(fs, REPO, home)
         elif args.artifact == "claude":
             claude.sync(fs, REPO, home)
+        elif args.artifact == "project-agents":
+            _sync_project_agents(fs, args)
         else:
             # Skills first: a skills dir linked into the repo stops the run
             # before anything is written.
@@ -41,10 +45,29 @@ def main() -> int:
             rules.sync(fs, REPO, home)
             agents.sync(fs, REPO, home)
             claude.sync(fs, REPO, home)
+    except agents.MissingModels as exc:
+        log.error(str(exc))
+        # One line per gap for a caller that asks the user for exactly these.
+        for harness, level in exc.missing:
+            print(f"missing-model: {harness} {level}", file=sys.stderr)
+        return EXIT_MISSING_MODEL
     except SyncError as exc:
         log.error(str(exc))
         return 1
     return 0
+
+
+def _sync_project_agents(fs: Fs, args: argparse.Namespace) -> None:
+    """stdout carries the project agents, one path relative to the project
+    per line: init-project.sh keeps them out of git. Logs go to stderr."""
+    claude_models = agents.parse_models(args.claude_models, "claude") if args.claude_models is not None else None
+    opencode_models = (
+        agents.parse_models(args.opencode_models, "opencode") if args.opencode_models is not None else None
+    )
+    ours = agents.sync_project(fs, REPO, args.project, claude_models, opencode_models)
+    if not args.dry_run:
+        for path in ours:
+            print(path)
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -86,6 +109,23 @@ def _parser() -> argparse.ArgumentParser:
         parents=[common],
         help="settings/claude-settings.json merged into ~/.claude/settings.json, "
         "the hook scripts it runs linked into ~/.claude/hooks",
+    )
+    project_agents = artifacts.add_parser(
+        "project-agents",
+        parents=[common],
+        help="agents/<name>/AGENT.md rendered with concrete models into PROJECT/.claude/agents "
+        "and PROJECT/.opencode/agents; prints the written files, relative to PROJECT",
+    )
+    project_agents.add_argument("project", type=_existing_dir, metavar="PROJECT")
+    project_agents.add_argument(
+        "--claude-models",
+        metavar="LEVEL=MODEL,...",
+        help="e.g. frontier=opus,standard=sonnet; writes the Claude Code agents",
+    )
+    project_agents.add_argument(
+        "--opencode-models",
+        metavar="LEVEL=PROVIDER/MODEL,...",
+        help="e.g. frontier=anthropic/opus,standard=openai/gpt; writes the OpenCode agents",
     )
     return parser
 

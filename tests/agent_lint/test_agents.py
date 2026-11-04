@@ -16,7 +16,7 @@ name: sample
 description: |
   Use when the user asks for a sample, or when a sample is missing in the repo.
   SKIP: when the sample already exists and nobody asked to change it.
-model: sonnet
+model: standard
 tools: [Read, Grep]
 ---
 
@@ -64,13 +64,25 @@ def test_a_well_formed_agent_passes(tmp_path: Path) -> None:
             id="yaml-subset",
         ),
         pytest.param(GOOD.split("---\n")[0] + "no frontmatter", "frontmatter", id="fm"),
-        pytest.param(GOOD.replace("Sample agent.", "Use ''' here."), "'''", id="toml"),
+        pytest.param(GOOD.replace("model: standard", "model: sonnet"), "model", id="concrete-model"),
+        pytest.param(GOOD.replace("model: standard\n", ""), "model", id="no-model"),
+        pytest.param(GOOD.replace("model: standard", "model: standard\neffort: huge"), "effort", id="bad-effort"),
     ],
 )
 def test_lint_catches_a_broken_agent(tmp_path: Path, broken: str, expected: str) -> None:
     found = problems(_sample(tmp_path, broken))
 
     assert any(expected in problem for problem in found), found
+
+
+@pytest.mark.parametrize("model", ["frontier", "standard"])
+@pytest.mark.parametrize("effort", [None, "low", "medium", "high", "xhigh", "max"])
+def test_every_model_level_and_effort_is_accepted(tmp_path: Path, model: str, effort: str | None) -> None:
+    text = GOOD.replace("model: standard", f"model: {model}")
+    if effort:
+        text = text.replace(f"model: {model}", f"model: {model}\neffort: {effort}")
+
+    assert problems(_sample(tmp_path, text)) == []
 
 
 def test_agent_dir_without_agent_md_is_reported(tmp_path: Path) -> None:

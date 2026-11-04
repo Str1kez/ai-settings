@@ -18,8 +18,8 @@ flowchart LR
     rules -->|ссылка| rulesLink["Claude Code<br/>Gemini CLI"]
     rules -->|плоская копия| rulesFlat["Codex CLI<br/>OpenCode"]
     skills -->|ссылка на скилл| skillDirs["~/.claude/skills<br/>~/.agents/skills"]
-    agents -->|ссылка| agentLink["~/.claude/agents"]
-    agents -->|рендер| agentRender["Codex CLI, OpenCode<br/>Gemini CLI, Cursor"]
+    agents -->|рендер, модель сессии| agentRender["~/.claude/agents<br/>~/.config/opencode/agents"]
+    agents -->|рендер с моделями, init-project.sh| agentProject["проект: .claude/agents<br/>.opencode/agents"]
     settings -->|мёрдж и ссылки| claudeSettings["~/.claude/settings.json<br/>~/.claude/hooks"]
 ```
 
@@ -52,12 +52,12 @@ ai-settings/
 │   ├── agents/                # настройка matt-скиллов для этой репы
 │   └── links.md               # ссылки по AI-кодингу
 ├── skills/<name>/             # свои скиллы: SKILL.md, README.md, CHANGELOG.md
-├── agents/<name>/AGENT.md     # субагенты в формате Claude Code
+├── agents/<name>/AGENT.md     # шаблоны агентов: уровень модели, формат Claude Code
 ├── settings/                  # шаблон ~/.claude/settings.json и скрипты хуков
 ├── scripts/
 │   ├── install.sh             # точка входа: sync.py all
 │   ├── sync.py                # раскладка по харнессам, за ним пакет aisettings/
-│   ├── init-project.sh        # проектный слой: AGENTS.md, CHANGELOG.md, TODO.md
+│   ├── init-project.sh        # проектный слой: AGENTS.md, CHANGELOG.md, TODO.md, агенты
 │   ├── deploy-skills.sh       # скиллы в Claude Desktop
 │   ├── new.py                 # заготовка нового скилла или агента
 │   └── bump-skill-version.sh  # версия скилла и заготовка записи в его CHANGELOG
@@ -86,20 +86,20 @@ Claude Desktop — отдельный канал, эти каталоги он �
 
 ### Агенты
 
-Источник — `agents/<name>/AGENT.md` в формате Claude Code: frontmatter с `name`, `description`, `tools` и `model`, тело — промпт. Claude Code получает ссылку `~/.claude/agents/<name>.md`, остальные харнессы — рендер в свой формат:
+Источник — шаблон `agents/<name>/AGENT.md` в формате Claude Code: frontmatter с `name`, `description`, `tools`, `model` (уровень модели `frontier` или `standard`, не конкретная модель) и необязательным `effort`, тело — промпт. Агенты ставятся только в Claude Code и OpenCode; рендеры для Codex, Gemini и Cursor удалены, причины — в [ADR 0002](docs/adr/0002-project-agents.md). Из шаблона получаются агенты двух видов.
+
+Глобальный агент работает на модели сессии. Его ставит `install.sh`:
 
 | Харнесс | Файл | Что делает рендер |
 |---|---|---|
-| OpenCode | `~/.config/opencode/agents/<name>.md` | `mode: subagent`; `permission` из `tools`: без Edit и Write — `edit: deny`, без Bash — `bash: deny` |
-| Codex CLI | `~/.codex/agents/<name>.toml` | промпт в `developer_instructions`; без Edit и Write — `sandbox_mode = "read-only"` |
-| Gemini CLI | `~/.gemini/agents/<name>.md` | `tools` в именах Gemini: Read → `read_file` и `read_many_files`, Edit → `replace` и так далее |
-| Cursor | `~/.cursor/agents/<name>.md` | `model: inherit`; без Edit и Write — `readonly: true` |
+| Claude Code | `~/.claude/agents/<name>.md` | `model: inherit` и `effort` из шаблона. Рендер, а не ссылка: по ссылке Claude Code прочитал бы уровень как модель |
+| OpenCode | `~/.config/opencode/agents/<name>.md` | `mode: subagent`, без `model`; правила `permissions` из `tools`: без Edit и Write — `edit: deny`, без Bash — `shell: deny`. Effort не переносится: он зависит от провайдера |
 
-Модель я задаю только в Claude Code. В остальных харнессах субагент работает на модели агента, который его вызвал.
+Проектный агент получает конкретную модель под уровень. Его кладёт `init-project.sh` в `.claude/agents/` и `.opencode/agents/` проекта: тот же рендер, но с моделью из флагов или ответов в терминале и строкой `# model-level: <уровень>` под маркером. Проектный агент перекрывает одноимённого глобального: в Claude Code `.claude/agents/` важнее `~/.claude/agents/`, в OpenCode каталог `.opencode` грузится после глобального конфига. Файлы личные, они уходят в `.git/info/exclude` проекта. Шаблон, изменённый в репе, доходит до проекта только повторным `init-project.sh`. Порядок работы — в [гайде по новому проекту](docs/setup/new-project.md#проектные-агенты).
 
 Агенты деплоятся по тому же правилу, что и скиллы: только отслеживаемые git, про неотслеживаемый каталог с `AGENT.md` `sync.py` предупреждает. Имя берётся из каталога, а Claude Code показывает `name` из frontmatter, поэтому при расхождении `sync.py` падает и называет файл. Заготовку делает `scripts/new.py agent <name>`, проверяет агентов agent-lint в `tests/agent_lint/`.
 
-Рендер помечен `# managed-by: ai-settings`. Помеченный файл установщик перезаписывает, а рендер агента, которого в репе больше нет, удаляет. Файл без метки под именем агента репы уезжает в `backups/<ts>/`, под другим именем остаётся на месте.
+Рендер помечен `# managed-by: ai-settings`. Помеченный файл установщик перезаписывает, а рендер агента, которого в репе больше нет, удаляет. В домашнем каталоге файл без метки под именем агента репы уезжает в `backups/<ts>/`, под другим именем остаётся на месте. В проекте каталог принадлежит проекту: чужой файл с таким именем остаётся нетронутым, `sync.py` только предупреждает. Забрать проектного агента себе можно, удалив из файла строку с маркером.
 
 ### Настройки Claude Code
 
@@ -111,18 +111,18 @@ Claude Desktop — отдельный канал, эти каталоги он �
 
 | Харнесс | Поддержка | Правила | Скиллы | Агенты | Читает в проекте |
 |---|---|---|---|---|---|
-| Claude Code | да, 2.1.289 | ссылка `~/.claude/CLAUDE.md` | `~/.claude/skills` | ссылка `~/.claude/agents/<name>.md` | `AGENTS.md`, `CLAUDE.md` |
+| Claude Code | да, 2.1.289 | ссылка `~/.claude/CLAUDE.md` | `~/.claude/skills` | рендер `~/.claude/agents/<name>.md` | `AGENTS.md`, `CLAUDE.md` |
 | OpenCode | да, 1.18.34 | плоский `~/.config/opencode/AGENTS.md` | `~/.agents/skills`, `~/.claude/skills` | `~/.config/opencode/agents/<name>.md` | `AGENTS.md` |
-| Codex CLI | нет | плоский `~/.codex/AGENTS.md` | `~/.agents/skills` | `~/.codex/agents/<name>.toml` | `AGENTS.md` |
-| Gemini CLI | нет | ссылки `~/.gemini/{GEMINI,AGENTS}.md` | `~/.agents/skills` | `~/.gemini/agents/<name>.md` | `GEMINI.md` |
-| Cursor | нет | только UI, см. ограничения | `~/.agents/skills`, `~/.claude/skills` | `~/.cursor/agents/<name>.md` | `AGENTS.md`, `.cursor/rules/` |
+| Codex CLI | нет | плоский `~/.codex/AGENTS.md` | `~/.agents/skills` | — | `AGENTS.md` |
+| Gemini CLI | нет | ссылки `~/.gemini/{GEMINI,AGENTS}.md` | `~/.agents/skills` | — | `GEMINI.md` |
+| Cursor | нет | только UI, см. ограничения | `~/.agents/skills`, `~/.claude/skills` | — | `AGENTS.md`, `.cursor/rules/` |
 | Claude Desktop | нет | — | `deploy-skills.sh` | — | — |
 
 В колонке поддержки — версия, на которой я проверял раскладку вживую. Остальные строки собраны по документации харнессов.
 
 ## Проектный слой
 
-Глобальные правила уже работают в любом проекте. `scripts/init-project.sh` добавляет только то, что принадлежит самому проекту: `AGENTS.md` под факты проекта, `CHANGELOG.md` и `TODO.md`, которых требуют мои правила. С `--cursor` он кладёт копию глобальных правил в `.cursor/rules/ai-settings.mdc` и прячет её от git через `.git/info/exclude`. Подробно — в [гайде по новому проекту](docs/setup/new-project.md).
+Глобальные правила уже работают в любом проекте. `scripts/init-project.sh` добавляет только то, что принадлежит самому проекту: `AGENTS.md` под факты проекта, `CHANGELOG.md` и `TODO.md`, которых требуют мои правила, и проектных агентов с моими моделями (в Claude Code и OpenCode). С `--cursor` он кладёт копию глобальных правил в `.cursor/rules/ai-settings.mdc` и прячет её от git через `.git/info/exclude`. Подробно — в [гайде по новому проекту](docs/setup/new-project.md).
 
 ## Код установщика
 

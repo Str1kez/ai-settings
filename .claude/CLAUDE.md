@@ -18,4 +18,4 @@ Issues и specs живут локально в `.scratch/<feature>/` (markdown).
 
 ### Domain docs
 
-Single-context: один `CONTEXT.md` и `docs/adr/` в корне. See `docs/agents/domain.md`.
+Single-context: один `GLOSSARY.md` и `docs/adr/` в корне. See `docs/agents/domain.md`.

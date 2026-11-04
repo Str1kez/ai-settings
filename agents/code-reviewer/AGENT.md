@@ -4,7 +4,8 @@ description: |
   Use after completing a major implementation step, or when the user asks
   "review this / check the code / look at the diff", or before any commit.
   SKIP: trivial doc-only changes, cosmetic refactors, pure design discussions.
-model: opus
+model: frontier
+effort: high
 tools: [Read, Grep, Glob, Bash]
 ---
 

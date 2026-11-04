@@ -10,7 +10,10 @@ scripts/sync.py rules [--dry-run] [--check | --cursor-project PATH]
 scripts/sync.py skills [--dry-run]
 scripts/sync.py agents [--dry-run]
 scripts/sync.py claude [--dry-run]
+scripts/sync.py project-agents PROJECT [--dry-run] [--claude-models SPEC] [--opencode-models SPEC]
 ```
+
+`project-agents` зовёт `init-project.sh`. SPEC — `frontier=opus,standard=sonnet`, для OpenCode модели вида `provider/model`. Подкоманда пишет агентов в `PROJECT/.claude/agents` и `PROJECT/.opencode/agents` (в файле строка `# model-level:` с уровнем), чужие одноимённые файлы пропускает, наших агентов без шаблона удаляет. Без флагов обновляет харнессы, где наши агенты уже лежат: модель уровня берёт из их строк `# model-level:`, флаги её перекрывают. Уровень без модели — выход 3 и строки `missing-model: HARNESS LEVEL` в stderr; две разные модели на уровень в файлах — выход 1 с именами файлов. В stdout печатает записанные файлы относительно `PROJECT`: по ним `init-project.sh` прячет их в `.git/info/exclude`. В терминале `init-project.sh` сам спрашивает модели: зовёт подкоманду с `--dry-run` и пустой привязкой харнесса (`--claude-models ""`), читает из stderr `missing-model` и передаёт ответы теми же флагами.
 
 `--dry-run` печатает план и ничего не меняет. `rules --check` разворачивает `@imports` и падает на битом.
 
@@ -25,7 +28,7 @@ scripts/sync.py claude [--dry-run]
 - `rules.py` — ссылки на `CLAUDE.md` и `GEMINI.md`, плоский `AGENTS.md` для Codex, OpenCode и Cursor.
 - `skills.py` — каждый отслеживаемый скилл `skills/<skill>/` в `~/.claude/skills` и `~/.agents/skills`.
 - `tracked.py` — какие каталоги `skills/<name>/` и `agents/<name>/` отслеживает git. Деплоятся только они. Каталог, удалённый без `git rm`, считается отсутствующим. Настоящий каталог с маркером (`SKILL.md`, `AGENT.md`), которого git не отслеживает и не игнорирует, — предупреждение о забытом `git add`.
-- `agents.py` — парсер `agents/<name>/AGENT.md` (падает, если `name` во frontmatter не равен имени каталога): ссылки для Claude Code и рендер для OpenCode, Codex, Gemini CLI и Cursor.
+- `agents.py` — парсер `agents/<name>/AGENT.md` (падает, если `name` во frontmatter не равен имени каталога): шаблон с уровнем модели становится глобальным агентом, помеченным рендером для Claude Code (`model: inherit`) и субагентом без `model` для OpenCode. Ссылки на репу, оставшиеся от прошлых версий, удаляются.
 - `claude.py` — мёрдж шаблона `settings/claude-settings.json` в `~/.claude/settings.json` и ссылки на скрипты хуков в `~/.claude/hooks`. Шаблон владеет `$schema`, `permissions.{allow,ask,deny}` и своими хуками, остальное в файле пользовательское и не трогается. Шаблон же задаёт список скриптов: линкуется каждый `~/.claude/hooks/<script>`, который он запускает, и только в такой форме в начале команды. Оба файла читаются и проверяются до первого изменения в хоуме. Изменённые строки `settings.json` уходят в лог без контекста, чтобы не показать значения пользователя.
 - `log.py` — строки логов в stderr.
 
