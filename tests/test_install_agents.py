@@ -59,13 +59,16 @@ def test_every_repo_agent_is_a_marked_claude_render_on_the_session_model(
         assert prompt.strip() == body.strip()
 
 
-def test_code_reviewer_is_the_only_template_and_reads_at_high_effort(installed_home: Path) -> None:
-    assert sorted(_repo_agents()) == ["code-reviewer"]
+def test_repo_templates_are_code_reviewer_and_coder_with_their_effort_and_tools(installed_home: Path) -> None:
+    assert sorted(_repo_agents()) == ["code-reviewer", "coder"]
 
-    rendered, _ = _split(installed_home / ".claude/agents/code-reviewer.md")
+    reviewer, _ = _split(installed_home / ".claude/agents/code-reviewer.md")
+    coder, _ = _split(installed_home / ".claude/agents/coder.md")
 
-    assert rendered["effort"] == "high"
-    assert rendered["tools"] == "Read, Grep, Glob, Bash"
+    assert reviewer["effort"] == "high"
+    assert reviewer["tools"] == "Read, Grep, Glob, Bash"
+    assert coder["effort"] == "medium"
+    assert coder["tools"] == "Read, Grep, Glob, Bash, Edit, Write"
 
 
 def test_every_repo_agent_is_an_opencode_subagent_with_its_prompt(
