@@ -10,7 +10,10 @@ scripts/sync.py rules [--dry-run] [--check | --cursor-project PATH]
 scripts/sync.py skills [--dry-run]
 scripts/sync.py agents [--dry-run]
 scripts/sync.py claude [--dry-run]
+scripts/sync.py project-agents PROJECT [--dry-run] [--claude-models SPEC] [--opencode-models SPEC]
 ```
+
+`project-agents` зовёт `init-project.sh`. SPEC — `frontier=opus,standard=sonnet`, для OpenCode модели вида `provider/model`. Подкоманда пишет агентов в `PROJECT/.claude/agents` и `PROJECT/.opencode/agents` (в файле строка `# model-level:` с уровнем), чужие одноимённые файлы пропускает, наших агентов без шаблона удаляет. В stdout печатает записанные файлы относительно `PROJECT`: по ним `init-project.sh` прячет их в `.git/info/exclude`.
 
 `--dry-run` печатает план и ничего не меняет. `rules --check` разворачивает `@imports` и падает на битом.
 

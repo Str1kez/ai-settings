@@ -14,21 +14,42 @@ source "$SCRIPT_DIR/lib/common.sh"
 
 usage() {
   cat <<EOF
-Usage: $0 [--cursor] [PATH]
-  PATH       project root, the current directory by default
-  --cursor   also write .cursor/rules/ai-settings.mdc and keep it out of git
+Usage: $0 [--cursor] [--claude-models SPEC] [--opencode-models SPEC] [PATH]
+  PATH                  project root, the current directory by default
+  --cursor              also write .cursor/rules/ai-settings.mdc and keep it out of git
+  --claude-models SPEC  write the agent templates into .claude/agents, SPEC like
+                        frontier=opus,standard=sonnet
+  --opencode-models SPEC
+                        the same into .opencode/agents, models as provider/model:
+                        frontier=anthropic/opus,standard=openai/gpt
+Project agents are personal: they are kept out of git through .git/info/exclude.
 EOF
 }
 
 CURSOR=0
+CLAUDE_MODELS=""
+OPENCODE_MODELS=""
+HAVE_CLAUDE_MODELS=0
+HAVE_OPENCODE_MODELS=0
 PROJECT_ROOT="$PWD"
-for arg in "$@"; do
-  case "$arg" in
+while [[ $# -gt 0 ]]; do
+  case "$1" in
     --cursor) CURSOR=1 ;;
+    --claude-models=*) CLAUDE_MODELS="${1#*=}"; HAVE_CLAUDE_MODELS=1 ;;
+    --opencode-models=*) OPENCODE_MODELS="${1#*=}"; HAVE_OPENCODE_MODELS=1 ;;
+    --claude-models|--opencode-models)
+      if [[ $# -lt 2 ]]; then log_error "$1 needs a value"; usage >&2; exit 2; fi
+      if [[ "$1" == --claude-models ]]; then
+        CLAUDE_MODELS="$2"; HAVE_CLAUDE_MODELS=1
+      else
+        OPENCODE_MODELS="$2"; HAVE_OPENCODE_MODELS=1
+      fi
+      shift ;;
     -h|--help) usage; exit 0 ;;
     -*) usage >&2; exit 2 ;;
-    *) PROJECT_ROOT="$arg" ;;
+    *) PROJECT_ROOT="$1" ;;
   esac
+  shift
 done
 PROJECT_ROOT="$(cd "$PROJECT_ROOT" && pwd)"
 
@@ -101,23 +122,29 @@ fi
 if [[ $CURSOR -eq 1 ]]; then
   cursor_rule=".cursor/rules/ai-settings.mdc"
   python3 "$SCRIPT_DIR/sync.py" rules --cursor-project "$PROJECT_ROOT"
-  if ! git -C "$PROJECT_ROOT" rev-parse --git-dir >/dev/null 2>&1; then
+  git_exclude "$PROJECT_ROOT" "$cursor_rule" || {
     log_warn "Not a git repo: after git init, rerun with --cursor to keep $cursor_rule out of git"
-  else
-    # --no-index: a pattern counts even if the file is already tracked.
-    if ! git -C "$PROJECT_ROOT" check-ignore -q --no-index "$cursor_rule"; then
-      exclude="$(cd "$PROJECT_ROOT" && git rev-parse --git-path info/exclude)"
-      [[ "$exclude" == /* ]] || exclude="$PROJECT_ROOT/$exclude"
-      # Exclude patterns are relative to the top of the repo, the project may
-      # be a subdirectory of it.
-      prefix="$(git -C "$PROJECT_ROOT" rev-parse --show-prefix)"
-      mkdir -p "$(dirname "$exclude")"
-      echo "/$prefix$cursor_rule" >> "$exclude"
-      log_ok "Excluded $cursor_rule from git"
-    fi
-    if git -C "$PROJECT_ROOT" ls-files --error-unmatch "$cursor_rule" >/dev/null 2>&1; then
-      log_warn "$cursor_rule is already in git; untrack it: git rm --cached $cursor_rule"
-    fi
+  }
+fi
+
+# Project agents: the agent templates with concrete models for each level.
+# They are personal (the models follow my subscription), so they are kept out
+# of git the same way. sync.py prints the files it wrote, one per line.
+if [[ $HAVE_CLAUDE_MODELS -eq 0 && $HAVE_OPENCODE_MODELS -eq 0 ]]; then
+  log_info "No project agents: pass --claude-models and/or --opencode-models to create them"
+else
+  agent_args=()
+  [[ $HAVE_CLAUDE_MODELS -eq 1 ]] && agent_args+=(--claude-models "$CLAUDE_MODELS")
+  [[ $HAVE_OPENCODE_MODELS -eq 1 ]] && agent_args+=(--opencode-models "$OPENCODE_MODELS")
+  # A failure aborts here (set -e): sync.py has already said why.
+  written="$(python3 "$SCRIPT_DIR/sync.py" project-agents "$PROJECT_ROOT" "${agent_args[@]}")"
+  not_git=0
+  while IFS= read -r agent_file; do
+    [[ -n "$agent_file" ]] || continue
+    git_exclude "$PROJECT_ROOT" "$agent_file" || not_git=1
+  done <<< "$written"
+  if [[ $not_git -eq 1 ]]; then
+    log_warn "Not a git repo: after git init, rerun to keep the project agents out of git"
   fi
 fi
 
