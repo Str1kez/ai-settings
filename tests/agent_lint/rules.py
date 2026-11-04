@@ -55,6 +55,7 @@ def problems(agent_dir: Path) -> list[str]:
 
     found = _name_problems(frontmatter, agent_dir.name)
     found += _description_problems(frontmatter.get("description"))
+    found += _model_problems(frontmatter)
     tools = _tools(frontmatter.get("tools"))
     found += _tools_problems(tools)
     if not match.group(2).strip():
@@ -72,6 +73,18 @@ def _name_problems(frontmatter: dict[str, Any], dir_name: str) -> list[str]:
         )
     if not NAME_RE.match(dir_name):
         found.append(f"directory name {dir_name!r} doesn't match {NAME_RE.pattern}")
+    return found
+
+
+def _model_problems(frontmatter: dict[str, Any]) -> list[str]:
+    found = []
+    if frontmatter.get("model") not in agents.MODEL_LEVELS:
+        found.append(
+            f"model {frontmatter.get('model')!r} must be a level, one of {list(agents.MODEL_LEVELS)}: "
+            "a template never names a concrete model"
+        )
+    if "effort" in frontmatter and frontmatter["effort"] not in agents.EFFORTS:
+        found.append(f"effort {frontmatter['effort']!r} must be one of {list(agents.EFFORTS)}, or omitted")
     return found
 
 

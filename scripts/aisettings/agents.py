@@ -1,7 +1,8 @@
-"""Agents: agents/<name>/AGENT.md in Claude Code format is the only source.
+"""Agents: agents/<name>/AGENT.md is the only source, a template that names a
+model level (and an optional effort) instead of a model.
 
-Claude Code reads it as is, through a link per agent. OpenCode gets a
-markdown agent rendered from it.
+Each template becomes a global agent on the session's model: a marked render
+for Claude Code and a subagent without a model for OpenCode.
 """
 
 from __future__ import annotations
@@ -39,6 +40,13 @@ _MARKDOWN_HEADER = f"---\n{_MARKER}\n"
 # quietly cost an agent its permission. The agent lint holds tools to it.
 KNOWN_TOOLS = frozenset(_TOOL_TO_PERMISSION)
 
+# A template names a model level, never a model. One list: the render and the
+# agent lint both read it.
+MODEL_LEVELS = ("frontier", "standard")
+EFFORTS = ("low", "medium", "high", "xhigh", "max")
+# What a global agent runs on in Claude Code: the model of the session.
+_INHERIT = "inherit"
+
 # Runtime alias: no `X | Y` here, it must evaluate on Python 3.9.
 _Fields = dict[str, Union[str, list[str]]]
 
@@ -49,14 +57,18 @@ class Agent(NamedTuple):
     tools: list[str]
     body: str
     path: Path
+    model: str
+    effort: str | None
 
 
 def sync(fs: Fs, repo: Path, home: Path) -> None:
     agents = _collect(repo)
     tracked.warn_untracked(repo, "agents", "AGENT.md")
-    _sync_claude(fs, repo, home / _CLAUDE_AGENTS, agents)
-    renders = {f"{agent.name}.md": _render_opencode(agent) for agent in agents}
-    _sync_renders(fs, home / _OPENCODE_AGENTS, renders, _MARKDOWN_HEADER)
+    _drop_repo_links(fs, repo, home / _CLAUDE_AGENTS)
+    claude = {f"{agent.name}.md": _render_claude(agent, _INHERIT) for agent in agents}
+    _sync_renders(fs, home / _CLAUDE_AGENTS, claude, _MARKDOWN_HEADER)
+    opencode = {f"{agent.name}.md": _render_opencode(agent) for agent in agents}
+    _sync_renders(fs, home / _OPENCODE_AGENTS, opencode, _MARKDOWN_HEADER)
 
 
 def _collect(repo: Path) -> list[Agent]:
@@ -66,18 +78,13 @@ def _collect(repo: Path) -> list[Agent]:
     return [load(agent_dir / "AGENT.md") for agent_dir in tracked.tracked_dirs(repo, "agents", "AGENT.md")]
 
 
-def _sync_claude(fs: Fs, repo: Path, claude_agents: Path, agents: list[Agent]) -> None:
-    """Link every agent. A link into repo/agents/ that matches no agent goes:
-    its agent was renamed or deleted. Links elsewhere aren't ours."""
-    linked = {f"{agent.name}.md" for agent in agents}
-    for agent in agents:
-        fs.link(agent.path, claude_agents / f"{agent.name}.md")
+def _drop_repo_links(fs: Fs, repo: Path, claude_agents: Path) -> None:
+    """Earlier versions linked each agent into Claude Code. Those links into
+    repo/agents/ make way for the renders. Links elsewhere aren't ours."""
     if not claude_agents.is_dir():
         return
     for entry in sorted(claude_agents.iterdir()):
-        if not entry.is_symlink() or entry.name in linked:
-            continue
-        if link_target(entry).is_relative_to(repo / "agents"):
+        if entry.is_symlink() and link_target(entry).is_relative_to(repo / "agents"):
             fs.unlink(entry)
 
 
@@ -106,6 +113,20 @@ def _is_render(path: Path, header: str) -> bool:
 def _markdown_agent(frontmatter: list[str], agent: Agent) -> str:
     """The marked header, frontmatter lines and the agent's body as prompt."""
     return _MARKDOWN_HEADER + "\n".join([*frontmatter, "---", "", agent.body.strip(), ""])
+
+
+def _render_claude(agent: Agent, model: str) -> str:
+    """A Claude Code agent. The model is passed in: a global agent inherits
+    the session's, a project agent will get the model its level is bound to."""
+    frontmatter = [
+        f"name: {agent.name}",
+        f"description: {_yaml_string(agent.description)}",
+        f"model: {model}",
+    ]
+    if agent.effort:
+        frontmatter.append(f"effort: {agent.effort}")
+    frontmatter.append(f"tools: {', '.join(agent.tools)}")
+    return _markdown_agent(frontmatter, agent)
 
 
 def _render_opencode(agent: Agent) -> str:
@@ -148,7 +169,13 @@ def load(path: Path) -> Agent:
     description = fields.get("description", name)
     if not isinstance(description, str):
         raise SyncError(f"{path}: description must be a string")
-    return Agent(name, description.strip(), tools, match.group(2), path)
+    model = fields.get("model")
+    if model not in MODEL_LEVELS:
+        raise SyncError(f"{path}: model {model!r} must be one of {list(MODEL_LEVELS)}")
+    effort = fields.get("effort")
+    if effort is not None and effort not in EFFORTS:
+        raise SyncError(f"{path}: effort {effort!r} must be one of {list(EFFORTS)}")
+    return Agent(name, description.strip(), tools, match.group(2), path, model, effort)
 
 
 def _parse_fields(frontmatter: str) -> _Fields:

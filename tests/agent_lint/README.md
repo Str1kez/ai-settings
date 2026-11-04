@@ -13,6 +13,7 @@
 - есть `AGENT.md` с frontmatter, который читается как YAML-словарь;
 - `name` равен имени каталога. Claude Code показывает `name`, а ссылки и рендеры называются по каталогу;
 - `description` от 100 символов, с `Use ...` (или `TRIGGER`) и `SKIP` (или `Do NOT use`), без незаполненных `<заготовок>` от `scripts/new.py`;
+- `model` — уровень `frontier` или `standard`, конкретная модель вроде `opus` отклоняется. `effort` — `low`, `medium`, `high`, `xhigh` или `max`, можно не указывать. Списки читаются из `scripts/aisettings/agents.py`;
 - `tools` — непустой список известных инструментов из `scripts/aisettings/agents.py`. Неизвестный рендер молча выбрасывает, и агент теряет права;
 - тело не пустое: оно становится промптом;
 - `sync.py` читает `description` и `tools` так же, как YAML. У него свой урезанный парсер, поэтому `description: >-` он прочтёт неверно.

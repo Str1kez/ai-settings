@@ -25,7 +25,7 @@ scripts/sync.py claude [--dry-run]
 - `rules.py` — ссылки на `CLAUDE.md` и `GEMINI.md`, плоский `AGENTS.md` для Codex, OpenCode и Cursor.
 - `skills.py` — каждый отслеживаемый скилл `skills/<skill>/` в `~/.claude/skills` и `~/.agents/skills`.
 - `tracked.py` — какие каталоги `skills/<name>/` и `agents/<name>/` отслеживает git. Деплоятся только они. Каталог, удалённый без `git rm`, считается отсутствующим. Настоящий каталог с маркером (`SKILL.md`, `AGENT.md`), которого git не отслеживает и не игнорирует, — предупреждение о забытом `git add`.
-- `agents.py` — парсер `agents/<name>/AGENT.md` (падает, если `name` во frontmatter не равен имени каталога): ссылки для Claude Code и рендер для OpenCode.
+- `agents.py` — парсер `agents/<name>/AGENT.md` (падает, если `name` во frontmatter не равен имени каталога): шаблон с уровнем модели становится глобальным агентом, помеченным рендером для Claude Code (`model: inherit`) и субагентом без `model` для OpenCode. Ссылки на репу, оставшиеся от прошлых версий, удаляются.
 - `claude.py` — мёрдж шаблона `settings/claude-settings.json` в `~/.claude/settings.json` и ссылки на скрипты хуков в `~/.claude/hooks`. Шаблон владеет `$schema`, `permissions.{allow,ask,deny}` и своими хуками, остальное в файле пользовательское и не трогается. Шаблон же задаёт список скриптов: линкуется каждый `~/.claude/hooks/<script>`, который он запускает, и только в такой форме в начале команды. Оба файла читаются и проверяются до первого изменения в хоуме. Изменённые строки `settings.json` уходят в лог без контекста, чтобы не показать значения пользователя.
 - `log.py` — строки логов в stderr.
 

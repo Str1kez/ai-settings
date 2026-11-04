@@ -39,14 +39,33 @@ def _opencode_agent(home: Path, name: str) -> Path:
     return home / ".config/opencode/agents" / f"{name}.md"
 
 
-def test_every_repo_agent_is_linked_into_a_real_claude_agents_dir(
+def test_every_repo_agent_is_a_marked_claude_render_on_the_session_model(
     installed_home: Path,
 ) -> None:
     claude_agents = installed_home / ".claude/agents"
 
     assert claude_agents.is_dir() and not claude_agents.is_symlink()
     for name, source in _repo_agents().items():
-        assert (claude_agents / f"{name}.md").resolve() == source
+        path = claude_agents / f"{name}.md"
+        rendered, prompt = _split(path)
+        original, body = _split(source)
+
+        assert not path.is_symlink()
+        assert path.read_text(encoding="utf-8").startswith("---\n# managed-by: ai-settings\n")
+        assert rendered["name"] == name
+        assert rendered["description"] == original["description"].strip()
+        assert rendered["model"] == "inherit"
+        assert rendered.get("effort") == original.get("effort")
+        assert prompt.strip() == body.strip()
+
+
+def test_code_reviewer_is_the_only_template_and_reads_at_high_effort(installed_home: Path) -> None:
+    assert sorted(_repo_agents()) == ["code-reviewer"]
+
+    rendered, _ = _split(installed_home / ".claude/agents/code-reviewer.md")
+
+    assert rendered["effort"] == "high"
+    assert rendered["tools"] == "Read, Grep, Glob, Bash"
 
 
 def test_every_repo_agent_is_an_opencode_subagent_with_its_prompt(
@@ -74,22 +93,6 @@ OPENCODE_PERMISSIONS = {
         Permission("grep", "*", "allow"),
         Permission("glob", "*", "allow"),
         Permission("edit", "*", "deny"),
-    ],
-    "pr-writer": [
-        Permission("read", "*", "allow"),
-        Permission("edit", "*", "deny"),
-    ],
-    "debugger": [
-        Permission("read", "*", "allow"),
-        Permission("grep", "*", "allow"),
-        Permission("glob", "*", "allow"),
-        Permission("edit", "*", "allow"),
-    ],
-    "fastapi-backend": [
-        Permission("read", "*", "allow"),
-        Permission("grep", "*", "allow"),
-        Permission("glob", "*", "allow"),
-        Permission("edit", "*", "allow"),
     ],
 }
 
@@ -120,7 +123,7 @@ def repo(tmp_path: Path) -> Path:
         write(
             repo / "agents" / name / "AGENT.md",
             f"---\nname: {name}\ndescription: Use for {name} work.\n"
-            f"model: sonnet\ntools: [Read, Grep]\n---\n\n# {name}\n",
+            f"model: standard\ntools: [Read, Grep]\n---\n\n# {name}\n",
         )
     git_track(repo, "agents")
     return repo
@@ -153,6 +156,39 @@ def test_agent_gone_from_the_repo_leaves_both_harnesses_and_foreign_ones_stay(
     ]
     mine = _opencode_agent(home, "mine").read_text(encoding="utf-8")
     assert mine == FOREIGN_OPENCODE_AGENT
+    assert (home / ".claude/agents/mine.md").resolve() == foreign_target
+
+
+def test_links_into_the_repo_left_by_older_versions_make_way_for_the_renders(
+    tmp_path: Path, repo: Path, home: Path
+) -> None:
+    foreign_target = tmp_path / "dotfiles/mine.md"
+    write(foreign_target, "my agent\n")
+    claude_agents = home / ".claude/agents"
+    claude_agents.mkdir(parents=True)
+    (claude_agents / "keeper.md").symlink_to(repo / "agents/keeper/AGENT.md")
+    (claude_agents / "goner.md").symlink_to(repo / "agents/goner/AGENT.md")
+    (claude_agents / "old-one.md").symlink_to(repo / "agents/old-one/AGENT.md")
+    (claude_agents / "mine.md").symlink_to(foreign_target)
+
+    run_sync(repo, home, "agents")
+
+    assert sorted(os.listdir(claude_agents)) == ["goner.md", "keeper.md", "mine.md"]
+    assert not (claude_agents / "keeper.md").is_symlink()
+    assert not (claude_agents / "goner.md").is_symlink()
+    assert (claude_agents / "mine.md").resolve() == foreign_target
+    assert not (repo / "backups").exists()
+
+
+def test_foreign_claude_agent_under_a_repo_agent_name_moves_to_backups(repo: Path, home: Path) -> None:
+    write(home / ".claude/agents/keeper.md", FOREIGN_OPENCODE_AGENT)
+
+    run_sync(repo, home, "agents")
+
+    backups = sorted((repo / "backups").rglob("keeper.md"))
+    assert [path.read_text(encoding="utf-8") for path in backups] == [FOREIGN_OPENCODE_AGENT]
+    rendered, _ = _split(home / ".claude/agents/keeper.md")
+    assert rendered["model"] == "inherit"
 
 
 def test_foreign_opencode_agent_under_a_repo_agent_name_moves_to_backups(repo: Path, home: Path) -> None:
@@ -172,7 +208,7 @@ def test_opencode_render_drops_the_legacy_list_tool(repo: Path, home: Path) -> N
     # the rules for the remaining tools stay.
     write(
         repo / "agents/keeper/AGENT.md",
-        "---\nname: keeper\ndescription: Use for keeper work.\nmodel: sonnet\ntools: [Read, List]\n---\n\n# keeper\n",
+        "---\nname: keeper\ndescription: Use for keeper work.\nmodel: standard\ntools: [Read, List]\n---\n\n# keeper\n",
     )
 
     run_sync(repo, home, "agents")
@@ -196,7 +232,7 @@ def test_opencode_maps_a_tool_no_repo_agent_uses_to_its_permission(
     write(
         repo / "agents/keeper/AGENT.md",
         "---\nname: keeper\ndescription: Use for keeper work.\n"
-        f"model: sonnet\ntools: [Read, {tool}]\n---\n\n# keeper\n",
+        f"model: standard\ntools: [Read, {tool}]\n---\n\n# keeper\n",
     )
 
     run_sync(repo, home, "agents")
@@ -214,7 +250,7 @@ def test_agents_are_not_rendered_for_codex_gemini_and_cursor(repo: Path, home: P
 def test_agent_whose_frontmatter_name_differs_from_its_dir_fails_the_sync(repo: Path, home: Path) -> None:
     write(
         repo / "agents/keeper/AGENT.md",
-        "---\nname: keeper-v2\ndescription: Keeps.\ntools: [Read]\n---\n\nKeeps.\n",
+        "---\nname: keeper-v2\ndescription: Keeps.\nmodel: standard\ntools: [Read]\n---\n\nKeeps.\n",
     )
 
     result = run_unchecked(["python3", repo / "scripts/sync.py", "agents"], home)

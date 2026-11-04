@@ -10,7 +10,7 @@ import pytest
 from tests.helpers import copy_scripts, git_track, run_sync, write
 
 SKILL = "---\nname: {name}\n---\n"
-AGENT = "---\nname: {name}\ndescription: Use for work.\ntools: [Read]\n---\n\nBody.\n"
+AGENT = "---\nname: {name}\ndescription: Use for work.\nmodel: standard\ntools: [Read]\n---\n\nBody.\n"
 
 
 @pytest.fixture

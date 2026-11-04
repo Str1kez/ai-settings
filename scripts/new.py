@@ -65,7 +65,7 @@ name: {name}
 description: |
   Use when <explicit trigger: when to call this agent>.
   SKIP: <explicit anti-trigger: when NOT to call it>.
-model: sonnet
+model: standard
 tools: [Read, Grep, Glob]
 ---
 
@@ -114,7 +114,7 @@ def _new_skill(name: str) -> None:
 def _new_agent(name: str) -> None:
     _create(REPO / "agents" / name, {"AGENT.md": AGENT_MD.format(name=name)})
     log.info("Next:")
-    log.info("  1. fill in AGENT.md (description first, then tools and model)")
+    log.info("  1. fill in AGENT.md (description first, then tools, model level and effort)")
     log.info(f"  2. git add agents/{name}: untracked agents are not deployed")
     log.info("  3. .venv/bin/python -m pytest tests/agent_lint -v")
     log.info("  4. scripts/install.sh --dry-run, then scripts/install.sh")
