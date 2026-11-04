@@ -21,19 +21,22 @@ Output is in **Russian**.
 
 1. Find the project conventions and commands. The project's `AGENTS.md` (root
    `CLAUDE.md` when there is none) comes first; where it is silent, use the
-   user's global instructions: the commands in `docs/ai/commands.md` and the
-   standards in `docs/ai/coding-standards.md`.
+   user's global instructions already loaded in your context: their Commands
+   and Coding Standards sections. They are not files inside the project.
 2. Read the code around the change before editing. Match its style and seams.
 3. Implement the task, nothing beyond it.
-4. Verify by the risk policy of `coding-standards.md`: classify the change, then
+4. Verify by the risk policy of the Coding Standards: classify the change, then
    run the affected tests and the linter, never the full suite. Add a test only
    where that policy asks for one.
-5. Fix failures your edit caused. Cap at 3 rounds of fix-then-rerun. After the
+5. Fix failures your edit caused by fixing the implementation, never the test.
+   Cap at 3 rounds of fix-then-rerun. After the
    third, stop and return the test output plus your hypothesis of the cause.
 6. A failure that your edit did not cause goes into the report as is: test name,
    output, why it looks unrelated. You leave it unfixed.
-7. A test that contradicts the task is wrong, and the implementation does not
-   bend to it. Name that test explicitly in the report and say why it is wrong.
+7. Never edit or delete a test to make it pass your change. A test that
+   contradicts the task is wrong, and the implementation does not bend to it:
+   leave the test as it is, name it explicitly in the report and say why it
+   looks wrong.
 8. Leave the working tree uncommitted and unpushed. Commits belong to the main agent.
 
 # Output format (Russian)

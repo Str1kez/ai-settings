@@ -9,7 +9,7 @@
 
 ### Удалено
 - Агенты `fastapi-backend`, `pr-writer` и `debugger`. `fastapi-backend` привязан к стеку, которого в большинстве проектов нет. `pr-writer` и `debugger` дублировали скиллы `en-commit-message`, `ru-pr-description`, `changelog-entry` и `diagnosing-bugs`, а те работают прямо в диалоге.
-- Рендеры агентов для Codex CLI, Gemini CLI и Cursor. Эти харнессы я не использую и не проверял рендеры вживую. Правила и скиллы для них остаются. Установщик больше не пишет в `~/.codex/agents`, `~/.gemini/agents` и `~/.cursor/agents` и старые файлы оттуда не убирает, команда очистки — в разделе «Миграция».
+- Рендеры агентов для Codex CLI, Gemini CLI и Cursor. Эти харнессы я не использую и не проверял рендеры вживую. Правила и скиллы для них остаются. Установщик больше не пишет в `~/.codex/agents`, `~/.gemini/agents` и `~/.cursor/agents` и старые файлы оттуда не убирает, команда очистки — в разделе Миграция ниже.
 
 ### Изменено
 - В шаблоне агента поле `model` называет уровень модели, `frontier` или `standard`, а не конкретную модель. Конкретную модель (`opus`, `sonnet`, `haiku`) agent-lint теперь не пускает. Необязательное поле `effort` (`low`, `medium`, `high`, `xhigh`, `max`) задаёт усилие по роли агента.
@@ -27,7 +27,7 @@
 
 ### Миграция
 1. `git pull` и `./scripts/install.sh`. Установщик сам уберёт из Claude Code и OpenCode агентов `fastapi-backend`, `pr-writer`, `debugger` и ссылки на шаблоны.
-2. Старые рендеры в Codex, Gemini и Cursor убираю руками. Команда удаляет только файлы с пометкой `# managed-by: ai-settings` в первых двух строках, то есть наши рендеры. Файлы без пометки остаются на месте:
+2. Старые рендеры в Codex, Gemini и Cursor убираю руками. Команда удаляет только файлы с пометкой `# managed-by: ai-settings` в первых двух строках, то есть мои рендеры. Файлы без пометки остаются на месте:
 
    ```bash
    for f in ~/.codex/agents/*.toml ~/.gemini/agents/*.md ~/.cursor/agents/*.md; do
