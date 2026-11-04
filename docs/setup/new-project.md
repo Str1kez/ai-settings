@@ -28,9 +28,9 @@
 
 ## Matt-скиллы
 
-Инженерным matt-скиллам нужна настройка под репу: где трекер задач, какие метки триажа, где лежат `CONTEXT.md` и ADR. После `init-project.sh` запусти в проекте `/setup-matt-pocock-skills`: он допишет блок `## Agent skills` в `AGENTS.md` и создаст `docs/agents/`. Пока `docs/agents/` нет, `init-project.sh` в конце об этом напоминает.
+Инженерным matt-скиллам нужна настройка под репу: где трекер задач, какие метки триажа, где лежат `GLOSSARY.md` и ADR. После `init-project.sh` запусти в проекте `/setup-matt-pocock-skills`: он допишет блок `## Agent skills` в `AGENTS.md` и создаст `docs/agents/`. Пока `docs/agents/` нет, `init-project.sh` в конце об этом напоминает.
 
-С `init-project.sh` они не пересекаются. Matt-скиллы не трогают `CHANGELOG.md` и `TODO.md`, а `CONTEXT.md` и `docs/adr/` создают сами, когда появляется что записать. Задачи, если трекер локальный, живут в `.scratch/<feature>/`, а `TODO.md` остаётся списком верхнего уровня.
+С `init-project.sh` они не пересекаются. Matt-скиллы не трогают `CHANGELOG.md` и `TODO.md`, а `GLOSSARY.md` и `docs/adr/` создают сами, когда появляется что записать. Задачи, если трекер локальный, живут в `.scratch/<feature>/`, а `TODO.md` остаётся списком верхнего уровня.
 
 Одно правило: не заводи `CLAUDE.md` рядом с `AGENTS.md`. Если в корне есть `CLAUDE.md`, `/setup-matt-pocock-skills` пишет свой блок в него, и Codex, OpenCode и Cursor этот блок не увидят.
 
