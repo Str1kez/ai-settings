@@ -56,6 +56,31 @@ while [[ $# -gt 0 ]]; do
 done
 PROJECT_ROOT="$(cd "$PROJECT_ROOT" && pwd)"
 
+# Bad flag values must fail before the first file is written. A dry run of
+# sync.py applies its own validation. A level without a model is fatal here
+# only for a harness the flags cover: the prompts below fill the others.
+if [[ $HAVE_CLAUDE_MODELS -eq 1 || $HAVE_OPENCODE_MODELS -eq 1 ]]; then
+  early_args=()
+  [[ $HAVE_CLAUDE_MODELS -eq 1 ]] && early_args+=(--claude-models "$CLAUDE_MODELS")
+  [[ $HAVE_OPENCODE_MODELS -eq 1 ]] && early_args+=(--opencode-models "$OPENCODE_MODELS")
+  early_code=0
+  early_err="$(python3 "$SCRIPT_DIR/sync.py" project-agents --dry-run "$PROJECT_ROOT" "${early_args[@]}" 2>&1 >/dev/null)" || early_code=$?
+  if [[ $early_code -eq 3 ]]; then
+    covered=""
+    [[ $HAVE_CLAUDE_MODELS -eq 1 ]] && covered+="claude "
+    [[ $HAVE_OPENCODE_MODELS -eq 1 ]] && covered+="opencode "
+    for harness in $covered; do
+      if printf '%s\n' "$early_err" | grep -q "^missing-model: $harness "; then
+        printf '%s\n' "$early_err" >&2
+        exit 3
+      fi
+    done
+  elif [[ $early_code -ne 0 ]]; then
+    printf '%s\n' "$early_err" >&2
+    exit "$early_code"
+  fi
+fi
+
 log_info "Initializing ai-settings for project: $PROJECT_ROOT"
 
 # Claude Code, Codex, OpenCode and Cursor read AGENTS.md from the project root
@@ -125,9 +150,13 @@ fi
 if [[ $CURSOR -eq 1 ]]; then
   cursor_rule=".cursor/rules/ai-settings.mdc"
   python3 "$SCRIPT_DIR/sync.py" rules --cursor-project "$PROJECT_ROOT"
-  git_exclude "$PROJECT_ROOT" "$cursor_rule" || {
-    log_warn "Not a git repo: after git init, rerun with --cursor to keep $cursor_rule out of git"
-  }
+  exclude_code=0
+  git_exclude "$PROJECT_ROOT" "$cursor_rule" || exclude_code=$?
+  case "$exclude_code" in
+    0) ;;
+    2) log_warn "Not a git repo: after git init, rerun with --cursor to keep $cursor_rule out of git" ;;
+    *) log_error "Could not exclude $cursor_rule from git"; exit "$exclude_code" ;;
+  esac
 fi
 
 # Project agents: the agent templates with concrete models for each level.
@@ -154,6 +183,17 @@ probe_missing() {
   esac
 }
 
+# prompt TEXT: reads one line into REPLY_LINE. EOF (Ctrl-D) aborts: under
+# set -e a failed read would end the script without a word.
+prompt() {
+  REPLY_LINE=""
+  if ! read -r -p "$1" REPLY_LINE; then
+    echo >&2
+    log_error "Input closed before the questions were answered; no project agents were written"
+    exit 1
+  fi
+}
+
 # ask_model HARNESS LEVEL: one model for one level, asked until it is valid.
 # Claude Code has defaults for the known levels, Enter takes them; OpenCode
 # has none and needs provider/model.
@@ -164,10 +204,11 @@ ask_model() {
   fi
   while true; do
     if [[ -n "$default" ]]; then
-      read -r -p "  $harness: model for $level [$default]: " answer
-      answer="${answer:-$default}"
+      prompt "  $harness: model for $level [$default]: "
+      answer="${REPLY_LINE:-$default}"
     else
-      read -r -p "  $harness: model for $level: " answer
+      prompt "  $harness: model for $level: "
+      answer="$REPLY_LINE"
     fi
     if [[ -z "$answer" || "$answer" == *[,=\ ]* ]]; then
       log_warn "Give one model name, without spaces, commas or '='"
@@ -193,7 +234,8 @@ ask_harness() {
   if [[ -n "$gaps" ]]; then
     all="$gaps"
   else
-    read -r -p "Project agents for $label? [y/N] " answer
+    prompt "Project agents for $label? [y/N] "
+    answer="$REPLY_LINE"
     [[ "$answer" == [yY] || "$answer" == [yY][eE][sS] ]] || return 0
   fi
   log_info "$label models"
@@ -215,7 +257,13 @@ written="$(python3 "$SCRIPT_DIR/sync.py" project-agents "$PROJECT_ROOT" ${agent_
 not_git=0
 while IFS= read -r agent_file; do
   [[ -n "$agent_file" ]] || continue
-  git_exclude "$PROJECT_ROOT" "$agent_file" || not_git=1
+  exclude_code=0
+  git_exclude "$PROJECT_ROOT" "$agent_file" || exclude_code=$?
+  case "$exclude_code" in
+    0) ;;
+    2) not_git=1 ;;
+    *) log_error "Could not exclude $agent_file from git"; exit "$exclude_code" ;;
+  esac
 done <<< "$written"
 if [[ $not_git -eq 1 ]]; then
   log_warn "Not a git repo: after git init, rerun to keep the project agents out of git"

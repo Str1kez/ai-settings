@@ -160,6 +160,7 @@ def test_bad_model_flags_fail_and_create_no_agents(
     assert message in log
     assert not (project / ".claude").exists()
     assert not (project / ".opencode").exists()
+    assert not (project / "AGENTS.md").exists()
 
 
 def test_foreign_file_under_an_agent_name_is_left_alone_and_reported(repo: Path, home: Path, project: Path) -> None:
@@ -209,7 +210,9 @@ def test_without_flags_no_agents_are_created_and_the_run_succeeds(repo: Path, ho
     assert "--claude-models" in log
 
 
-def test_template_gone_from_the_repo_takes_its_project_agent_along(repo: Path, home: Path, project: Path) -> None:
+def test_template_gone_from_the_repo_takes_its_project_agent_along_but_keeps_its_exclude_line(
+    repo: Path, home: Path, project: Path
+) -> None:
     write(project / CLAUDE_DIR / "mine.md", FOREIGN)
     _init(repo, home, project, "--claude-models", CLAUDE_FLAG)
     shutil.rmtree(repo / "agents/worker")
@@ -218,6 +221,8 @@ def test_template_gone_from_the_repo_takes_its_project_agent_along(repo: Path, h
 
     assert code == 0
     assert sorted(p.name for p in (project / CLAUDE_DIR).iterdir()) == ["mine.md", "reviewer.md"]
+    exclude = (project.parent.parent / ".git/info/exclude").read_text(encoding="utf-8").splitlines()
+    assert "/services/api/.claude/agents/worker.md" in exclude
 
 
 def test_changed_template_reaches_the_project_on_rerun(repo: Path, home: Path, project: Path) -> None:
@@ -337,18 +342,6 @@ def test_two_files_naming_different_models_for_one_level_fail_naming_the_files(
     assert code != MISSING_MODEL_EXIT
     assert "reviewer.md" in log and "worker.md" in log
     assert "frontier" in log
-
-
-def test_removed_template_loses_its_agent_but_keeps_its_exclude_line(repo: Path, home: Path, project: Path) -> None:
-    _init(repo, home, project, "--claude-models", CLAUDE_FLAG)
-    shutil.rmtree(repo / "agents/worker")
-
-    code, _ = _init(repo, home, project)
-
-    assert code == 0
-    assert not (project / CLAUDE_DIR / "worker.md").exists()
-    exclude = (project.parent.parent / ".git/info/exclude").read_text(encoding="utf-8").splitlines()
-    assert "/services/api/.claude/agents/worker.md" in exclude
 
 
 def test_file_that_lost_its_marker_is_foreign_on_rerun(repo: Path, home: Path, project: Path) -> None:
