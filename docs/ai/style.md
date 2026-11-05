@@ -31,6 +31,7 @@
 ## Options and decisions
 
 - Non-trivial decision → 2–3 options with tradeoffs, plus a recommendation and why.
+- Under each option, one line on how it breaks on an edge case, written before the recommendation. An option with no edge case you can name hasn't been thought through yet.
 - Never dump options with no recommendation — that just offloads the decision to the user.
 - Trivial decision → pick one, move on. Mention the alternative only if it's worth naming.
 
