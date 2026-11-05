@@ -4,7 +4,16 @@ Language-agnostic principles. Applies to all code. Language-specific rules live 
 
 ## YAGNI
 
-Do not add functionality "for the future". Build only what the current task needs. Extract abstractions when there are **three** concrete use cases, not before.
+Do not add functionality "for the future". Build only what the current task needs. Extract abstractions when there are **three** concrete use cases, not before. Interfaces on I/O boundaries are the exception: see Dependencies and boundaries.
+
+## Dependencies and boundaries
+
+- A component gets its collaborators from outside: constructor arguments or the framework's DI. It keeps them as fields and never builds them itself; global mutable state and module-level singletons stay out.
+- Every boundary with I/O or an external system sits behind an interface, even with a single implementation: database, HTTP clients, queues, filesystem, clock, LLM provider. The interface holds only the methods its consumer calls and is named after the consumer's need (`UserRepository`, not `PostgresClient`). The language rules pick the mechanism.
+- Pure in-process logic with a single implementation uses the concrete type. It gets an interface when a second implementation appears.
+- Wiring, which implementation goes where, lives in one composition root: the app factory, `main`, or the DI container.
+- Data crossing a boundary has its own schema: an API returns response schemas, never persistence models.
+- Domain code raises domain errors. Translation to transport errors (HTTP status, exit code) happens at the edge, never inside services.
 
 ## Risk-based verification
 
@@ -55,6 +64,12 @@ or a public contract used by other systems.
   new test is warranted, state which existing check or smoke path verified the
   change.
 
+### Writing tests
+
+- Arrange–Act–Assert, with a blank line between the sections.
+- Name a test after the behaviour it checks: `user_is_locked_after_three_failed_logins`, not `lock_user`.
+- Run real in-process code and real local resources where they are cheap: a temp directory, a test database. A system you don't run (a third-party API, an LLM provider) gets a fake that implements its boundary interface. Prefer an integration test over a mock-heavy unit test.
+
 ## No dead code
 
 - Unused imports, variables, functions, files — delete them. Don't comment them out.
@@ -70,12 +85,21 @@ or a public contract used by other systems.
 - Every `TODO` or `FIXME` in code must have either a ticket reference or a GitHub issue link.
 - A bare `TODO: fix this` is a lie.
 
+## Comments
+
+The reader is a senior engineer. Names, types and structure say what the code does; a comment says only what the code cannot show:
+
+- a workaround (a library bug, a platform quirk, a deliberate hack), with the reason and a ticket when it is temporary;
+- non-obvious behaviour: an ordering constraint, a side effect, an invariant the types don't express, a value taken from an external spec, what each regex group captures;
+- why this approach and not the obvious one.
+
+Doc comments go on public API where the signature doesn't state the contract (what it returns, raises, changes) or where the language's tooling requires them. They describe the contract, not the implementation steps.
+
 ## Explicit > clever
 
 - If a colleague needs to read the code twice, rewrite it.
 - Magic numbers → named constants.
 - Long one-liners → multi-line with intermediate variables.
-- Regex dragons → inline comments explaining what each group captures.
 
 ## Safety
 

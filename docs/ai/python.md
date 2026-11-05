@@ -42,23 +42,24 @@ never from this file.
 - Prefer `list[int]` over `List[int]`; `dict[str, Any]` over `Dict[str, Any]` — PEP 585.
 - Type hints are enforced by **mypy strict** (see Linting & formatting below), not just documentation — code must pass `mypy --strict` before merge.
 
+## Interfaces
+
+- Internal contracts are `abc.ABC` with `@abstractmethod`: every implementation is ours and inherits explicitly, so a missing method fails at instantiation and the implementations are one search away.
+- `typing.Protocol` is for implementations that aren't ours: the public API of a library we ship, or third-party classes typed structurally.
+
 ## Testing (pytest)
 
-- Arrange–Act–Assert structure; blank line between sections.
 - Use fixtures for setup; scope them (`session`, `module`, `function`) to match lifetime.
-- Avoid mocking the filesystem, network, or database unless the cost of real I/O is excessive. Prefer integration tests over mock-heavy unit tests.
 - Use `pytest.mark.parametrize` for truth-table tests.
-- Name tests after behavior, not implementation: `test_user_is_locked_after_three_failed_logins`, not `test_lock_user`.
 
 ## Web framework patterns (FastAPI & LiteStar)
 
 Common to both:
 
-- **Dependency injection only.** No global mutable state.
-- **Pydantic v2** for request/response schemas. Never return raw DB models.
+- **Pydantic v2** for request/response schemas.
 - **Async correctly**: no blocking calls (`requests.get`, `time.sleep`, sync SQLAlchemy) inside async handlers.
 - Project layout: `app/routers/` (or `app/controllers/`), `app/schemas/`, `app/services/`, `app/db/`. One concern per file.
-- Error handling: raise the framework's HTTP exception at the route boundary; internal/domain errors use custom exception types, translated to HTTP at the edge, not inside services.
+- Domain errors are custom exception classes; the route boundary translates them to the framework's HTTP exception.
 
 FastAPI specifics:
 
