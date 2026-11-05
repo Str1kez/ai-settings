@@ -7,7 +7,7 @@ When any of these thoughts appears, **STOP** and reconsider. The pattern you're 
 | "I'll just `except Exception:`" | Swallows all errors, including the ones you actually want to see | Catch specific exception types; re-raise unknown ones |
 | "I'll hardcode this URL/key for now" | "For now" becomes permanent; leaks to prod | Env var or config file; ask the user |
 | "I'll copy-paste this logic" | Duplication, drift over time | Extract a function/module/component |
-| "I'll mock everything in the test" | Tests don't catch real integration bugs | Mock only external boundaries (network, filesystem); use real code for everything in-process |
+| "I'll mock everything in the test" | Tests don't catch real integration bugs | Fake only systems you don't run, through their boundary interface; use real code in-process and cheap real resources (temp dir, test DB) |
 | "I'll load the whole dataset in memory" | OOM at scale | Streaming, chunking, or generators |
 | "Diff is 800+ lines, whatever" | Unreviewable, risky merge | Split the PR into logical chunks |
 | "Every changed function needs its own test" | Test volume becomes a proxy for confidence and couples the suite to implementation details | Classify risk; test only critical behaviour, non-obvious outcomes, and regressions through a public seam |

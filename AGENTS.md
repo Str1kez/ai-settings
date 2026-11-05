@@ -43,7 +43,7 @@ Language-specific:
 - Every non-trivial change → entry in `CHANGELOG.md` (Russian, Keep a Changelog).
 - Root `TODO.md` is maintained and updated as work progresses.
 - ADRs for architectural decisions live in `docs/adr/` (create when first ADR appears).
-- README is required for any new project, package, skill, or non-trivial script.
+- README is required for any new project, package, skill, or non-trivial script. It is written for someone who uses it, not someone who develops it: what it does and for whom, how to install and run it, one real usage example with its output. Architecture, internals, dev workflow and agent instructions go to `docs/` or `AGENTS.md`.
 - Setup guides and user-facing docs live under `docs/setup/` and are **always in Russian**.
 
 ## 9. Red Flags
