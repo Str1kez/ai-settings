@@ -7,5 +7,5 @@ Version `X.Y.Z`, date `YYYY-MM-DD`. Past releases: `git show c94d971` (1.0.0), `
 3. Bump the version in `pyproject.toml` and in `uv.lock` (the `ai-settings` package entry).
 4. `TODO.md`: close the items this release closes, move them to "Сделано", drop stale entries from "Следующее".
 5. `make check` must pass: ruff check and format, both mypy runs, pytest, `sync.py rules --check`.
-6. PR in Russian from the template in `docs/ai/git-workflow.md`. Title: `Релиз X.Y.Z: …`.
+6. PR in Russian via skill `ru-pr-description`. Title: `Релиз X.Y.Z: …`.
 7. After the merge: annotated tag `vX.Y.Z` on the merge commit in `origin/main`, then `git push origin vX.Y.Z`. Delete only the local branch; the remote one stays in history. Then pull `main`.

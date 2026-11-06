@@ -65,4 +65,4 @@ Always-on. Applies only to AI's own chat responses.
 
 **Auto-clarity:** для предупреждений о безопасности и деструктивных операций — нормальный стиль, возобновить после.
 
-**Does NOT apply to:** TG-посты, статьи, документы, презентации, README, CHANGELOG, коммиты, PR — всё что под `writing-voice.md`.
+**Does NOT apply to:** TG-посты, статьи, документы, презентации, README, CHANGELOG, коммиты, PR — всё что под скиллом `writing-voice`.

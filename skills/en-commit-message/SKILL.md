@@ -1,6 +1,6 @@
 ---
 name: en-commit-message
-version: 1.0.0
+version: 1.1.0
 description: |
   Use when the user asks "write a commit / generate a commit message / describe this diff as a commit".
   Also trigger automatically before `git commit` if no message was provided.
@@ -20,7 +20,8 @@ Generate a conventional-commit message in English from the current staged diff.
 3. Pick scope (optional) — module or component name, lowercase, English, from changed file paths.
 4. Write the description in English, imperative mood, lowercase start, no trailing period, ≤72 chars.
 5. If the change is non-trivial — add a body paragraph in English explaining **WHY**, not WHAT. Wrap at ~72 chars.
-6. Output the message ready to paste into `git commit -m`.
+6. Describe the change from the user's perspective, not the code's. Keep the body dry: no hyperbole, sarcasm or rhetoric.
+7. Output the message ready to paste into `git commit -m`.
 
 # Format
 

@@ -1,23 +1,8 @@
 # Git Workflow
 
-## Commit messages — Conventional Commits
+## Commit and PR text
 
-Format: `<type>(<scope>): <description>`
-
-**Types** (English, lowercase): `feat`, `fix`, `chore`, `refactor`, `docs`, `test`, `style`, `perf`, `ci`, `build`.
-
-**Scope** (optional, English, lowercase): module or component name, derived from changed file paths. Examples: `auth`, `api`, `db`, `skills/en-commit-message`.
-
-**Description** (**English**, imperative, lowercase first letter, no trailing period, ≤72 chars): what the commit does from the user's perspective.
-
-Example:
-```
-feat(auth): add github oauth login
-
-Closes BOTICS-42. Regular login/password stays as a fallback.
-```
-
-**Body** (optional, **English**): explains WHY, not WHAT. Separated from subject by a blank line. Lines wrap at ~72 chars.
+Commit format: skill `en-commit-message`. PR title and description: skill `ru-pr-description`.
 
 ## Branch naming
 
@@ -31,28 +16,6 @@ Examples:
 - `task-BOTICS-789-upgrade-fastapi`
 
 ## Pull Requests
-
-- **Title** — **Russian**, one line, under 70 chars.
-- **Description** — Russian, uses the template below:
-
-```markdown
-## TL;DR
-<1–2 предложения: что и зачем>
-
-## Что изменилось
-- <пункт 1>
-- <пункт 2>
-
-## Как тестировал
-- pytest / npm test / ручные шаги
-- результат
-
-## Чек-лист
-- [x] Тесты проходят
-- [x] Линтер чист
-- [ ] Changelog обновлён (если есть user-visible изменения)
-- [ ] Документация обновлена (если изменился публичный API)
-```
 
 - **Prefer small PRs.** Split aggressively. No hard limit, but if the diff is >800 lines — pause and justify.
 - **One PR = one logical change.** Don't mix refactoring with feature work.
