@@ -25,7 +25,7 @@ OpenCode читает скиллы и из `~/.agents/skills`, и из `~/.claud
 Каждый `agents/<name>/AGENT.md` становится `~/.config/opencode/agents/<name>.md`:
 
 - `description` из `AGENT.md` и `mode: subagent`;
-- `permissions` из `tools`: список правил `{action, resource, effect}` — перечисленные тулзы дают allow (`Read→read`, `Grep→grep`, `Glob→glob`, `Edit/Write→edit`, `Task→subagent`, `WebFetch/WebSearch→webfetch/websearch`), кроме `Bash→shell`: для shell allow-правила не рендерится никогда, глобальные ask/deny правила остаются последним словом; без Edit и Write — правило `edit: deny`, без Bash — `shell: deny`;
+- `permissions` из `tools`: список правил `{action, resource, effect}` — перечисленные тулзы дают allow (`Read→read`, `Grep→grep`, `Glob→glob`, `Edit/Write→edit`, `Task→subagent`, `Skill→skill`, `WebFetch/WebSearch→webfetch/websearch`), кроме `Bash→shell`: для shell allow-правила не рендерится никогда, глобальные ask/deny правила остаются последним словом; без Edit и Write — правило `edit: deny`, без Bash — `shell: deny`;
 - тело `AGENT.md` становится промптом.
 
 Модель глобальному агенту установщик не задаёт: субагент работает на модели агента, который его вызвал. Поле `effort` из шаблона в OpenCode не попадает, оно зависит от провайдера. Агента с конкретной моделью для проекта делает `init-project.sh`, см. [гайд нового проекта](new-project.md#проектные-агенты).

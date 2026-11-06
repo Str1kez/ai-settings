@@ -55,7 +55,7 @@ You are a senior engineer conducting a rigorous code review.
 - `description` говорит, когда звать агента: `Use ...` (или `TRIGGER`) и `SKIP` (или `Do NOT use`), от 100 символов.
 - `model` — уровень модели: `frontier` или `standard`. Конкретную модель (`opus`, `sonnet`) линт не пускает. Глобальный агент всё равно работает на модели сессии, уровень нужен проектным агентам. Список — `MODEL_LEVELS` в `scripts/aisettings/agents.py`.
 - `effort` — необязательно: `low`, `medium`, `high`, `xhigh` или `max`. Попадает в рендер для Claude Code, в OpenCode его нет. Список — `EFFORTS` там же.
-- `tools` — инструменты в именах Claude Code: `Read`, `Grep`, `Glob`, `List`, `Bash`, `Edit`, `Write`, `Task`, `WebFetch`, `WebSearch`. Источник списка — `KNOWN_TOOLS` в `scripts/aisettings/agents.py`. Рендеры переводят эти имена в права других харнессов, а незнакомое молча выбросили бы, и агент остался бы без инструмента. Поэтому линт незнакомые имена не пускает.
+- `tools` — инструменты в именах Claude Code: `Read`, `Grep`, `Glob`, `List`, `Bash`, `Edit`, `Write`, `Task`, `Skill`, `WebFetch`, `WebSearch`. Источник списка — `KNOWN_TOOLS` в `scripts/aisettings/agents.py`. Рендеры переводят эти имена в права других харнессов, а незнакомое молча выбросили бы, и агент остался бы без инструмента. Поэтому линт незнакомые имена не пускает.
 - Агент без `Edit` и `Write` становится read-only: в OpenCode `edit: deny`.
 - Тело после frontmatter — системный промпт агента.
 

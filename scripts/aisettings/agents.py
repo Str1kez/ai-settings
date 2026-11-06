@@ -26,6 +26,7 @@ _TOOL_TO_PERMISSION = {
     "Write": "edit",
     "Bash": "shell",
     "Task": "subagent",
+    "Skill": "skill",
     "WebFetch": "webfetch",
     "WebSearch": "websearch",
 }

@@ -68,7 +68,7 @@ def test_repo_templates_are_code_reviewer_and_coder_with_their_effort_and_tools(
     assert reviewer["effort"] == "high"
     assert reviewer["tools"] == "Read, Grep, Glob, Bash"
     assert coder["effort"] == "medium"
-    assert coder["tools"] == "Read, Grep, Glob, Bash, Edit, Write"
+    assert coder["tools"] == "Read, Grep, Glob, Bash, Edit, Write, Skill"
 
 
 def test_every_repo_agent_is_an_opencode_subagent_with_its_prompt(
@@ -227,7 +227,7 @@ def test_opencode_render_drops_the_legacy_list_tool(repo: Path, home: Path) -> N
 # silently: a synthetic agent pins each one.
 @pytest.mark.parametrize(
     ("tool", "action"),
-    [("Task", "subagent"), ("WebFetch", "webfetch"), ("WebSearch", "websearch")],
+    [("Task", "subagent"), ("Skill", "skill"), ("WebFetch", "webfetch"), ("WebSearch", "websearch")],
 )
 def test_opencode_maps_a_tool_no_repo_agent_uses_to_its_permission(
     repo: Path, home: Path, tool: str, action: str
