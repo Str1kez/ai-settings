@@ -1,8 +1,8 @@
 ---
 name: ship
-version: 1.0.0
+version: 1.1.0
 description: |
-  Use when work on a branch is finished and has to reach main: "доведи ветку",
+  Use when work on a branch is finished and has to reach the base branch: "доведи ветку",
   "оформи PR", "смёрджи", "закрой задачу", "ship it".
   Runs checks, CHANGELOG, commit, PR, merge, local branch cleanup.
   SKIP: when asked only for a commit message or a PR text, when there is no git
@@ -13,15 +13,18 @@ tags: [git, pr, merge, workflow]
 
 # Purpose
 
-Carry a finished branch to main through one fixed sequence. Tags and versions
+Carry a finished branch to the base branch through one fixed sequence. Tags and versions
 belong to repos that have them: step 8 handles those and is skipped everywhere else.
 
 # Process
 
 How far to go is set by the request: "оформи PR" stops after step 5, "смёрджи" or
-"доведи ветку" runs through step 7.
+"доведи ветку" runs through step 7. Without a remote, step 5 is skipped and the
+request "оформи PR" has nothing to do: say so.
 
 1. **State.** Run `git status`, `git branch --show-current`, `git log --oneline -5`.
+   Determine the base branch in order: the git section of the repo's `AGENTS.md`,
+   `git symbolic-ref refs/remotes/origin/HEAD`, whichever of `main`/`master` exists.
    Done when you know the base branch, the current branch and whether the tree is dirty.
    On the base branch with changes, create a branch named per `git-workflow.md`
    (`task-<KEY>-<N>-<description>`). Take the key and number from the user or the
@@ -35,12 +38,15 @@ How far to go is set by the request: "оформи PR" stops after step 5, "см
 4. **Commit.** Stage the change, read the whole `git diff --staged`, invoke
    `en-commit-message`. Done when `git status` is clean. Files that may hold secrets
    (`.env`, `*.pem`, `*.key`, `credentials.json`) stay out of the stage.
-5. **Push and PR.** `git push -u origin <branch>`, invoke `ru-pr-description`,
-   `gh pr create`. Done when you have the PR URL.
-6. **Merge.** `gh pr checks` is green, then `gh pr merge --squash`. Done when the PR
-   state is `MERGED`. Pending checks mean wait; failed checks mean stop and report.
-7. **Cleanup.** `git checkout <base>`, `git pull`, `git branch -d <branch>`. The
-   remote branch stays on origin as history; delete it only on a separate request.
+5. **Push and PR.** Skipped entirely when `git remote` is empty. Otherwise
+   `git push -u origin <branch>`, invoke `ru-pr-description`, `gh pr create`. Done when you have the PR URL.
+6. **Merge.** With a remote: `gh pr checks` is green, then `gh pr merge --squash`.
+   Done when the PR state is `MERGED`. Pending checks mean wait; failed checks mean
+   stop and report. Without a remote: merge into the base branch locally the way the
+   repo's `AGENTS.md` describes; when it says nothing, ask the user once. Done when
+   the base branch holds the change.
+7. **Cleanup.** `git checkout <base>`, `git pull` (only when a remote exists),
+   `git branch -d <branch>`. The remote branch stays on origin as history; delete it only on a separate request.
 8. **Release, only for versioned repos.** `git tag` is non-empty and `CHANGELOG.md`
    has version headers: follow the repo's release doc (`docs/agents/release.md` or
    the section in `AGENTS.md`). Done when the repo's own release checklist is closed.

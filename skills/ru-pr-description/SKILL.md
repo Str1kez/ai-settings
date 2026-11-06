@@ -1,6 +1,6 @@
 ---
 name: ru-pr-description
-version: 1.0.0
+version: 1.1.0
 description: |
   Use when the user asks "напиши PR / сгенерь PR description / опиши что я делал в этой ветке".
   Also trigger automatically before `gh pr create` when no `--body` argument was provided.
@@ -15,12 +15,12 @@ Generate a Russian PR title + description from the branch diff and commit histor
 
 # Process
 
-1. Determine the base branch (`main` by default, or from a user-supplied argument).
+1. Determine the base branch: a user-supplied argument, else the git section of the repo's `AGENTS.md`, else `git symbolic-ref refs/remotes/origin/HEAD`, else whichever of `main`/`master` exists.
 2. `git log --oneline <base>..HEAD` — list commits in this branch.
 3. `git diff <base>...HEAD --stat` — files changed.
 4. `git diff <base>...HEAD` — full diff if under ~500 lines; otherwise summarize from stat + commit messages.
 5. Write the **title** in Russian: one line, under 70 chars.
-6. Write the **body** using the template below.
+6. Write the **body** using the template below. Tone follows skill `writing-voice`.
 
 # Template (Russian)
 

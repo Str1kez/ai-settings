@@ -1,6 +1,6 @@
 ---
 name: changelog-entry
-version: 1.2.0
+version: 1.3.0
 description: |
   Use when the user asks "обнови changelog / добавь запись в changelog", or after a
   user-visible change is committed.
@@ -33,6 +33,7 @@ Add an entry to the repo's root `CHANGELOG.md` following Keep a Changelog format
 
 5. Add one entry in active voice, describing what the **user** sees change.
 6. Preserve all other entries and sections exactly.
+7. Tone follows skill `writing-voice`.
 
 # Anti-patterns
 

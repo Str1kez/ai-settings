@@ -13,9 +13,7 @@
 
 ## 3. Writing Voice (generated content)
 
-Governs the voice of content you produce on my behalf — commits, PRs, CHANGELOG, TODO, docs, posts, articles. Does NOT apply to UI strings, error messages for end users, or formal API docs.
-
-@docs/ai/writing-voice.md
+Text going out to people under my name (PR, CHANGELOG, TODO, docs, post): invoke skill `writing-voice`. Commit messages are English and follow `en-commit-message`.
 
 ## 4. Commands (read this FIRST for any task)
 @docs/ai/commands.md

@@ -13,6 +13,12 @@ Alternative to a password — a link sent via email. Password stays
 the default; magic-link is enabled via the `magic_link_auth` feature flag.
 ```
 
+```
+feat(auth): add github oauth login
+
+Closes BOTICS-42. Regular login/password stays as a fallback.
+```
+
 ## fix — bug fix
 
 ```
