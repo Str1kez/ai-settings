@@ -58,10 +58,10 @@
             "Bash(python --version)",
             "Bash(python3 --version)",
             "Bash(uv --version)",
-            "Bash(jq:*)"
+            "Bash(jq:*)",
+            "Bash(git commit:*)"
         ],
         "ask": [
-            "Bash(git commit:*)",
             "Bash(git push:*)",
             "Bash(git checkout:*)",
             "Bash(git merge:*)",
