@@ -108,7 +108,15 @@ else
 
 ## Commands
 
-<!-- How to install, run, test, lint and build. -->
+<!-- Makefile targets for install, run, test, lint and build. The agent,
+     a human and CI run the same targets; a new script or CI step gets a
+     target first. -->
+
+## Where to look
+
+<!-- One line per doc an agent must read before a kind of work:
+     - <trigger> → `<file>`
+     For example: writing or changing tests → `docs/agents/testing.md` -->
 
 ## Conventions
 
