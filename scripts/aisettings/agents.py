@@ -1,8 +1,9 @@
 """Agents: agents/<name>/AGENT.md is the only source, a template that names a
 model level (and an optional effort) instead of a model.
 
-Each template becomes a global agent on the session's model: a marked render
-for Claude Code and a subagent without a model for OpenCode.
+Each template becomes a global agent: a marked render for Claude Code (the
+session's model, haiku for the `fast` level) and a subagent without a model
+for OpenCode.
 """
 
 from __future__ import annotations
@@ -48,10 +49,13 @@ KNOWN_TOOLS = frozenset(_TOOL_TO_PERMISSION)
 
 # A template names a model level, never a model. One list: the render and the
 # agent lint both read it.
-MODEL_LEVELS = ("frontier", "standard")
+MODEL_LEVELS = ("frontier", "standard", "fast")
 EFFORTS = ("low", "medium", "high", "xhigh", "max")
 # What a global agent runs on in Claude Code: the model of the session.
 _INHERIT = "inherit"
+# The exception: cheap mechanical work must not ride on a session model that
+# may be the most expensive one, so a global `fast` agent is pinned.
+_GLOBAL_CLAUDE_MODELS = {"fast": "haiku"}
 
 # Runtime alias: no `X | Y` here, it must evaluate on Python 3.9.
 _Fields = dict[str, Union[str, list[str]]]
@@ -71,7 +75,9 @@ def sync(fs: Fs, repo: Path, home: Path) -> None:
     agents = _collect(repo)
     tracked.warn_untracked(repo, "agents", "AGENT.md")
     _drop_repo_links(fs, repo, home / _CLAUDE_AGENTS)
-    claude = {f"{agent.name}.md": _render_claude(agent, _INHERIT) for agent in agents}
+    claude = {
+        f"{agent.name}.md": _render_claude(agent, _GLOBAL_CLAUDE_MODELS.get(agent.level, _INHERIT)) for agent in agents
+    }
     _sync_renders(fs, home / _CLAUDE_AGENTS, claude)
     opencode = {f"{agent.name}.md": _render_opencode(agent) for agent in agents}
     _sync_renders(fs, home / _OPENCODE_AGENTS, opencode)

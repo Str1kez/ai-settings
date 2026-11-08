@@ -7,7 +7,7 @@
 ## Claude Code-specific notes
 
 - Always use the `Skill` tool (never `Read` on skill files) when invoking a skill.
-- Use the `Agent` tool with `subagent_type` to delegate heavy, isolated tasks. Check the available agent types first: a project's `.claude/agents/` overrides the global `~/.claude/agents/`, and only project agents carry a chosen model (global ones run on the session model). `./agents/` in the ai-settings repo holds templates, not ready agents.
+- Use the `Agent` tool with `subagent_type` to delegate heavy, isolated tasks. Check the available agent types first: a project's `.claude/agents/` overrides the global `~/.claude/agents/`, and only project agents carry a chosen model (global ones run on the session model, except `fast` ones, which are pinned to haiku in Claude Code). `./agents/` in the ai-settings repo holds templates, not ready agents.
 - Before complex work: inspect descriptions of potentially relevant skills.
   Invoke a skill only when its stated trigger matches the task; checking the
   list is not permission to start every remotely related workflow.
