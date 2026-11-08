@@ -1,8 +1,18 @@
-# Python Standards
+---
+name: python-standards
+version: 1.0.0
+description: |
+  Use when writing or reviewing Python code, or setting up a Python project
+  (pyproject, ruff, mypy, uv, pytest).
+  SKIP: code in other languages, questions that do not touch code or project setup.
+category: code
+tags: [python, standards, ruff, mypy, uv]
+---
 
-Applies to all Python code. Builds on top of `coding-standards.md`.
+# Purpose
+Python standards: target version, tooling, typing, interfaces, framework patterns, database rules. Builds on Coding Standards.
 
-## Language version
+# Language version
 
 My projects target **Python 3.12+**. The exact version comes from the repo,
 never from this file.
@@ -28,7 +38,7 @@ never from this file.
   `from __future__ import annotations`; leaving it in existing modules is
   harmless. Below 3.14, keep the import in modules that use forward references.
 
-## Package management
+# Package management
 
 - **uv** is preferred over pip when possible. Faster, reproducible, handles lockfiles.
 - `uv venv` to create, `uv pip install -e ".[dev]"` to install in editable mode.
@@ -36,23 +46,21 @@ never from this file.
   `.venv/bin/python`, never `uv run` — see the cache caveat in `commands.md`.
 - Single source of truth for deps: `pyproject.toml`. Avoid `requirements.txt` unless required by external tooling.
 
-## Type hints
+# Type hints
 
 - **Required in new code.** All public functions, methods, and class attributes are annotated.
-- Prefer `list[int]` over `List[int]`; `dict[str, Any]` over `Dict[str, Any]` — PEP 585.
-- Type hints are enforced by **mypy strict** (see Linting & formatting below), not just documentation — code must pass `mypy --strict` before merge.
 
-## Interfaces
+# Interfaces
 
 - Internal contracts are `abc.ABC` with `@abstractmethod`: every implementation is ours and inherits explicitly, so a missing method fails at instantiation and the implementations are one search away.
 - `typing.Protocol` is for implementations that aren't ours: the public API of a library we ship, or third-party classes typed structurally.
 
-## Testing (pytest)
+# Testing (pytest)
 
 - Use fixtures for setup; scope them (`session`, `module`, `function`) to match lifetime.
 - Use `pytest.mark.parametrize` for truth-table tests.
 
-## Web framework patterns (FastAPI & LiteStar)
+# Web framework patterns (FastAPI & LiteStar)
 
 Common to both:
 
@@ -71,13 +79,13 @@ LiteStar specifics:
 - DI via `Provide`, scoped per-request unless explicitly stated otherwise.
 - Prefer LiteStar's built-in DTO layer over hand-rolled serialization when the schema maps 1:1 to a DB model.
 
-## Database (SQLAlchemy + Alembic)
+# Database (SQLAlchemy + Alembic)
 
 - **SQLAlchemy 2.0+ style** (`sqlalchemy.select(...)`, not legacy `Query`).
 - Migrations via **Alembic**: autogenerate, then manually review before committing.
 - Never edit an applied migration. Add a new migration to reverse or amend.
 
-## Linting & formatting
+# Linting & formatting
 
 - `ruff check .` for linting; `ruff format .` for formatting. No `black`.
 - `mypy --strict .` for type checking, run in CI and required to pass before merge.
@@ -94,10 +102,3 @@ LiteStar specifics:
   [tool.ruff.lint]
   select = ["E", "F", "I", "UP", "B"]
   ```
-
-- Imports order: stdlib → third-party → local. Blank line between groups. `ruff` enforces this automatically.
-
-## Imports
-
-- Absolute imports by default. Relative imports only within a package when they improve readability.
-- Never `from module import *`.

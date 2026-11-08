@@ -66,7 +66,7 @@ def test_repo_templates_are_code_reviewer_and_coder_with_their_effort_and_tools(
     coder, _ = _split(installed_home / ".claude/agents/coder.md")
 
     assert reviewer["effort"] == "high"
-    assert reviewer["tools"] == "Read, Grep, Glob, Bash"
+    assert reviewer["tools"] == "Read, Grep, Glob, Bash, Skill"
     assert coder["effort"] == "medium"
     assert coder["tools"] == "Read, Grep, Glob, Bash, Edit, Write, Skill"
 
@@ -95,6 +95,7 @@ OPENCODE_PERMISSIONS = {
         Permission("read", "*", "allow"),
         Permission("grep", "*", "allow"),
         Permission("glob", "*", "allow"),
+        Permission("skill", "*", "allow"),
         Permission("edit", "*", "deny"),
     ],
 }

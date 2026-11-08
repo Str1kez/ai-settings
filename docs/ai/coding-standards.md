@@ -1,6 +1,6 @@
 # Coding Standards
 
-Language-agnostic principles. Applies to all code. Language-specific rules live in `python.md`.
+Language-agnostic principles. Applies to all code. Language-specific rules live in skill `python-standards`.
 
 ## YAGNI
 

@@ -20,7 +20,7 @@ Text going out to people under my name (PR, CHANGELOG, TODO, docs, post): invoke
 
 ## 5. Tech Stack (with versions)
 
-- Python `3.12+`, exact version from the repo (see `docs/ai/python.md`); prefer `uv` over `pip`; occasionally Go and Rust for side projects
+- Python `3.12+`, exact version from the repo (see skill `python-standards`); prefer `uv` over `pip`; occasionally Go and Rust for side projects
 - Frameworks: FastAPI `0.100+`, LiteStar `2.24+` (backend); Vue `3` (frontend, side projects only)
 - Data: SQLAlchemy `2.0+`, Pydantic `v2`, Alembic, Pydantic AI
 - Testing: pytest (Python, `pytest-xdist` for parallel runs), standard `testing` package (Go), `cargo test` (Rust)
@@ -30,8 +30,7 @@ Text going out to people under my name (PR, CHANGELOG, TODO, docs, post): invoke
 ## 6. Coding Standards
 @docs/ai/coding-standards.md
 
-Language-specific:
-- Python: @docs/ai/python.md
+Python code or project setup (pyproject, ruff, mypy, uv): invoke skill `python-standards`.
 
 ## 7. Git Workflow
 @docs/ai/git-workflow.md
@@ -104,14 +103,7 @@ Do not add it after intermediate progress updates.
 
 Do not call MCP servers, connectors, browser automation for external targets, or scheduled-task tools without an explicit user request. This includes Notion, Confluence, Claude_in_Chrome, scheduled tasks, and similar private or side-effect-capable integrations.
 
-## 14. Uncertainty & Hallucination
-
-- Prefer **asking** to guessing when uncertainty affects the outcome.
-- **"I don't know"** is a valid, preferred answer over a plausible-sounding guess.
-- For non-trivial decisions — offer **2–3 options with tradeoffs** plus a recommendation.
-- Never invent APIs, flags, endpoints, or function signatures. If unsure — verify from docs or ask the user.
-
-## 15. ML-Specific
+## 14. ML-Specific
 
 > Load on demand — only in ML/data projects. Reference: `docs/ai/ml.md`.
 > Read it manually when working on ML tasks: `@./docs/ai/ml.md`

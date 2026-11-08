@@ -25,16 +25,9 @@ skill_count=$(count_files "$HOME"/.claude/skills/*/SKILL.md)
 agent_count=$(count_files "$HOME"/.claude/agents/*.md)
 
 user_message="[ai-settings] Loaded: ${skill_count} skill(s), ${agent_count} subagent(s). Silence: AI_SETTINGS_QUIET=1"
-model_context="Reminder: check for relevant skill/subagent BEFORE non-trivial tasks."
 
-# Plain stdout of SessionStart goes to the model only. systemMessage is what the user sees.
-USER_MESSAGE="$user_message" MODEL_CONTEXT="$model_context" python3 -c '
+# systemMessage is what the user sees; the model gets nothing from this hook.
+USER_MESSAGE="$user_message" python3 -c '
 import json, os
-print(json.dumps({
-    "systemMessage": os.environ["USER_MESSAGE"],
-    "hookSpecificOutput": {
-        "hookEventName": "SessionStart",
-        "additionalContext": os.environ["MODEL_CONTEXT"],
-    },
-}))
+print(json.dumps({"systemMessage": os.environ["USER_MESSAGE"]}))
 '

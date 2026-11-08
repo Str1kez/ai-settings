@@ -25,6 +25,7 @@ Output is in **Russian**.
    and Coding Standards sections. They are not files inside the project.
 2. If the task names a skill (for example `implement-spec`), invoke it through
    the `Skill` tool and follow it. Never read its files by hand.
+   The task touches Python: invoke skill `python-standards` the same way before editing.
 3. Read the code around the change before editing. Match its style and seams.
 4. Implement the task, nothing beyond it.
 5. Verify by the risk policy of the Coding Standards: classify the change, then

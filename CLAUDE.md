@@ -8,16 +8,7 @@
 
 - Always use the `Skill` tool (never `Read` on skill files) when invoking a skill.
 - Use the `Agent` tool with `subagent_type` to delegate heavy, isolated tasks. Check the available agent types first: a project's `.claude/agents/` overrides the global `~/.claude/agents/`, and only project agents carry a chosen model (global ones run on the session model). `./agents/` in the ai-settings repo holds templates, not ready agents.
-- Before complex work: inspect descriptions of potentially relevant skills.
-  Invoke a skill only when its stated trigger matches the task; checking the
-  list is not permission to start every remotely related workflow.
-- `Write` and `Edit` require a prior `Read` of the target file — don't try to edit blind.
 
 ## Claude Code controls
 
 Model switches use `/model`. Effort switches use `/effort` with `low`, `medium`, `high`, `xhigh`, or `max`.
-
-## Session hooks
-
-The `SessionStart` hook at `~/.claude/hooks/session-start-reminder.sh` prints a short summary of available skills and subagents at the start of each session.
-Silence with `AI_SETTINGS_QUIET=1` in the environment.
