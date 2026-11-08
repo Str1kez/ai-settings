@@ -141,6 +141,35 @@ def test_every_project_agent_has_exactly_one_exclude_line_after_two_runs(repo: P
     assert ".opencode/agents" not in status
 
 
+def test_unknown_level_error_lists_all_three_levels(repo: Path, home: Path, project: Path) -> None:
+    code, log = _init(repo, home, project, "--claude-models", "huge=x")
+
+    assert code != 0
+    assert "['frontier', 'standard', 'fast']" in log
+
+
+def test_fast_level_gets_its_own_model_in_both_harnesses(repo: Path, home: Path, project: Path) -> None:
+    write(repo / "agents/runner/AGENT.md", _template("runner", "fast", "low"))
+    git_track(repo, "agents")
+
+    code, _ = _init(
+        repo,
+        home,
+        project,
+        "--claude-models",
+        f"{CLAUDE_FLAG},fast=haiku",
+        "--opencode-models",
+        f"{OPENCODE_FLAG},fast=openai/mini",
+    )
+
+    claude, _, claude_raw = _split(project / CLAUDE_DIR / "runner.md")
+    opencode, _, _ = _split(project / OPENCODE_DIR / "runner.md")
+    assert code == 0
+    assert claude["model"] == "haiku"
+    assert "# model-level: fast" in claude_raw
+    assert opencode["model"] == "openai/mini"
+
+
 @pytest.mark.parametrize(
     ("flags", "message"),
     [

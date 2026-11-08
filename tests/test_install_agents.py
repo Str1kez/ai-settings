@@ -54,21 +54,27 @@ def test_every_repo_agent_is_a_marked_claude_render_on_the_session_model(
         assert path.read_text(encoding="utf-8").startswith("---\n# managed-by: ai-settings\n")
         assert rendered["name"] == name
         assert rendered["description"] == original["description"].strip()
-        assert rendered["model"] == "inherit"
+        assert rendered["model"] == ("haiku" if original["model"] == "fast" else "inherit")
         assert rendered.get("effort") == original.get("effort")
         assert prompt.strip() == body.strip()
 
 
-def test_repo_templates_are_code_reviewer_and_coder_with_their_effort_and_tools(installed_home: Path) -> None:
-    assert sorted(_repo_agents()) == ["code-reviewer", "coder"]
+def test_repo_templates_are_code_reviewer_coder_and_operator_with_their_effort_and_tools(
+    installed_home: Path,
+) -> None:
+    assert sorted(_repo_agents()) == ["code-reviewer", "coder", "operator"]
 
     reviewer, _ = _split(installed_home / ".claude/agents/code-reviewer.md")
     coder, _ = _split(installed_home / ".claude/agents/coder.md")
+    operator, _ = _split(installed_home / ".claude/agents/operator.md")
 
     assert reviewer["effort"] == "high"
     assert reviewer["tools"] == "Read, Grep, Glob, Bash"
     assert coder["effort"] == "medium"
     assert coder["tools"] == "Read, Grep, Glob, Bash, Edit, Write, Skill"
+    assert operator["model"] == "haiku"
+    assert operator["effort"] == "low"
+    assert operator["tools"] == "Read, Grep, Glob, Bash"
 
 
 def test_every_repo_agent_is_an_opencode_subagent_with_its_prompt(
@@ -181,6 +187,23 @@ def test_links_into_the_repo_left_by_older_versions_make_way_for_the_renders(
     assert not (claude_agents / "goner.md").is_symlink()
     assert (claude_agents / "mine.md").resolve() == foreign_target
     assert not (repo / "backups").exists()
+
+
+def test_fast_agent_is_pinned_to_haiku_in_claude_and_has_no_model_in_opencode(repo: Path, home: Path) -> None:
+    write(
+        repo / "agents/runner/AGENT.md",
+        "---\nname: runner\ndescription: Use for runner work.\nmodel: fast\ntools: [Read]\n---\n\n# runner\n",
+    )
+    git_track(repo, "agents")
+
+    run_sync(repo, home, "agents")
+
+    claude, _ = _split(home / ".claude/agents/runner.md")
+    opencode, _ = _split(_opencode_agent(home, "runner"))
+    keeper, _ = _split(home / ".claude/agents/keeper.md")
+    assert claude["model"] == "haiku"
+    assert "model" not in opencode
+    assert keeper["model"] == "inherit"
 
 
 def test_foreign_claude_agent_under_a_repo_agent_name_moves_to_backups(repo: Path, home: Path) -> None:

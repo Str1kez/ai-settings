@@ -102,7 +102,7 @@ def _parser() -> argparse.ArgumentParser:
     artifacts.add_parser(
         "agents",
         parents=[common],
-        help="agents/<name>/AGENT.md linked into ~/.claude/agents, rendered into ~/.config/opencode/agents",
+        help="agents/<name>/AGENT.md rendered into ~/.claude/agents and ~/.config/opencode/agents",
     )
     artifacts.add_parser(
         "claude",

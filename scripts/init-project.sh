@@ -18,10 +18,10 @@ Usage: $0 [--cursor] [--claude-models SPEC] [--opencode-models SPEC] [PATH]
   PATH                  project root, the current directory by default
   --cursor              also write .cursor/rules/ai-settings.mdc and keep it out of git
   --claude-models SPEC  write the agent templates into .claude/agents, SPEC like
-                        frontier=opus,standard=sonnet
+                        frontier=opus,standard=sonnet,fast=haiku
   --opencode-models SPEC
                         the same into .opencode/agents, models as provider/model:
-                        frontier=anthropic/opus,standard=openai/gpt
+                        frontier=anthropic/opus,standard=openai/gpt,fast=openai/mini
 In a terminal, a harness without a flag is asked for: whether to create its
 agents (only when it has none yet) and a model for each level still missing.
 A rerun without these flags updates the agents already there and keeps their models.
@@ -208,7 +208,7 @@ prompt() {
 ask_model() {
   local harness="$1" level="$2" default="" answer
   if [[ "$harness" == claude ]]; then
-    case "$level" in frontier) default="opus" ;; standard) default="sonnet" ;; esac
+    case "$level" in frontier) default="opus" ;; standard) default="sonnet" ;; fast) default="haiku" ;; esac
   fi
   while true; do
     if [[ -n "$default" ]]; then

@@ -4,10 +4,12 @@
 
 Шаблон лежит в `agents/<name>/AGENT.md` и называет уровень модели, а не модель. Из одного шаблона получаются агенты двух видов, только для Claude Code и OpenCode:
 
-- **Глобальный агент.** Его ставит `scripts/install.sh`: рендер с пометкой `managed-by: ai-settings` в `~/.claude/agents/<name>.md` (`model: inherit`, `effort` из шаблона) и субагент без `model` в `~/.config/opencode/agents/<name>.md`. Он работает на модели сессии, в любом проекте сразу после установки.
+- **Глобальный агент.** Его ставит `scripts/install.sh`: рендер с пометкой `managed-by: ai-settings` в `~/.claude/agents/<name>.md` (`effort` из шаблона) и субагент без `model` в `~/.config/opencode/agents/<name>.md`. Он работает в любом проекте сразу после установки. В Claude Code это `model: inherit`, то есть модель сессии, а на уровне `fast` — `model: haiku`. В OpenCode `model` нет на всех уровнях, глобальный агент едет на модели вызвавшего.
 - **Проектный агент.** Его кладёт `scripts/init-project.sh` в `.claude/agents/` и `.opencode/agents/` проекта, с конкретной моделью под каждый уровень. Он перекрывает одноимённого глобального. Вопросы, флаги и повторный запуск — в [гайде по новому проекту](../docs/setup/new-project.md#проектные-агенты).
 
-Решение и отклонённые варианты — в [ADR 0002](../docs/adr/0002-project-agents.md), раскладка — в [ARCHITECTURE.md](../ARCHITECTURE.md#агенты).
+Сейчас три агента: `code-reviewer` (`frontier`, только читает), `coder` (`standard`, пишет код) и `operator` (`fast`). `operator` выполняет команды из брифа, сначала их read-only режим, и дословно отчитывается. Файлы репы он не трогает и останавливается на `ERROR`, ненулевом коде, лишней строке плана и отказе в правах. Хосты и формы команд он берёт из runbook проекта по ссылке из брифа.
+
+Решение и отклонённые варианты — в [ADR 0002](../docs/adr/0002-project-agents.md) и [ADR 0003](../docs/adr/0003-fast-model-level.md) (уровень `fast`), раскладка — в [ARCHITECTURE.md](../ARCHITECTURE.md#агенты).
 
 Деплоятся только агенты, которые отслеживает git, как и скиллы: так на каждой машине стоит один и тот же набор. Каталог с `AGENT.md`, который git не отслеживает и не игнорирует, `install.sh` не ставит, предупреждает и называет команду `git add`.
 
@@ -53,7 +55,7 @@ You are a senior engineer conducting a rigorous code review.
 
 - `name` равен имени каталога. Claude Code показывает `name`, а ссылки и рендеры называются по каталогу. При расхождении `sync.py` падает и называет файл, иначе один агент жил бы под двумя именами.
 - `description` говорит, когда звать агента: `Use ...` (или `TRIGGER`) и `SKIP` (или `Do NOT use`), от 100 символов.
-- `model` — уровень модели: `frontier` или `standard`. Конкретную модель (`opus`, `sonnet`) линт не пускает. Глобальный агент всё равно работает на модели сессии, уровень нужен проектным агентам. Список — `MODEL_LEVELS` в `scripts/aisettings/agents.py`.
+- `model` — уровень модели: `frontier`, `standard` или `fast`. Конкретную модель (`opus`, `sonnet`) линт не пускает. Глобальный агент в Claude Code работает на модели сессии, только `fast` идёт на `haiku`. Для проектных агентов уровень задаёт модель. Список — `MODEL_LEVELS` в `scripts/aisettings/agents.py`.
 - `effort` — необязательно: `low`, `medium`, `high`, `xhigh` или `max`. Попадает в рендер для Claude Code, в OpenCode его нет. Список — `EFFORTS` там же.
 - `tools` — инструменты в именах Claude Code: `Read`, `Grep`, `Glob`, `List`, `Bash`, `Edit`, `Write`, `Task`, `Skill`, `WebFetch`, `WebSearch`. Источник списка — `KNOWN_TOOLS` в `scripts/aisettings/agents.py`. Рендеры переводят эти имена в права других харнессов, а незнакомое молча выбросили бы, и агент остался бы без инструмента. Поэтому линт незнакомые имена не пускает.
 - Агент без `Edit` и `Write` становится read-only: в OpenCode `edit: deny`.
