@@ -135,7 +135,7 @@ register / PR tone) — содержимое не копируй, там мой 
 
 Там у меня:
 ```
-- Python `3.12+`, exact version from the repo (see `docs/ai/python.md`); prefer `uv` over `pip`; occasionally Go and Rust for side projects
+- Python `3.12+`, exact version from the repo (see skill `python-standards`); prefer `uv` over `pip`; occasionally Go and Rust for side projects
 - Frameworks: FastAPI 0.100+, LiteStar 2.24+ (backend); Vue 3 (frontend, side projects only)
 - Data: SQLAlchemy 2.0+, Pydantic v2, Alembic, Pydantic AI
 - Testing: pytest (Python, pytest-xdist for parallel runs), standard testing package (Go), cargo test (Rust)
@@ -196,9 +196,9 @@ git). Открой файл для структуры (секции по инс�
 
 ## Опционально (если стек / задачи отличаются)
 
-### 6. `docs/ai/python.md`, `docs/ai/ml.md`
+### 6. `skills/python-standards`, `docs/ai/ml.md`
 
-Языковые стандарты. Если не пишешь на Python — удали `python.md` и убери его `@import` из `AGENTS.md` секции 6. `ml.md` — особый случай: он уже вынесен из постоянной цепочки (load-on-demand), подключается вручную только в ML-проектах через `@./docs/ai/ml.md`. Лучше меньше, чем левое.
+Языковые стандарты. Python живёт в скилле `python-standards` и грузится только в Python-сессиях. Если не пишешь на Python — удали каталог скилла и строку про него из `AGENTS.md` секции 6. `ml.md` — особый случай: он уже вынесен из постоянной цепочки (load-on-demand), подключается вручную только в ML-проектах через `@./docs/ai/ml.md`. Лучше меньше, чем левое.
 
 **Промпт (адаптация одного модуля):**
 
@@ -223,8 +223,7 @@ git). Открой файл для структуры (секции по инс�
 
 ```
 Я не пишу на <LANG>. Удали docs/ai/<LANG>.md и убери строку
-`- <Lang>: @docs/ai/<lang>.md` из секции 6 в AGENTS.md (или удали
-всю подсекцию language-specific, если там больше ничего не осталось).
+строку про язык из секции 6 в AGENTS.md.
 Проверь, что imports остались валидными: ./scripts/sync.py rules --check
 ```
 

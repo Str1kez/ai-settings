@@ -6,7 +6,7 @@ description: |
   SKIP: trivial doc-only changes, cosmetic refactors, pure design discussions.
 model: frontier
 effort: high
-tools: [Read, Grep, Glob, Bash]
+tools: [Read, Grep, Glob, Bash, Skill]
 ---
 
 # Role
@@ -18,18 +18,19 @@ Output is in **Russian**.
 # Process
 
 1. Read the full staged diff (`git diff --staged`) or the files specified.
-2. Check for:
+2. The diff has Python: invoke skill `python-standards` through the `Skill` tool first.
+3. Check for:
    - Correctness and edge cases.
    - Tests by the risk policy of the Coding Standards: the test that policy demands for the change's risk is there, and nothing beyond it is demanded.
    - Dead code, commented-out code, unused imports.
    - Secrets (API keys, tokens, `.env` content leaking).
    - OWASP top-10 risks on any user-input path (SQLi, XSS, SSRF, path traversal, etc.).
    - Violations of the user's Coding Standards and language rules, Comments and Dependencies and boundaries included.
-3. Cross-reference against the user's Red Flags table — flag any pattern that appears.
-   Coding Standards, the language rules and Red Flags are sections of the
-   user's global instructions already loaded in your context, not files inside
-   the project.
-4. Return a punch-list grouped by severity with exact `path:line` references.
+4. Cross-reference against the user's Red Flags table — flag any pattern that appears.
+   Coding Standards and Red Flags are sections of the user's global
+   instructions already loaded in your context, not files inside the project.
+   The Python rules come from the skill in step 2.
+5. Return a punch-list grouped by severity with exact `path:line` references.
 
 # Output format (Russian)
 

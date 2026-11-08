@@ -1,7 +1,7 @@
 ## This repo
 
 - Root `CLAUDE.md`, `AGENTS.md`, `GEMINI.md` and `docs/ai/` are the user's global instructions: install symlinks or renders them into every harness home, so they load in every project. Guidance about working on this repo goes in this file.
-- Python in `scripts/` runs under the system `python3` (3.9 on macOS): stdlib only, 3.9-compatible syntax. For `scripts/` this overrides the version rule in `docs/ai/python.md`.
+- Python in `scripts/` runs under the system `python3` (3.9 on macOS): stdlib only, 3.9-compatible syntax. For `scripts/` this overrides the version rule in skill `python-standards`.
 - Checks run through `make check` (ruff, mypy, pytest, `sync.py rules --check`); `make fix` formats and autofixes. The commands live in the `Makefile`.
 - `scripts/install.sh` (`make install-dry`, `make install`) writes into the real harness homes (`~/.claude`, `~/.agents`, `~/.codex`, ...). Run it with `--dry-run`, show the output, and do the real run only after the user approves.
 - Releasing: follow `docs/agents/release.md`.

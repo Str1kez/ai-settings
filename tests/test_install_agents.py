@@ -69,7 +69,7 @@ def test_repo_templates_are_code_reviewer_coder_and_operator_with_their_effort_a
     operator, _ = _split(installed_home / ".claude/agents/operator.md")
 
     assert reviewer["effort"] == "high"
-    assert reviewer["tools"] == "Read, Grep, Glob, Bash"
+    assert reviewer["tools"] == "Read, Grep, Glob, Bash, Skill"
     assert coder["effort"] == "medium"
     assert coder["tools"] == "Read, Grep, Glob, Bash, Edit, Write, Skill"
     assert operator["model"] == "haiku"
@@ -101,6 +101,7 @@ OPENCODE_PERMISSIONS = {
         Permission("read", "*", "allow"),
         Permission("grep", "*", "allow"),
         Permission("glob", "*", "allow"),
+        Permission("skill", "*", "allow"),
         Permission("edit", "*", "deny"),
     ],
 }
