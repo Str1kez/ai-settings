@@ -2,8 +2,8 @@
 
 settings.json belongs to the user: Claude Code itself, plugins and tools like
 agterm write there too. The installer owns only what the template
-settings/claude-settings.json holds: $schema, permissions.allow, .ask and
-.deny, and the template's hooks. Everything else stays as it is.
+settings/claude-settings.json holds: $schema, the keys of env, permissions.allow,
+.ask and .deny, and the template's hooks. Everything else stays as it is.
 
 The template is also the list of hook scripts: every ~/.claude/hooks/<script>
 it runs is linked from settings/hooks/<script>. ~/.claude/hooks is a real dir,
@@ -90,6 +90,8 @@ def _checked(settings: Any, path: Path) -> _Json:
         fail("the top level", "object")
     if not isinstance(settings.get("permissions", {}), dict):
         fail("permissions", "object")
+    if not isinstance(settings.get("env", {}), dict):
+        fail("env", "object")
     hooks = settings.get("hooks", {})
     if not isinstance(hooks, dict):
         fail("hooks", "object")
@@ -170,9 +172,22 @@ def _merge(settings: _Json, template: _Json, is_installers: _HookTest) -> _Json:
     if "$schema" in template:
         merged["$schema"] = template["$schema"]
     merged.update((key, value) for key, value in settings.items() if key != "$schema")
+    if "env" in template:
+        merged["env"] = _merge_env(settings.get("env", {}), template["env"])
     merged["permissions"] = _merge_permissions(settings.get("permissions", {}), template.get("permissions", {}))
     merged["hooks"] = _merge_hooks(settings.get("hooks", {}), template.get("hooks", {}), is_installers)
     return merged
+
+
+def _merge_env(env: _Json, template: _Json) -> _Json:
+    """The template's keys win; the user's other keys stay. A key the template
+    drops later stays too: the installer can't tell it from the user's own.
+
+    A new key goes first and an existing one keeps its place. The logged diff
+    has no context, so a line next to the change, which may hold a token, would
+    show up in it as soon as the change gave that line a comma."""
+    new = {key: value for key, value in template.items() if key not in env}
+    return {**new, **{key: template.get(key, value) for key, value in env.items()}}
 
 
 def _merge_permissions(permissions: _Json, template: _Json) -> _Json:

@@ -1,6 +1,6 @@
 # Шелл агентов
 
-Claude Code и OpenCode у меня исполняют команды в одном и том же `/bin/bash` и не читают мои zsh-конфиги. Ставится это двумя строками руками: `install.sh` их не пишет.
+Claude Code и OpenCode у меня исполняют команды в одном и том же `/bin/bash` и не читают мои zsh-конфиги. `install.sh` пинит шелл сам, на каждой машине, руками ничего ставить не нужно.
 
 ## Зачем
 
@@ -11,25 +11,14 @@ Claude Code и OpenCode у меня исполняют команды в одн�
 
 В логах сессий это давало обрывы команд на `echo ====` (zsh разворачивает `=слово` в путь к программе) и на незакавыченных глобах (`no matches found`), а ещё иконки eza в выводе, который агент потом парсит. Хуже всего, что оборванный глоб иногда давал правдоподобный, но неверный вывод. В bash без rc-файлов этих ловушек нет, и оба харнесса ведут себя одинаково.
 
-## Настройка
+## Что делает установщик
 
-1. Claude Code, `~/.claude/settings.json`, верхний уровень:
+- **Claude Code.** Ключ `env.CLAUDE_CODE_SHELL` лежит в шаблоне `settings/claude-settings.json` и мёрджится в `~/.claude/settings.json`. Значение шаблона побеждает, остальные ключи твоего `env` остаются, см. [Claude Code](claude-code.md#settingsjson).
+- **OpenCode.** `sync.py opencode` вставляет `"shell": "/bin/bash"` в начало `~/.config/opencode/opencode.jsonc`. Комментарии и остальные ключи остаются как были. Файла нет, и он создаётся с одним этим ключом. Если `shell` уже стоит с другим значением, установщик его не меняет и пишет предупреждение: агенты OpenCode тогда пойдут в другом шелле.
 
-   ```json
-   "env": { "CLAUDE_CODE_SHELL": "/bin/bash" }
-   ```
+Оба значения совпадают, это проверяет тест. После `install.sh` перезапусти оба харнесса: `opencode service restart` и новую сессию Claude Code (`claude --continue` продолжит текущую).
 
-   `install.sh` ключ `env` не трогает: шаблон владеет только `$schema`, списками permissions и своими хуками, см. [Claude Code](claude-code.md#settingsjson).
-2. OpenCode, `~/.config/opencode/opencode.jsonc`, верхний уровень:
-
-   ```jsonc
-   "shell": "/bin/bash",
-   ```
-
-   Этот файл установщик тоже не трогает, см. [OpenCode](opencode.md).
-3. Перезапустить оба: `opencode service restart` и новую сессию Claude Code (`claude --continue` продолжит текущую).
-
-Я беру системный `/bin/bash`, а не bash из Homebrew: его нет в `/etc/shells`, и примет ли его OpenCode, я не проверял.
+Я беру системный `/bin/bash`, а не bash из Homebrew: он есть на любом маке, а Homebrew-bash нет в `/etc/shells`, и примет ли его OpenCode, я не проверял.
 
 ## Проверка
 
@@ -57,3 +46,4 @@ echo "$BASH_VERSION"; echo ====; echo *.nomatch; ls -d / | cat
 - Мои zsh-алиасы (`gs`, `dcu` и прочие) не работают в `!`-командах Claude Code.
 - Встроенный терминал OpenCode тоже становится bash: ключ `shell` задаёт шелл и для него.
 - Снапшот Claude Code теперь берётся из `~/.bashrc`. У меня там только интеграция agterm: вне agterm она сразу выходит, внутри реагирует только на запуск gemini, aider и подобных CLI.
+- Свой `shell` в `opencode.jsonc` установщик не перепишет. Ключ `CLAUDE_CODE_SHELL` в `settings.json` перепишет: если на машине нужен другой шелл, это придётся менять в шаблоне.

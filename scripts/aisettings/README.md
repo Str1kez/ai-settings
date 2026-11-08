@@ -10,6 +10,7 @@ scripts/sync.py rules [--dry-run] [--check | --cursor-project PATH]
 scripts/sync.py skills [--dry-run]
 scripts/sync.py agents [--dry-run]
 scripts/sync.py claude [--dry-run]
+scripts/sync.py opencode [--dry-run]
 scripts/sync.py project-agents PROJECT [--dry-run] [--claude-models SPEC] [--opencode-models SPEC]
 ```
 
@@ -29,7 +30,8 @@ scripts/sync.py project-agents PROJECT [--dry-run] [--claude-models SPEC] [--ope
 - `skills.py` — каждый отслеживаемый скилл `skills/<skill>/` в `~/.claude/skills` и `~/.agents/skills`.
 - `tracked.py` — какие каталоги `skills/<name>/` и `agents/<name>/` отслеживает git. Деплоятся только они. Каталог, удалённый без `git rm`, считается отсутствующим. Настоящий каталог с маркером (`SKILL.md`, `AGENT.md`), которого git не отслеживает и не игнорирует, — предупреждение о забытом `git add`.
 - `agents.py` — парсер `agents/<name>/AGENT.md` (падает, если `name` во frontmatter не равен имени каталога): шаблон с уровнем модели становится глобальным агентом, помеченным рендером для Claude Code (`model: inherit`) и субагентом без `model` для OpenCode. Ссылки на репу, оставшиеся от прошлых версий, удаляются.
-- `claude.py` — мёрдж шаблона `settings/claude-settings.json` в `~/.claude/settings.json` и ссылки на скрипты хуков в `~/.claude/hooks`. Шаблон владеет `$schema`, `permissions.{allow,ask,deny}` и своими хуками, остальное в файле пользовательское и не трогается. Шаблон же задаёт список скриптов: линкуется каждый `~/.claude/hooks/<script>`, который он запускает, и только в такой форме в начале команды. Оба файла читаются и проверяются до первого изменения в хоуме. Изменённые строки `settings.json` уходят в лог без контекста, чтобы не показать значения пользователя.
+- `claude.py` — мёрдж шаблона `settings/claude-settings.json` в `~/.claude/settings.json` и ссылки на скрипты хуков в `~/.claude/hooks`. Шаблон владеет `$schema`, ключами `env` из шаблона, `permissions.{allow,ask,deny}` и своими хуками, остальное в файле пользовательское и не трогается. Ключ `env` шаблона, которого нет в файле, встаёт первым: так в логе рядом с изменением не оказывается строка пользователя с токеном. Шаблон же задаёт список скриптов: линкуется каждый `~/.claude/hooks/<script>`, который он запускает, и только в такой форме в начале команды. Оба файла читаются и проверяются до первого изменения в хоуме. Изменённые строки `settings.json` уходят в лог без контекста, чтобы не показать значения пользователя.
+- `opencode.py` — ключ `shell` в `~/.config/opencode/opencode.jsonc`. Файл с комментариями не переписывается: сканер находит корневой объект и ключи верхнего уровня (вложенный `shell` не считается), ключ вставляется текстом после первой `{`. Файла нет — создаётся с одним ключом. Другое значение `shell` остаётся с предупреждением.
 - `log.py` — строки логов в stderr.
 
 ## Ограничения
