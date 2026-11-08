@@ -244,3 +244,46 @@ def test_hooks_that_run_uv_get_a_warning_and_stay(repo: Path, home: Path) -> Non
 
     assert "uv run my-checker" in log
     assert _settings(home)["hooks"]["Stop"] == mine["Stop"]
+
+
+def _template_with_env(repo: Path, env: dict[str, str]) -> None:
+    write(repo / "settings/claude-settings.json", json.dumps({**TEMPLATE, "env": env}, indent=4))
+
+
+def test_env_keys_of_the_template_win_and_the_users_other_keys_stay(repo: Path, home: Path) -> None:
+    _template_with_env(repo, {"CLAUDE_CODE_SHELL": "/bin/bash"})
+    _write_settings(home, {**LIVE, "env": {"DISABLE_TELEMETRY": "1", "CLAUDE_CODE_SHELL": "/bin/zsh"}})
+
+    run_sync(repo, home, "claude")
+
+    assert _settings(home)["env"] == {"DISABLE_TELEMETRY": "1", "CLAUDE_CODE_SHELL": "/bin/bash"}
+
+
+def test_env_without_the_key_gets_it_and_the_users_values_stay_out_of_the_log(repo: Path, home: Path) -> None:
+    _template_with_env(repo, {"CLAUDE_CODE_SHELL": "/bin/bash"})
+    _write_settings(home, {**LIVE, "env": {"FIRST": "token-one", "LAST": "token-two"}})
+
+    log = run_sync(repo, home, "claude")
+
+    assert _settings(home)["env"] == {"CLAUDE_CODE_SHELL": "/bin/bash", "FIRST": "token-one", "LAST": "token-two"}
+    assert "token-one" not in log
+    assert "token-two" not in log
+
+
+def test_env_is_created_when_settings_have_none(repo: Path, home: Path) -> None:
+    _template_with_env(repo, {"CLAUDE_CODE_SHELL": "/bin/bash"})
+
+    run_sync(repo, home, "claude")
+
+    assert _settings(home)["env"] == {"CLAUDE_CODE_SHELL": "/bin/bash"}
+
+
+def test_env_that_is_not_an_object_stops_the_install(repo: Path, home: Path) -> None:
+    _write_settings(home, {**LIVE, "env": ["CLAUDE_CODE_SHELL"]})
+    before = (home / ".claude/settings.json").read_text(encoding="utf-8")
+
+    result = run_unchecked(["python3", repo / "scripts/sync.py", "claude"], home)
+
+    assert result.returncode != 0
+    assert "env is not a JSON object" in result.stderr
+    assert (home / ".claude/settings.json").read_text(encoding="utf-8") == before

@@ -1,5 +1,8 @@
 {
     "$schema": "https://json.schemastore.org/claude-code-settings",
+    "env": {
+        "CLAUDE_CODE_SHELL": "/bin/bash"
+    },
     "permissions": {
         "allow": [
             "Bash(git status:*)",

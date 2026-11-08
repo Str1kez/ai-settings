@@ -10,7 +10,7 @@ import argparse
 import sys
 from pathlib import Path
 
-from aisettings import agents, claude, log, rules, skills
+from aisettings import agents, claude, log, opencode, rules, skills
 from aisettings.fs import Fs, SyncError
 
 # project-agents: a level has no model in the flags or the project files.
@@ -36,6 +36,8 @@ def main() -> int:
             agents.sync(fs, REPO, home)
         elif args.artifact == "claude":
             claude.sync(fs, REPO, home)
+        elif args.artifact == "opencode":
+            opencode.sync(fs, home)
         elif args.artifact == "project-agents":
             _sync_project_agents(fs, args)
         else:
@@ -45,6 +47,7 @@ def main() -> int:
             rules.sync(fs, REPO, home)
             agents.sync(fs, REPO, home)
             claude.sync(fs, REPO, home)
+            opencode.sync(fs, home)
     except agents.MissingModels as exc:
         log.error(str(exc))
         # One line per gap for a caller that asks the user for exactly these.
@@ -109,6 +112,11 @@ def _parser() -> argparse.ArgumentParser:
         parents=[common],
         help="settings/claude-settings.json merged into ~/.claude/settings.json, "
         "the hook scripts it runs linked into ~/.claude/hooks",
+    )
+    artifacts.add_parser(
+        "opencode",
+        parents=[common],
+        help="the shell of the agents pinned in ~/.config/opencode/opencode.jsonc",
     )
     project_agents = artifacts.add_parser(
         "project-agents",

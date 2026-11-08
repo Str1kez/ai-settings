@@ -34,7 +34,7 @@ Codex CLI, Gemini CLI, Cursor и Claude Desktop установщик тоже о
 - **Репа не линкуется каталогом.** В `~/.claude/{skills,agents,hooks}` и `~/.agents/skills` лежат поштучные ссылки, остальным харнессам достаются сгенерированные файлы. Целиком линкуются только файлы инструкций: их `@imports` резолвятся от реального пути. Поэтому в репу не попадает чужое — ни `npx skills`, ни синк аккаунтных скиллов Claude Code.
 - **Один источник на артефакт.** Правила — `AGENTS.md` и `docs/ai/`, скилл — `skills/<name>/`, агент — `agents/<name>/AGENT.md`. Формат конкретного харнесса получается рендером, руками я его не пишу.
 - **Установщик трогает только своё.** Своё — это ссылки в репу и файлы с меткой `managed-by: ai-settings`. Чужие файлы и ссылки остаются на месте. Файл, который стоит там, где должна быть ссылка, уезжает в `backups/<ts>/`, а не удаляется.
-- **Пользовательские конфиги не мои.** `opencode.jsonc`, `~/.codex/config.toml` и настройки Gemini установщик не пишет. `~/.claude/settings.json` он мёрджит по правилам ниже.
+- **Пользовательские конфиги не мои.** `~/.codex/config.toml` и настройки Gemini установщик не пишет. В `opencode.jsonc` он только добавляет один ключ `shell`, `~/.claude/settings.json` мёрджит по правилам ниже.
 - **Повторный прогон ничего не меняет.** `install.sh --dry-run` печатает план и ничего не трогает.
 - **Bootstrap на системном Python.** `sync.py` запускает системный `python3`, на чистом маке это 3.9. Поэтому только stdlib и без `match/case`.
 
@@ -103,9 +103,13 @@ Claude Desktop — отдельный канал, эти каталоги он �
 
 ### Настройки Claude Code
 
-`sync.py claude` мёрджит шаблон `settings/claude-settings.json` в `~/.claude/settings.json`. Шаблон владеет `$schema`, списками `permissions.allow`, `permissions.ask` и `permissions.deny` и своими хуками. Остальные ключи и чужие хуки, например agterm, остаются как были. Если файл не читается как JSON, установщик ничего не меняет и падает. Правила мёрджа целиком — в [гайде Claude Code](docs/setup/claude-code.md#settingsjson).
+`sync.py claude` мёрджит шаблон `settings/claude-settings.json` в `~/.claude/settings.json`. Шаблон владеет `$schema`, ключами `env` из шаблона, списками `permissions.allow`, `permissions.ask` и `permissions.deny` и своими хуками. Остальные ключи и чужие хуки, например agterm, остаются как были. Если файл не читается как JSON, установщик ничего не меняет и падает. Правила мёрджа целиком — в [гайде Claude Code](docs/setup/claude-code.md#settingsjson).
 
 Скрипты хуков линкуются поштучно: `~/.claude/hooks/<script>` → `settings/hooks/<script>`.
+
+### Шелл агентов
+
+Оба харнесса запускают команды агента в `/bin/bash`, [почему и какой ценой](docs/setup/agent-shell.md). В Claude Code это ключ `env.CLAUDE_CODE_SHELL` шаблона. В OpenCode `sync.py opencode` вставляет `"shell"` текстом сразу после первой `{` в `opencode.jsonc`: файл с комментариями и ключами провайдеров не переписывается, а в stdlib нет парсера JSONC, поэтому его сканирует `opencode.py`. Своё значение `shell` установщик не меняет, а только предупреждает.
 
 ## Матрица харнессов
 
