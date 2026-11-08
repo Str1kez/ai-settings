@@ -29,7 +29,7 @@
 
 ## Проектные агенты
 
-Шаблоны из `agents/` (`code-reviewer`, `coder`) называют уровень модели: `frontier` или `standard`. Глобальный агент из `install.sh` работает на модели сессии. Проектный агент получает конкретную модель под каждый уровень и перекрывает одноимённого глобального. Зачем так — в [ADR 0002](../adr/0002-project-agents.md), формат шаблона — в [agents/README.md](../../agents/README.md). Проектных агентов делаю только для Claude Code и OpenCode.
+Шаблоны из `agents/` (`code-reviewer`, `coder`, `operator`) называют уровень модели: `frontier`, `standard` или `fast`. Глобальный агент из `install.sh` работает на модели сессии, а `fast` в Claude Code идёт на `haiku` ([ADR 0003](../adr/0003-fast-model-level.md)). В OpenCode глобальный агент всегда на модели сессии. Проектный агент получает конкретную модель под каждый уровень и перекрывает одноимённого глобального. Зачем так — в [ADR 0002](../adr/0002-project-agents.md), формат шаблона — в [agents/README.md](../../agents/README.md). Проектных агентов делаю только для Claude Code и OpenCode.
 
 Файлы ложатся в `.claude/agents/<name>.md` и `.opencode/agents/<name>.md` проекта. Под маркером `# managed-by: ai-settings` в них стоит строка `# model-level: <уровень>`, по ней повторный запуск находит модель.
 
@@ -38,13 +38,13 @@
 Флаг на харнесс, значение — `уровень=модель` через запятую:
 
 ```bash
-init-project.sh --claude-models frontier=opus,standard=sonnet
-init-project.sh --opencode-models frontier=anthropic/opus,standard=openai/gpt
+init-project.sh --claude-models frontier=opus,standard=sonnet,fast=haiku
+init-project.sh --opencode-models frontier=anthropic/opus,standard=openai/gpt,fast=openai/mini
 ```
 
 Модель OpenCode пишется как `provider/model`. Флаг задаёт модели для этого харнесса, и вопросов по нему не будет.
 
-В терминале харнесс без флага скрипт спрашивает сам. Если наших агентов в проекте ещё нет, сначала `Project agents for Claude Code? [y/N]`, при `y` модель для каждого уровня. Дефолты есть только у Claude Code: `frontier` — `opus`, `standard` — `sonnet`, их берёт Enter. У OpenCode дефолтов нет, нужен ответ вида `provider/model`, ответ без `/` скрипт отклонит. Без терминала вопросов нет: нет флагов и агентов в проекте, значит скрипт напишет одну строку в лог и ничего не создаст.
+В терминале харнесс без флага скрипт спрашивает сам. Если наших агентов в проекте ещё нет, сначала `Project agents for Claude Code? [y/N]`, при `y` модель для каждого уровня. Дефолты есть только у Claude Code: `frontier` — `opus`, `standard` — `sonnet`, `fast` — `haiku`, их берёт Enter. У OpenCode дефолтов нет, нужен ответ вида `provider/model`, ответ без `/` скрипт отклонит. Без терминала вопросов нет: нет флагов и агентов в проекте, значит скрипт напишет одну строку в лог и ничего не создаст.
 
 ### Повторный запуск
 
@@ -74,7 +74,8 @@ init-project.sh --opencode-models frontier=anthropic/opus,standard=openai/gpt
 ## Что класть в проектный AGENTS.md
 
 - Фреймворки и их версии.
-- Команды сборки, запуска и тестов, которые отличаются от глобальных.
+- Команды сборки, запуска и тестов, которые отличаются от глобальных. Я держу их в targets `Makefile`: агент, человек и CI запускают одно и то же, а новый скрипт или шаг CI сначала получает target.
+- Раздел `## Where to look`: по строке на документ, который агент читает перед определённой работой, в формате `<триггер> → <файл>`. Без него каждый бриф сабагента таскает формы команд и пути с собой.
 - Договорённости проекта, которые расходятся с глобальными правилами, и почему.
 - Ссылки на ADR и архитектурные решения проекта.
 

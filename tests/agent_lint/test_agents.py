@@ -75,7 +75,7 @@ def test_lint_catches_a_broken_agent(tmp_path: Path, broken: str, expected: str)
     assert any(expected in problem for problem in found), found
 
 
-@pytest.mark.parametrize("model", ["frontier", "standard"])
+@pytest.mark.parametrize("model", ["frontier", "standard", "fast"])
 @pytest.mark.parametrize("effort", [None, "low", "medium", "high", "xhigh", "max"])
 def test_every_model_level_and_effort_is_accepted(tmp_path: Path, model: str, effort: str | None) -> None:
     text = GOOD.replace("model: standard", f"model: {model}")
