@@ -10,6 +10,8 @@ Every tool use falls into one of three tiers. When in doubt — assume the more 
 | Filesystem | Search (grep/glob) in the cwd subtree |
 | Git | `git status`, `git log`, `git diff`, `git show` (read-only) |
 | Git | Local commit when the task or brief calls for one, after reading the full staged diff; it stays local until a push |
+| Git | Local `git merge` (e.g. a subagent worktree branch into the task branch); stays local until a push |
+| Git | `git add`, `git switch`, `git worktree add/remove` (no `--force`), `git branch -d` |
 | Runtime | Run existing tests (`pytest`) |
 | Info | `--version`, `--help`, docs lookups |
 | Checks | Linters, type-checkers, formatters (read-only mode) |
@@ -20,7 +22,7 @@ Every tool use falls into one of three tiers. When in doubt — assume the more 
 |---|---|
 | Filesystem | Create directories outside standard cwd subtree |
 | Deps | Install new dependencies (`uv add`, `uv pip install`, `pip install`) |
-| Git | Push, create/switch branches, rebase, merge |
+| Git | Push, rebase, `git checkout`, force-deleting branches (`branch -D`), `worktree remove --force` |
 | Runtime | Run destructive or long-running commands (DB migrations, build, deploy) |
 | Network | Any API call with side effects (POST/PUT/PATCH/DELETE) |
 | System | Sudo anything |
