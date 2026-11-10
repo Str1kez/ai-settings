@@ -62,12 +62,17 @@
             "Bash(python3 --version)",
             "Bash(uv --version)",
             "Bash(jq:*)",
-            "Bash(git commit:*)"
+            "Bash(git commit:*)",
+            "Bash(git merge:*)",
+            "Bash(git add:*)",
+            "Bash(git switch:*)",
+            "Bash(git worktree add:*)",
+            "Bash(git worktree remove:*)",
+            "Bash(git branch -d:*)"
         ],
         "ask": [
             "Bash(git push:*)",
             "Bash(git checkout:*)",
-            "Bash(git merge:*)",
             "Bash(git rebase:*)",
             "Bash(npm install:*)",
             "Bash(pip install:*)",
@@ -86,7 +91,9 @@
             "Bash(git reset --hard*)",
             "Bash(rm -rf*)",
             "Bash(*--dangerously-skip-permissions*)",
-            "Bash(*--no-verify*)"
+            "Bash(*--no-verify*)",
+            "Bash(git worktree remove*--force*)",
+            "Bash(git worktree remove*-f*)"
         ]
     },
     "hooks": {
