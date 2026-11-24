@@ -1,6 +1,6 @@
 ---
-name: ship
-version: 1.1.0
+name: land-branch
+version: 2.0.0
 description: |
   Use when work on a branch is finished and has to reach the base branch: "доведи ветку",
   "оформи PR", "смёрджи", "закрой задачу", "ship it".

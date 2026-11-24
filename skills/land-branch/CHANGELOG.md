@@ -1,6 +1,11 @@
-# CHANGELOG — ship
+# CHANGELOG — land-branch
 
 Формат: [Keep a Changelog](https://keepachangelog.com/ru/1.1.0/), семантическое версионирование.
+
+## [2.0.0] — 2026-11-24
+
+### Изменено
+- Скилл переименован из `ship` в `land-branch`. В Claude Code появилась своя команда `/ship`, и скилл с таким же именем перестал загружаться.
 
 ## [1.1.0] — 2026-11-06
 
